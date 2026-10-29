@@ -1,0 +1,37 @@
+// swift-tools-version: 6.0
+import PackageDescription
+
+let package = Package(
+    name: "SonyCtl",
+    platforms: [.macOS(.v14)],
+    products: [
+        .library(name: "MDRKit", targets: ["MDRKit"]),
+        .library(name: "MDRTransport", targets: ["MDRTransport"]),
+        .library(name: "MDRSession", targets: ["MDRSession"]),
+        .library(name: "HeadphoneModel", targets: ["HeadphoneModel"]),
+        .executable(name: "mdr-cli", targets: ["mdr-cli"]),
+    ],
+    targets: [
+        .target(name: "MDRKit", path: "Packages/MDRKit/Sources/MDRKit"),
+        .testTarget(name: "MDRKitTests", dependencies: ["MDRKit"], path: "Packages/MDRKit/Tests/MDRKitTests"),
+
+        .target(
+            name: "MDRTransport",
+            dependencies: ["MDRKit"],
+            path: "Packages/MDRTransport/Sources/MDRTransport",
+            linkerSettings: [.linkedFramework("IOBluetooth")]
+        ),
+
+        .target(name: "MDRSession", dependencies: ["MDRKit"], path: "Packages/MDRSession/Sources/MDRSession"),
+        .testTarget(name: "MDRSessionTests", dependencies: ["MDRSession"], path: "Packages/MDRSession/Tests/MDRSessionTests"),
+
+        .target(name: "HeadphoneModel", dependencies: ["MDRKit"], path: "Packages/HeadphoneModel/Sources/HeadphoneModel"),
+        .testTarget(name: "HeadphoneModelTests", dependencies: ["HeadphoneModel", "MDRKit"], path: "Packages/HeadphoneModel/Tests/HeadphoneModelTests"),
+
+        .executableTarget(
+            name: "mdr-cli",
+            dependencies: ["MDRKit", "MDRTransport", "MDRSession", "HeadphoneModel"],
+            path: "Tools/mdr-cli"
+        ),
+    ]
+)

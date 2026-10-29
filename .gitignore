@@ -1,0 +1,12 @@
+.build/
+.swiftpm/
+dist/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+# Modelos 3D do usuário nunca vão para o repositório
+*.usdz
+
+# Vistas de referência de terceiros usadas só para modelar; não vão para o repositório
+images/
+.DS_Store

@@ -1,0 +1,131 @@
+import HeadphoneModel
+import MDRKit
+import SwiftUI
+
+/// Painel da barra: adapta o `DeviceController` para o `PanelView` (que não conhece o protocolo).
+struct MenuBarView: View {
+    @Environment(DeviceController.self) private var device
+    @Environment(\.openSettings) private var openSettings
+    @State private var opened = 0
+
+    var body: some View {
+        PanelView(state: .from(device), actions: actions, entranceID: opened)
+            .keepsChannelOpen()
+            .deviceAlerts()
+            .onAppear { opened += 1 }
+    }
+
+    private var actions: PanelActions {
+        let d = device
+        return PanelActions(
+            setMode: { m in d.perform { try await $0.setSoundMode(m) } },
+            setAmbient: { v in d.perform { try await $0.setAmbientLevel(v) } },
+            setFocusOnVoice: { v in d.perform { try await $0.setFocusOnVoice(v) } },
+            setPreset: { id in d.perform { try await $0.setEqualizerPreset(id) } },
+            setSpeakToChat: { v in d.perform { try await $0.setSpeakToChat(v) } },
+            setDSEE: { v in d.perform { try await $0.setDSEE(v) } },
+            previous: { d.perform { try await $0.playback(.previous) } },
+            playPause: {
+                let playing = d.state.playback?.isPlaying ?? false
+                d.perform { try await $0.playback(playing ? .pause : .play) }
+            },
+            next: { d.perform { try await $0.playback(.next) } },
+            setVolume: { v in d.perform { try await $0.setVolume(v) } },
+            connect: { Task { await d.connectDevice() } },
+            disconnect: { Task { await d.disconnectDevice() } },
+            openSettings: { NSApp.activate(); openSettings() },
+            quit: { NSApp.terminate(nil) })
+    }
+}
+
+extension PanelState {
+    @MainActor static func from(_ d: DeviceController) -> PanelState {
+        let s = d.state
+        var p = PanelState()
+        p.name = d.selectedDevice?.name ?? s.modelName ?? String(localized: "Fone")
+        p.subtitle = [s.modelName, s.codec.map { "\($0)" }].compactMap { $0 }.joined(separator: " · ")
+        p.link = d.isReady ? .ready : d.isBluetoothConnected ? .bluetoothOnly : .off
+        switch d.snapshot.phase {
+        case .ready: p.phase = .ready
+        case .connecting: p.phase = .loading
+        default:
+            p.phase = .disconnected(message: d.selectedAddress == nil ? "Nenhum fone pareado. Pareie o fone nos Ajustes do Sistema."
+                                    : d.isBluetoothConnected ? "O controle do fone está em pausa." : "O fone não está conectado ao Mac.")
+        }
+        if let b = s.battery { p.battery = Int(b.level); p.charging = b.isCharging }
+        if let n = s.noiseControl {
+            p.mode = n.soundMode
+            p.ambientLevel = Int(n.ambientLevel)
+            p.focusOnVoice = n.focusOnVoice
+        }
+        if let eq = s.equalizer, !s.equalizerPresets.isEmpty {
+            p.presets = s.equalizerPresets.map { .init(id: $0.id, name: PresetNames.name($0.id, custom: d.settings.presetNames)) }
+            p.presetID = eq.presetID
+            // Clear Bass entra como 1º ponto: no XM5 o "Graves realçados" é só Clear Bass, com as bandas em 0.
+            p.bands = eq.clearBass.map { [$0] + eq.bands } ?? eq.bands
+        }
+        if s.capabilities.speakToChat { p.speakToChat = s.speakToChat ?? false }
+        if s.capabilities.dsee {
+            p.dsee = s.dsee ?? false
+            p.dseeTitle = s.dseeType == 0x03 ? "DSEE Extreme" : "DSEE"
+            p.dseeAvailable = s.dseeAvailable != false
+        }
+        p.showPlayback = s.capabilities.playback
+        p.isPlaying = s.playback?.isPlaying ?? false
+        p.volume = s.volume.map(Int.init)
+        // O fone tem a mensagem de título/artista no protocolo, mas o MDRKit ainda não a decodifica
+        // (fora do escopo desta mudança de UI): a linha fica escondida.
+        p.nowPlaying = nil
+        p.accent = d.settings.ringAccent
+        p.use3D = d.settings.popupUse3D
+        p.lightRing = d.settings.modelLightRing
+        p.customModel = CustomMedia.modelURL
+        p.customImage = CustomMedia.image
+        return p
+    }
+}
+
+/// Ícone da barra: template do SF Symbol `headphones`; apagado quando desconectado, com ponto
+/// quando a bateria está baixa e, opcionalmente, a % ao lado.
+struct MenuBarLabel: View {
+    @Environment(DeviceController.self) private var device
+    @Environment(\.openSettings) private var openSettings
+
+    var body: some View {
+        HStack(spacing: 3) {
+            Image(nsImage: Self.icon(connected: device.isBluetoothConnected, lowBattery: device.isBatteryLow))
+            if device.settings.menuBarShowsPercent, let b = device.lastBattery {
+                Text("\(b.level)%").monospacedDigit()
+            }
+        }
+        .onAppear { StatusItemMenu.openSettings = { openSettings() } }
+        .accessibilityLabel("SonyCtl")
+    }
+
+    static func icon(connected: Bool, lowBattery: Bool) -> NSImage {
+        let config = NSImage.SymbolConfiguration(pointSize: 14, weight: .regular)
+        let symbol = NSImage(systemSymbolName: "headphones", accessibilityDescription: nil)!.withSymbolConfiguration(config)!
+        let size = NSSize(width: symbol.size.width + 3, height: symbol.size.height)
+        let img = NSImage(size: size, flipped: false) { _ in
+            symbol.draw(in: NSRect(origin: .zero, size: symbol.size), from: .zero, operation: .sourceOver, fraction: connected ? 1 : 0.35)
+            if lowBattery {
+                NSColor.black.setFill()
+                NSBezierPath(ovalIn: NSRect(x: size.width - 6, y: 0, width: 6, height: 6)).fill()
+            }
+            return true
+        }
+        img.isTemplate = true
+        img.accessibilityDescription = connected ? (lowBattery ? "Fone conectado, bateria baixa" : "Fone conectado") : "Fone desconectado"
+        return img
+    }
+}
+
+func batterySymbol(_ level: UInt8) -> String {
+    switch level {
+    case 0..<13: "battery.0"
+    case 13..<38: "battery.25"
+    case 38..<63: "battery.50"
+    case 63..<88: "battery.75"
+    default: "battery.100"
+    }
+}

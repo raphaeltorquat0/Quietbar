@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>pt-BR</string>
+	<key>CFBundleDisplayName</key>
+	<string>SonyCtl</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.utilities</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>O SonyCtl usa o Bluetooth para ler e alterar os ajustes do seu fone Sony.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>O macOS só informa o nome da rede Wi-Fi a apps com acesso à localização. O SonyCtl usa isso apenas para os perfis por rede.</string>
+	<key>NSLocationUsageDescription</key>
+	<string>O macOS só informa o nome da rede Wi-Fi a apps com acesso à localização. O SonyCtl usa isso apenas para os perfis por rede.</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Projeto independente, sem afiliação com a Sony.</string>
+</dict>
+</plist>
