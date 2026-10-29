@@ -4,13 +4,13 @@ import ServiceManagement
 import SwiftUI
 
 @main
-struct SonyCtlApp: App {
+struct QuietbarApp: App {
     @State private var device = DeviceController.shared
 
     init() {
         if CommandLine.arguments.contains("--selftest") { Self.selfTest() }
         if let i = CommandLine.arguments.firstIndex(of: "--render-panel-previews") {
-            let dir = CommandLine.arguments.dropFirst(i + 1).first ?? "/tmp/sonyctl-ui"
+            let dir = CommandLine.arguments.dropFirst(i + 1).first ?? "/tmp/quietbar-ui"
             Task { @MainActor in PanelPreviewRenderer.run(to: URL(fileURLWithPath: dir)) }
         }
         // `make install` abre o app com esta flag: só o próprio app pode se registrar como item de login.
@@ -31,7 +31,7 @@ struct SonyCtlApp: App {
         Task(priority: .utility) { @MainActor in await HeadphoneRealityKit.prewarm(spec) }
     }
 
-    /// `SonyCtl.app/Contents/MacOS/SonyCtl --selftest`: abre o canal com o fone, imprime e sai.
+    /// `Quietbar.app/Contents/MacOS/Quietbar --selftest`: abre o canal com o fone, imprime e sai.
     /// Serve para validar o RFCOMM com e sem App Sandbox sem precisar da UI.
     private static func selfTest() {
         Task { @MainActor in

@@ -20,7 +20,7 @@ enum PopupPosition: String, CaseIterable, Identifiable {
 /// Popup de conexão: painel flutuante sem foco, em todos os Spaces.
 @MainActor final class PopupController {
     static let shared = PopupController()
-    static let showNotification = Notification.Name("io.github.sonyctl.showPopup")
+    static let showNotification = Notification.Name("io.github.raphaeltorquat0.quietbar.showPopup")
 
     private var panel: NSPanel?
     private var presenting = false
@@ -268,7 +268,7 @@ struct HeadphoneIllustration: View {
 /// Imagem e modelo .usdz do usuário, copiados para Application Support (nunca para o bundle).
 enum CustomMedia {
     static let dir: URL = {
-        let d = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appending(path: "SonyCtl")
+        let d = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appending(path: "Quietbar")
         try? FileManager.default.createDirectory(at: d, withIntermediateDirectories: true)
         return d
     }()

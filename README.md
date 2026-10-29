@@ -1,6 +1,6 @@
-<p align="center"><img src="docs/screenshots/icone.png" width="128" alt="Ícone do SonyCtl"></p>
+<p align="center"><img src="docs/screenshots/icone.png" width="128" alt="Ícone do Quietbar"></p>
 
-<h1 align="center">SonyCtl</h1>
+<h1 align="center">Quietbar</h1>
 
 <p align="center">
 Controle o <b>Sony WH-1000XM5</b> pela barra de menus do macOS, sem o app da Sony no celular.<br>
@@ -8,7 +8,7 @@ Controle o <b>Sony WH-1000XM5</b> pela barra de menus do macOS, sem o app da Son
 </p>
 
 <p align="center">
-<a href="https://github.com/raphaeltorquat0/SonyCtl/releases/latest"><b>⬇︎ Baixar a última versão (.dmg)</b></a>
+<a href="https://github.com/raphaeltorquat0/Quietbar/releases/latest"><b>⬇︎ Baixar a última versão (.dmg)</b></a>
 </p>
 
 <p align="center">
@@ -38,12 +38,12 @@ Apple Silicon e Intel.
 
 ## Instalar
 
-1. Baixe o `SonyCtl-<versão>.dmg` em [Releases](https://github.com/raphaeltorquat0/SonyCtl/releases/latest)
-   e arraste o SonyCtl para **Aplicativos**.
-2. Abra o SonyCtl. Como o app não é notarizado pela Apple (é um projeto independente, sem conta de
+1. Baixe o `Quietbar-<versão>.dmg` em [Releases](https://github.com/raphaeltorquat0/Quietbar/releases/latest)
+   e arraste o Quietbar para **Aplicativos**.
+2. Abra o Quietbar. Como o app não é notarizado pela Apple (é um projeto independente, sem conta de
    desenvolvedor paga), o macOS bloqueia a primeira abertura. Vá em **Ajustes do Sistema › Privacidade e
-   Segurança**, role até o aviso do SonyCtl e clique em **Abrir Mesmo Assim**. Isso só é preciso uma vez.
-   <br>Pelo Terminal, o equivalente é `xattr -dr com.apple.quarantine /Applications/SonyCtl.app`.
+   Segurança**, role até o aviso do Quietbar e clique em **Abrir Mesmo Assim**. Isso só é preciso uma vez.
+   <br>Pelo Terminal, o equivalente é `xattr -dr com.apple.quarantine /Applications/Quietbar.app`.
 3. Permita o acesso ao **Bluetooth** quando o macOS pedir. O fone precisa estar pareado com o Mac.
 
 O ícone de fone aparece na barra de menus. Para abrir junto com o Mac: Configurações › Geral ›
@@ -52,11 +52,11 @@ O ícone de fone aparece na barra de menus. Para abrir junto com o Mac: Configur
 ### Compilar do código
 
 ```sh
-git clone https://github.com/raphaeltorquat0/SonyCtl.git && cd SonyCtl
+git clone https://github.com/raphaeltorquat0/Quietbar.git && cd Quietbar
 make install
 ```
 
-Compila, assina localmente, instala em `/Applications/SonyCtl.app` (fechando a versão anterior), liga
+Compila, assina localmente, instala em `/Applications/Quietbar.app` (fechando a versão anterior), liga
 "abrir ao iniciar sessão" e abre o app. Requisitos: macOS 14+ e Xcode 16+;
 [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`) só se você mudar o `project.yml`.
 

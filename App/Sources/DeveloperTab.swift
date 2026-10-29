@@ -26,7 +26,7 @@ private struct DiagnosticsSection: View {
 
     var body: some View {
         Section("Diagnóstico") {
-            LabeledContent("SonyCtl", value: Diagnostics.appVersion)
+            LabeledContent("Quietbar", value: Diagnostics.appVersion)
             LabeledContent("macOS", value: ProcessInfo.processInfo.operatingSystemVersionString)
             LabeledContent("Fone", value: device.state.modelName ?? "—")
             LabeledContent("Firmware", value: device.state.firmwareVersion ?? "—")
@@ -48,7 +48,7 @@ private struct DiagnosticsSection: View {
     }
 
     static func report(_ d: DeviceController) -> String {
-        var lines = ["SonyCtl \(appVersion)", "macOS \(ProcessInfo.processInfo.operatingSystemVersionString)",
+        var lines = ["Quietbar \(appVersion)", "macOS \(ProcessInfo.processInfo.operatingSystemVersionString)",
                      "canal: \(d.snapshot.phase)", "bluetooth conectado: \(d.isBluetoothConnected)"]
         if let e = d.lastError { lines.append("último erro: \(e)") }
         lines += d.state.diagnosticFields.map { "\($0.0): \($0.1)" }
@@ -123,7 +123,7 @@ private struct ModelViewerSection: View {
 
     private func export() {
         let p = NSSavePanel()
-        p.nameFieldStringValue = "SonyCtl.usdz"
+        p.nameFieldStringValue = "Quietbar.usdz"
         p.allowedContentTypes = [.usdz]
         guard p.runModal() == .OK, let url = p.url else { return }
         var st = HeadphoneExport.State()
@@ -225,7 +225,7 @@ private struct ProtocolLogSection: View {
                 Button(frozen == nil ? "Pausar" : "Continuar") { frozen = frozen == nil ? log.entries : nil }
                 Button("Limpar") { log.clear(); frozen = nil }
                 Button("Copiar") { Diagnostics.copy(text) }
-                Button("Exportar…") { Diagnostics.save(text, name: "sonyctl-mdr.log") }
+                Button("Exportar…") { Diagnostics.save(text, name: "quietbar-mdr.log") }
             }
             ScrollViewReader { proxy in
                 ScrollView {

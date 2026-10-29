@@ -1,12 +1,12 @@
-name: SonyCtl
+name: Quietbar
 options:
-  bundleIdPrefix: io.github.sonyctl
+  bundleIdPrefix: io.github.raphaeltorquat0
   deploymentTarget:
     macOS: "14.0"
   createIntermediateGroups: true
   developmentLanguage: pt-BR
 packages:
-  SonyCtlKit:
+  QuietbarKit:
     path: .
 settings:
   base:
@@ -14,33 +14,33 @@ settings:
     MARKETING_VERSION: "1.0.0"
     CURRENT_PROJECT_VERSION: "1"
 targets:
-  SonyCtl:
+  Quietbar:
     type: application
     platform: macOS
     sources:
       - path: App/Sources
       - path: App/Resources
     dependencies:
-      - package: SonyCtlKit
+      - package: QuietbarKit
         product: MDRSession
-      - package: SonyCtlKit
+      - package: QuietbarKit
         product: MDRTransport
-      - package: SonyCtlKit
+      - package: QuietbarKit
         product: MDRKit
-      - package: SonyCtlKit
+      - package: QuietbarKit
         product: HeadphoneModel
-      - target: SonyCtlControls
+      - target: QuietbarControls
       - sdk: IOBluetooth.framework
       - sdk: CoreWLAN.framework
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: io.github.sonyctl.SonyCtl
-        PRODUCT_NAME: SonyCtl
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.raphaeltorquat0.Quietbar
+        PRODUCT_NAME: Quietbar
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_FILE: App/Support/Info.plist
         # scripts/build-app.sh troca para a variante com sandbox; a extensão não é afetada.
-        SONYCTL_APP_ENTITLEMENTS: App/Support/SonyCtl.entitlements
-        CODE_SIGN_ENTITLEMENTS: $(SONYCTL_APP_ENTITLEMENTS)
+        QUIETBAR_APP_ENTITLEMENTS: App/Support/Quietbar.entitlements
+        CODE_SIGN_ENTITLEMENTS: $(QUIETBAR_APP_ENTITLEMENTS)
         CODE_SIGN_STYLE: Manual
         CODE_SIGN_IDENTITY: "-"
         ENABLE_HARDENED_RUNTIME: YES
@@ -51,7 +51,7 @@ targets:
         Release:
           ONLY_ACTIVE_ARCH: NO
           ARCHS: "arm64 x86_64"
-  SonyCtlControls:
+  QuietbarControls:
     type: app-extension
     platform: macOS
     deploymentTarget: "26.0"
@@ -63,10 +63,10 @@ targets:
       - sdk: SwiftUI.framework
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: io.github.sonyctl.SonyCtl.Controls
-        PRODUCT_NAME: SonyCtlControls
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.raphaeltorquat0.Quietbar.Controls
+        PRODUCT_NAME: QuietbarControls
         INFOPLIST_FILE: Controls/Info.plist
-        CODE_SIGN_ENTITLEMENTS: Controls/SonyCtlControls.entitlements
+        CODE_SIGN_ENTITLEMENTS: Controls/QuietbarControls.entitlements
         CODE_SIGN_STYLE: Manual
         CODE_SIGN_IDENTITY: "-"
         ENABLE_HARDENED_RUNTIME: YES

@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "SonyCtl",
+    name: "Quietbar",
     platforms: [.macOS(.v14)],
     products: [
         .library(name: "MDRKit", targets: ["MDRKit"]),

@@ -1,5 +1,5 @@
-# SonyCtl — `make install` é o único comando necessário no dia a dia.
-APP_NAME := SonyCtl
+# Quietbar — `make install` é o único comando necessário no dia a dia.
+APP_NAME := Quietbar
 DEST     := /Applications/$(APP_NAME).app
 DEV_DD   := .build/xcode-debug
 

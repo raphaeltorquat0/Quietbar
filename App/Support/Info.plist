@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>pt-BR</string>
 	<key>CFBundleDisplayName</key>
-	<string>SonyCtl</string>
+	<string>Quietbar</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -25,11 +25,11 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>O SonyCtl usa o Bluetooth para ler e alterar os ajustes do seu fone Sony.</string>
+	<string>O Quietbar usa o Bluetooth para ler e alterar os ajustes do seu fone Sony.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>O macOS só informa o nome da rede Wi-Fi a apps com acesso à localização. O SonyCtl usa isso apenas para os perfis por rede.</string>
+	<string>O macOS só informa o nome da rede Wi-Fi a apps com acesso à localização. O Quietbar usa isso apenas para os perfis por rede.</string>
 	<key>NSLocationUsageDescription</key>
-	<string>O macOS só informa o nome da rede Wi-Fi a apps com acesso à localização. O SonyCtl usa isso apenas para os perfis por rede.</string>
+	<string>O macOS só informa o nome da rede Wi-Fi a apps com acesso à localização. O Quietbar usa isso apenas para os perfis por rede.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Projeto independente, sem afiliação com a Sony.</string>
 </dict>

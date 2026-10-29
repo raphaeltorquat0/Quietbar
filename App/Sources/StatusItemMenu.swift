@@ -50,7 +50,7 @@ import Observation
             })
         }
         menu.addItem(.separator())
-        menu.addItem(ClosureItem("Sair do SonyCtl") { NSApp.terminate(nil) })
+        menu.addItem(ClosureItem("Sair do Quietbar") { NSApp.terminate(nil) })
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: -4), in: w.contentView)
     }
 }

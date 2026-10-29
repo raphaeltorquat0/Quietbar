@@ -392,12 +392,12 @@
         }
       }
     },
-    "Sair do SonyCtl": {
+    "Sair do Quietbar": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quit SonyCtl"
+            "value": "Quit Quietbar"
           }
         }
       }

@@ -103,7 +103,7 @@ import Testing
 @MainActor @Suite struct SnapshotTests {
     @Test(arguments: [SoundModeArg.nc, .ambient, .off])
     func rendersEachState(_ m: SoundModeArg) throws {
-        let url = FileManager.default.temporaryDirectory.appending(path: "sonyctl-\(m).png")
+        let url = FileManager.default.temporaryDirectory.appending(path: "quietbar-\(m).png")
         var st = HeadphoneExport.State()
         st.mode = m.mode
         try HeadphoneExport.snapshotSceneKit(to: url, size: CGSize(width: 200, height: 200), state: st)

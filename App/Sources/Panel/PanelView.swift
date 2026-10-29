@@ -257,7 +257,7 @@ struct PanelView: View {
             Spacer()
             PanelMenu(icon: "ellipsis") {
                 if state.link != .off { Button("Desconectar", action: actions.disconnect) }
-                Button("Sair do SonyCtl", action: actions.quit)
+                Button("Sair do Quietbar", action: actions.quit)
             }
             .accessibilityLabel("Mais opções")
         }

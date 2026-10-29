@@ -99,7 +99,7 @@ struct MenuBarLabel: View {
             }
         }
         .onAppear { StatusItemMenu.openSettings = { openSettings() } }
-        .accessibilityLabel("SonyCtl")
+        .accessibilityLabel("Quietbar")
     }
 
     static func icon(connected: Bool, lowBattery: Bool) -> NSImage {

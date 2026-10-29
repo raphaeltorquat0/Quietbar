@@ -275,10 +275,10 @@ enum Notifier {
     }
 }
 
-/// Log de tráfego em `~/Library/Logs/SonyCtl/traffic.log`, no mesmo formato do `mdr-cli --log-hex`.
+/// Log de tráfego em `~/Library/Logs/Quietbar/traffic.log`, no mesmo formato do `mdr-cli --log-hex`.
 enum TrafficLog {
     static let url = FileManager.default.homeDirectoryForCurrentUser
-        .appending(path: "Library/Logs/SonyCtl/traffic.log")
+        .appending(path: "Library/Logs/Quietbar/traffic.log")
 
     @Sendable static func append(_ dir: MDRSession.Direction, _ bytes: [UInt8]) {
         let line = "\(Date().ISO8601Format()) \(dir == .tx ? ">>" : "<<") \(bytes.hex)\n"

@@ -1,6 +1,6 @@
 # Protocolo Sony MDR v2 — referência consolidada para o WH-1000XM5
 
-Documento de trabalho do SonyCtl. Cada item cita a origem:
+Documento de trabalho do Quietbar. Cada item cita a origem:
 
 | Sigla | Referência | Commit estudado | Licença |
 |---|---|---|---|
@@ -16,7 +16,7 @@ WH-1000XM5 fw 2.5.1 sobre o `libmdr` de [M]; [C] é tráfego real de MDR v2 (mes
 
 - Bluetooth Classic, RFCOMM. Nada de BLE. [M][L]
 - UUID do serviço SPP Sony MDR v2: **`956C7B26-D49A-4BA8-B03F-B17D393CB6E2`**. [M `mdr-c/Base.h:49`][L `mdr_backend.cpp:29`]
-- UUID legado (v1, XM4 e anteriores): `96CC203E-5068-46AD-B32D-E316F5E069BA`. Não usado no v1 do SonyCtl. [M][L]
+- UUID legado (v1, XM4 e anteriores): `96CC203E-5068-46AD-B32D-E316F5E069BA`. Não usado no v1 do Quietbar. [M][L]
 - O canal RFCOMM vem do registro SDP desse UUID (`getRFCOMMChannelID`). [M `ConnectionMacOS.mm`]
 - Tamanho máximo de pacote: 2048 bytes; escrita limitada ao MTU do canal. [M `Command.hpp`]
 
@@ -56,7 +56,7 @@ Fonte: [M `Protocol.hpp:37`]. Demais valores (`0x02`, `0x09`, `0x0A`, `0x0D`, `0
 - Ao enviar com `seq = s`, espera-se ACK com `seq = 1 - s`; recebido, o próximo envio usa `1 - s`. ACK com seq inesperado é descartado (ACK atrasado). [M `HandleAck`]
 - Vetor real de ACK: `3E 01 01 00 00 00 00 02 3C` (type 1, seq 1, len 0, checksum 2). [C]
 - Um comando por vez: só se envia o próximo depois do ACK do anterior. [M `SendCommandACK`]
-- Timeout/retry: [M] usa timeout padrão por awaiter; o SonyCtl usa 1 s × 3 tentativas com backoff (ver `DECISIONS.md`).
+- Timeout/retry: [M] usa timeout padrão por awaiter; o Quietbar usa 1 s × 3 tentativas com backoff (ver `DECISIONS.md`).
 
 ## 3. Payload (Tabela 1 e 2)
 
@@ -102,7 +102,7 @@ O layout de RET, NTFY e SET de um mesmo inquired type é idêntico, salvo onde i
 
 **Atenção (V2):** `EnableDisable.ENABLE = 0x00`, `DISABLE = 0x01`; `OnOff.ON = 0x00`, `OFF = 0x01`. Invertido em relação ao intuitivo. [M `ProtocolV2.hpp`][G comenta "this is reversed on V2"]
 
-### 3.3 Funções anunciadas usadas pelo SonyCtl (Tabela 1)
+### 3.3 Funções anunciadas usadas pelo Quietbar (Tabela 1)
 
 | Código | Função | Habilita |
 |---|---|---|
@@ -179,7 +179,7 @@ Mesma ordem de `RequestInitV2` [M]:
 
 ## 5. Divergências entre as referências
 
-| Ponto | [M] | [G] | Escolha do SonyCtl |
+| Ponto | [M] | [G] | Escolha do Quietbar |
 |---|---|---|---|
 | Inquired type de NC/ASM do WH-1000XM5 | escolhe pela função anunciada (`0x6B` → `0x17`) | fixo `0x15` (ou `0x17` com "AmbientSoundControl2") | pela função anunciada; perfil XM5 de fallback usa `0x17` (evidência de teste em XM5 por [L], que usa [M]) |
 | Auto power off SET | `último = 00` | pares fixos (`01 01`, `02 02`…) | [M], que tem evidência em hardware via [L]; marcado para conferência no `HARDWARE_TEST.md` |

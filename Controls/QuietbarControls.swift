@@ -3,7 +3,7 @@ import SwiftUI
 import WidgetKit
 
 @main
-struct SonyCtlControlsBundle: WidgetBundle {
+struct QuietbarControlsBundle: WidgetBundle {
     var body: some Widget { SoundModeControl() }
 }
 
@@ -11,13 +11,13 @@ struct SonyCtlControlsBundle: WidgetBundle {
 /// Sem estado (toggle) porque a extensão não enxerga o fone; quem fala com ele é o app.
 struct SoundModeControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
-        StaticControlConfiguration(kind: "io.github.sonyctl.SonyCtl.soundMode") {
+        StaticControlConfiguration(kind: "io.github.raphaeltorquat0.Quietbar.soundMode") {
             ControlWidgetButton(action: ToggleSoundModeIntent()) {
                 Label("Cancelamento / Ambiente", systemImage: "headphones")
             }
         }
         .displayName("Modo de som do fone")
-        .description("Alterna Cancelamento de ruído e Ambiente pelo SonyCtl (o app precisa estar aberto).")
+        .description("Alterna Cancelamento de ruído e Ambiente pelo Quietbar (o app precisa estar aberto).")
     }
 }
 
@@ -26,7 +26,7 @@ struct ToggleSoundModeIntent: AppIntent {
 
     func perform() async throws -> some IntentResult {
         CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(),
-                                             CFNotificationName("io.github.sonyctl.toggleSoundMode" as CFString), nil, nil, true)
+                                             CFNotificationName("io.github.raphaeltorquat0.quietbar.toggleSoundMode" as CFString), nil, nil, true)
         return .result()
     }
 }

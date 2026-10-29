@@ -164,7 +164,7 @@ func run(_ argv: [String]) async throws {
     if command == "model" { return try await runModel(Array(args.dropFirst())) }
     if command == "popup" {
         // O app escuta esta notificação; sem userInfo para funcionar com App Sandbox.
-        DistributedNotificationCenter.default().postNotificationName(.init("io.github.sonyctl.showPopup"), object: nil,
+        DistributedNotificationCenter.default().postNotificationName(.init("io.github.raphaeltorquat0.quietbar.showPopup"), object: nil,
                                                                      userInfo: nil, deliverImmediately: true)
         return
     }
