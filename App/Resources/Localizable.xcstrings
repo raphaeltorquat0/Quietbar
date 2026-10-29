@@ -82,6 +82,16 @@
         }
       }
     },
+    "Claro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear"
+          }
+        }
+      }
+    },
     "Conectado": {
       "localizations": {
         "en": {
@@ -118,6 +128,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Settings…"
+          }
+        }
+      }
+    },
+    "D": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "R"
           }
         }
       }
@@ -182,12 +202,52 @@
         }
       }
     },
+    "Direito": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right"
+          }
+        }
+      }
+    },
+    "E": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
+          }
+        }
+      }
+    },
     "Equalizador": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Equalizer"
+          }
+        }
+      }
+    },
+    "Esquerdo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Left"
+          }
+        }
+      }
+    },
+    "Estojo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Case"
           }
         }
       }
@@ -242,12 +302,32 @@
         }
       }
     },
+    "Forte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hard"
+          }
+        }
+      }
+    },
     "Graves realçados": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Bass boost"
+          }
+        }
+      }
+    },
+    "Leve": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Soft"
           }
         }
       }
@@ -358,6 +438,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Custom %lld"
+          }
+        }
+      }
+    },
+    "Pesado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Heavy"
           }
         }
       }

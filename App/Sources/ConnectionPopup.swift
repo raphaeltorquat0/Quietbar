@@ -53,7 +53,9 @@ enum PopupPosition: String, CaseIterable, Identifiable {
         if demo != nil { return show() }
         Task {
             let deadline = Date().addingTimeInterval(3)
-            while Date() < deadline, device.state.battery == nil || device.state.noiseControl == nil {
+            // Espera bateria e modo; fones sem NC (ex.: LinkBuds Clip) não mandam modo.
+            while Date() < deadline, device.state.primaryBattery == nil
+                    || (device.state.noiseControl == nil && device.state.capabilities.noiseControlType != nil) {
                 if !device.isReady { await device.ensureConnected() }
                 try? await Task.sleep(for: .milliseconds(150))
             }
@@ -138,7 +140,7 @@ struct PopupView: View {
         let s = device.state
         let settings = device.settings
         let demo = model.demo
-        let battery: (level: UInt8, isCharging: Bool)? = demo.map { ($0.level, $0.charging) } ?? s.battery.map { ($0.level, $0.isCharging) }
+        let battery: (level: UInt8, isCharging: Bool)? = demo.map { ($0.level, $0.charging) } ?? s.primaryBattery.map { ($0.level, $0.isCharging) }
         let mode = demo?.mode ?? s.noiseControl?.soundMode
         let level = battery.map { Double($0.level) / 100 }
         HStack(spacing: 14) {
@@ -201,7 +203,9 @@ struct PopupView: View {
 
     @ViewBuilder
     private func visual(level: Double?, mode: SoundMode?, settings: AppSettings) -> some View {
-        if failed3D || !settings.popupUse3D {
+        if model.demo == nil, device.state.capabilities.isEarbuds, CustomMedia.modelURL == nil, CustomMedia.image == nil {
+            EarbudsVisual()
+        } else if failed3D || !settings.popupUse3D {
             HeadphoneIllustration(battery: shownBattery, accent: Color(nsColor: settings.ringNSColor), image: CustomMedia.image)
         } else {
             HeadphoneView(battery: level, mode: mode, accent: settings.ringAccent, customModel: CustomMedia.modelURL,

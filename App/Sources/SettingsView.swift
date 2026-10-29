@@ -58,10 +58,14 @@ struct GeneralTab: View {
         let s = device.state
         Form {
             Section {
-                HeadphoneView(battery: s.battery.map { Double($0.level) / 100 }, mode: s.noiseControl?.soundMode,
-                              accent: settings.ringAccent, customModel: CustomMedia.modelURL, lightRing: settings.modelLightRing)
-                    .frame(height: 170)
-                    .id(settings.modelLightRing)
+                if s.capabilities.isEarbuds, CustomMedia.modelURL == nil {
+                    EarbudsVisual().frame(height: 170)
+                } else {
+                    HeadphoneView(battery: s.primaryBattery.map { Double($0.level) / 100 }, mode: s.noiseControl?.soundMode,
+                                  accent: settings.ringAccent, customModel: CustomMedia.modelURL, lightRing: settings.modelLightRing)
+                        .frame(height: 170)
+                        .id(settings.modelLightRing)
+                }
             }
             Section("Fone") {
                 Picker("Dispositivo", selection: $device.selectedAddress) {
@@ -73,7 +77,7 @@ struct GeneralTab: View {
                 LabeledContent("Firmware", value: s.firmwareVersion ?? "—")
                 LabeledContent("Endereço", value: s.macAddress ?? device.selectedAddress ?? "—")
                 LabeledContent("Codec", value: s.codec?.description ?? "—")
-                LabeledContent("Bateria", value: s.battery.map { "\($0.level)%\($0.isCharging ? " (carregando)" : "")" } ?? "—")
+                LabeledContent("Bateria", value: batteryText(s))
                 LabeledContent("Status") {
                     switch device.snapshot.phase {
                     case .ready: Text("Conectado").foregroundStyle(.green)
@@ -83,7 +87,7 @@ struct GeneralTab: View {
                     }
                 }
                 if s.capabilities.isFallback {
-                    Text("O fone não informou as funções suportadas; usando o perfil padrão do WH-1000XM5.")
+                    Text("O fone não informou as funções suportadas; usando o perfil conhecido do WH-1000XM5.")
                         .font(.caption).foregroundStyle(.orange)
                 }
             }
@@ -330,4 +334,17 @@ struct PopupTab: View {
             }
         }
     }
+}
+
+/// Bateria em texto: única (over-ear) ou esquerdo/direito/estojo (earbuds).
+func batteryText(_ s: MDRDeviceState) -> String {
+    func pct(_ b: BatteryStatus) -> String { "\(b.level)%\(b.isCharging ? " ⚡︎" : "")" }
+    if let lr = s.batteryLR {
+        var parts: [String] = []
+        if lr.left.level > 0 { parts.append(String(localized: "E") + " " + pct(lr.left)) }
+        if lr.right.level > 0 { parts.append(String(localized: "D") + " " + pct(lr.right)) }
+        if let c = s.batteryCase, c.level > 0 { parts.append(String(localized: "Estojo") + " " + pct(c)) }
+        return parts.isEmpty ? "—" : parts.joined(separator: " · ")
+    }
+    return s.battery.map(pct) ?? "—"
 }

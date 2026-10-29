@@ -25,6 +25,30 @@ import SwiftUI
         return p
     }
 
+    /// WF-1000XM5: earbuds com cancelamento de ruído, os dois lados e o estojo.
+    static var wf1000xm5: PanelState {
+        var p = connected(.noiseCanceling, battery: 64)
+        p.name = "WF-1000XM5"
+        p.subtitle = "WF-1000XM5 · LDAC"
+        p.earbuds = .init(left: 64, right: 71, caseLevel: 45)
+        return p
+    }
+
+    /// LinkBuds Clip: earbuds sem cancelamento de ruído, EQ de 10 bandas, só um lado no ouvido.
+    static var linkBudsClip: PanelState {
+        var p = connected(.off, battery: 78)
+        p.name = "LinkBuds Clip"
+        p.subtitle = "WF-LC900 · AAC"
+        p.mode = nil
+        p.earbuds = .init(left: 78, right: nil, caseLevel: 18)
+        p.presets = [0x00, 0x30, 0x31, 0x32, 0x33, 0xA0].map { .init(id: $0, name: PresetNames.name($0)) }
+        p.presetID = 0x30
+        p.bands = [4, 4, -1, -1, 0, 0, 0, 0, 0, 0]
+        p.bandsLimit = 6
+        p.speakToChat = nil
+        return p
+    }
+
     static var disconnected: PanelState {
         var p = PanelState()
         p.name = "WH-1000XM5"
@@ -52,7 +76,9 @@ import SwiftUI
          ("7-desconectado-claro", disconnected, .light, false),
          ("8-desconectado-escuro", disconnected, .dark, false),
          ("9-carregando-escuro", loading, .dark, false),
-         ("10-contraste-alto-claro", connected(.ambient), .light, true)]
+         ("10-contraste-alto-claro", connected(.ambient), .light, true),
+         ("12-wf1000xm5-escuro", wf1000xm5, .dark, false),
+         ("13-linkbuds-clip-claro", linkBudsClip, .light, false)]
     }
 
     static func withModel(_ p: PanelState) -> PanelState {

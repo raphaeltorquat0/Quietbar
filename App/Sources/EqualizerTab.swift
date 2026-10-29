@@ -6,12 +6,14 @@ struct EqualizerTab: View {
     @State private var draft: [Int]?
     @State private var newName = ""
 
-    private let labels = ["Clear Bass"] + EqualizerParam.fiveBandLabels
-
     var body: some View {
         let s = device.state
         let eq = s.equalizer
-        let values = draft ?? eq.flatMap { e in e.clearBass.map { [$0] + e.bands } } ?? Array(repeating: 0, count: 6)
+        let labels = eq?.labels ?? []
+        let range = eq?.range ?? -10...10
+        let values = draft ?? eq?.values ?? []
+        // No layout de 6, o 1º valor é o Clear Bass (fora da curva de frequências).
+        let hasClearBass = eq?.isFiveBand == true
         Form {
             DeviceSection(title: "Preset") {
                 if let eq {
@@ -32,39 +34,40 @@ struct EqualizerTab: View {
                 }
             }
             DeviceSection(title: "Curva (dB)") {
-                if eq?.isFiveBand == true {
-                    EqualizerCurve(values: Array(values.dropFirst())).frame(height: 80)
+                if eq?.isEditable == true, values.count == labels.count {
+                    EqualizerCurve(values: hasClearBass ? Array(values.dropFirst()) : values, limit: range.upperBound).frame(height: 80)
                     HStack(alignment: .bottom, spacing: 0) {
-                        ForEach(0..<6, id: \.self) { i in
+                        ForEach(0..<values.count, id: \.self) { i in
                             VStack(spacing: 4) {
                                 Text(values[i] > 0 ? "+\(values[i])" : "\(values[i])").monospacedDigit().font(.caption)
-                                VerticalSlider(value: values[i]) { v in
+                                VerticalSlider(value: values[i], range: range) { v in
                                     var d = values
                                     d[i] = v
                                     draft = d
                                 } onCommit: { commit() }
-                                Text(labels[i]).font(.caption2).foregroundStyle(i == 0 ? .blue : .secondary)
+                                Text(labels[i]).font(.caption2).foregroundStyle(hasClearBass && i == 0 ? Color.accentColor : .secondary)
                             }
                             .frame(maxWidth: .infinity)
                         }
                     }
                     .frame(height: 190)
                     HStack {
-                        Button("Zerar") { draft = Array(repeating: 0, count: 6); commit() }
+                        Button("Zerar") { draft = Array(repeating: 0, count: values.count); commit() }
                         Spacer()
                         Text("Editar aplica no preset Custom (ou no User Setting selecionado).").font(.caption).foregroundStyle(.secondary)
                     }
                 } else {
-                    Text("Este fone não expõe o equalizador de 5 bandas.").foregroundStyle(.secondary)
+                    Text("Este fone não expõe um equalizador editável.").foregroundStyle(.secondary)
                 }
             }
             Section("Presets salvos neste Mac") {
-                ForEach(device.settings.savedEqualizers) { p in
+                // Só as curvas com o mesmo número de bandas deste fone.
+                ForEach(device.settings.savedEqualizers.filter { $0.curve.count == values.count }) { p in
                     HStack {
                         Text(p.name)
                         Spacer()
-                        Text(([p.clearBass] + p.bands).map(String.init).joined(separator: " ")).font(.caption.monospaced()).foregroundStyle(.secondary)
-                        Button("Aplicar") { device.perform { try await $0.setEqualizer(clearBass: p.clearBass, bands: p.bands) } }
+                        Text(p.curve.map(String.init).joined(separator: " ")).font(.caption.monospaced()).foregroundStyle(.secondary)
+                        Button("Aplicar") { let c = p.curve; device.perform { try await $0.setEqualizer(values: c) } }
                             .disabled(!device.isReady)
                         Button(role: .destructive) { device.settings.savedEqualizers.removeAll { $0.id == p.id } } label: { Image(systemName: "trash") }
                             .buttonStyle(.borderless)
@@ -73,10 +76,10 @@ struct EqualizerTab: View {
                 HStack {
                     TextField("Nome", text: $newName)
                     Button("Salvar curva atual") {
-                        device.settings.savedEqualizers.append(SavedEqualizer(name: newName, clearBass: values[0], bands: Array(values.dropFirst())))
+                        device.settings.savedEqualizers.append(SavedEqualizer(name: newName, clearBass: 0, bands: [], values: values))
                         newName = ""
                     }
-                    .disabled(newName.isEmpty || eq?.isFiveBand != true)
+                    .disabled(newName.isEmpty || eq?.isEditable != true)
                 }
             }
         }
@@ -86,18 +89,19 @@ struct EqualizerTab: View {
 
     private func commit() {
         guard let d = draft else { return }
-        device.perform { try await $0.setEqualizer(clearBass: d[0], bands: Array(d.dropFirst())) }
+        device.perform { try await $0.setEqualizer(values: d) }
     }
 }
 
 struct VerticalSlider: View {
     let value: Int
+    var range: ClosedRange<Int> = -10...10
     let onChange: (Int) -> Void
     let onCommit: () -> Void
 
     var body: some View {
         GeometryReader { g in
-            Slider(value: Binding(get: { Double(value) }, set: { onChange(Int($0.rounded())) }), in: -10...10, step: 1) { editing in
+            Slider(value: Binding(get: { Double(value) }, set: { onChange(Int($0.rounded())) }), in: Double(range.lowerBound)...Double(range.upperBound), step: 1) { editing in
                 if !editing { onCommit() }
             }
             .rotationEffect(.degrees(-90))
@@ -107,15 +111,16 @@ struct VerticalSlider: View {
     }
 }
 
-/// Curva suave pelas 5 bandas (−10…+10 dB).
+/// Curva suave pelas bandas (±`limit` dB).
 struct EqualizerCurve: View {
     let values: [Int]
+    var limit: Int = 10
 
     var body: some View {
         Canvas { ctx, size in
             let pts = values.enumerated().map { i, v in
                 CGPoint(x: size.width * (CGFloat(i) + 0.5) / CGFloat(values.count),
-                        y: size.height / 2 - CGFloat(v) / 10 * (size.height / 2 - 4))
+                        y: size.height / 2 - CGFloat(v) / CGFloat(limit) * (size.height / 2 - 4))
             }
             var mid = Path()
             mid.move(to: CGPoint(x: 0, y: size.height / 2))

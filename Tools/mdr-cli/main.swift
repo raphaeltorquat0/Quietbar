@@ -20,7 +20,7 @@ uso: mdr-cli <comando> [--address AA:BB:CC:DD:EE:FF] [--log-hex]
 
 campos de set:
   mode nc|ambient|off       ambient 0-20            voice on|off
-  eq <preset hex|nome>      eq-bands <cb,b1,b2,b3,b4,b5> (dB −10…10)
+  eq <preset hex|nome>      eq-bands <6 ou 10 valores em dB>
   dsee on|off               stc on|off              stc-sens auto|high|low
   stc-time short|mid|long|none                      autopause on|off
   autooff 5m|15m|30m|1h|3h|removed|never            button nc-amb-off|nc-amb|nc-off|amb-off
@@ -89,8 +89,10 @@ func apply(_ field: String, _ value: String?, on session: MDRSession) async thro
         try await session.setEqualizerPreset(id)
     case "eq-bands":
         let n = try need().split(separator: ",").compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }
-        guard n.count == 6 else { throw CLIError("eq-bands espera 6 números: clearBass,400,1k,2.5k,6.3k,16k") }
-        try await session.setEqualizer(clearBass: n[0], bands: Array(n[1...]))
+        guard n.count == 6 || n.count == 10 else {
+            throw CLIError("eq-bands espera 6 números (clearBass,400,1k,2.5k,6.3k,16k) ou 10 (31…16k)")
+        }
+        try await session.setEqualizer(values: n)
     case "dsee": try await session.setDSEE(try parseOnOff(try need()))
     case "stc": try await session.setSpeakToChat(try parseOnOff(try need()))
     case "stc-sens", "stc-time":

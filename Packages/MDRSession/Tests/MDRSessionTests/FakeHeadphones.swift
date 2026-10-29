@@ -46,6 +46,22 @@ actor FakeHeadphones: MDRChannel {
         .generalSetting(0xD2): .generalSetting(inquiredType: 0xD2, on: true),
     ]
 
+    /// Earbuds sem cancelamento de ruído e com EQ de 10 bandas, como o LinkBuds Clip (WF-LC900).
+    static let linkBudsClip: [MDRCommand: MDRMessage] = [
+        .protocolInfo: .protocolInfo(version: 0x0300_3015, table1: true, table2: false),
+        .capabilityInfo: .capabilityInfo(counter: 1, uniqueID: "AC:80:0A:00:00:02"),
+        .firmwareVersion: .firmwareVersion("2.0.3"),
+        .modelName: .modelName("LinkBuds Clip"),
+        .seriesAndColor: .seriesAndColor(series: 0x60, color: 0x01),
+        .supportFunctions(.t1): .supportFunctions([0x29, 0x2A, 0x50].map { SupportFunction($0) }),
+        .battery(0x09): .batteryLR(EarbudsBattery(left: BatteryStatus(level: 78, threshold: 100),
+                                                  right: BatteryStatus(level: 0, threshold: 100))),
+        .battery(0x0A): .batteryCase(BatteryStatus(level: 60, threshold: 31)),
+        .equalizerAvailable: .equalizerAvailable(true),
+        .equalizer: .equalizer(EqualizerParam(presetID: 0x00, steps: Array(repeating: 6, count: 10))),
+        .equalizerPresets(0x00): .equalizerPresets(inquiredType: 0, bands: 10, steps: 13, [EqPreset(id: 0x30, name: "")]),
+    ]
+
     func configure(_ f: @Sendable (isolated FakeHeadphones) -> Void) { f(self) }
 
     // MARK: MDRChannel

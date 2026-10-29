@@ -208,15 +208,16 @@ struct BatteryRing: View {
 // MARK: - Mini curva do EQ
 
 struct EqualizerSparkline: View {
-    /// Clear Bass + 5 bandas (ou só as bandas), em dB (−10…10).
+    /// Clear Bass + 5 bandas (±10 dB) ou 10 bandas (±6 dB).
     let bands: [Int]
+    var limit = 10
 
     var body: some View {
         Canvas { ctx, size in
             guard bands.count > 1 else { return }
             let pts = bands.enumerated().map { i, v in
                 CGPoint(x: size.width * CGFloat(i) / CGFloat(bands.count - 1),
-                        y: size.height / 2 - CGFloat(v) / 10 * (size.height / 2 - 2))
+                        y: size.height / 2 - CGFloat(v) / CGFloat(limit) * (size.height / 2 - 2))
             }
             var mid = Path()
             mid.move(to: CGPoint(x: 0, y: size.height / 2))

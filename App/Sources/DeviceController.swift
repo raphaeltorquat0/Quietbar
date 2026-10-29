@@ -51,7 +51,9 @@ final class DeviceController {
     }
 
     func refreshDevices() {
-        devices = BluetoothDevices.paired().filter { $0.hasMDRService || $0.address == selectedAddress }
+        devices = BluetoothDevices.paired().filter {
+            $0.hasMDRService || BluetoothDevices.looksLikeSony($0.name) || $0.address == selectedAddress
+        }
     }
 
     // MARK: - Visibilidade
@@ -91,7 +93,7 @@ final class DeviceController {
 
     private func connect() async {
         guard let address = selectedAddress else {
-            lastError = "Nenhum fone Sony pareado. Pareie o WH-1000XM5 nos Ajustes do Sistema."
+            lastError = "Nenhum fone Sony pareado. Pareie o fone nos Ajustes do Sistema."
             return
         }
         guard BluetoothDevices.isConnected(address) else {
@@ -168,8 +170,8 @@ final class DeviceController {
 
     private func received(_ snap: MDRSession.Snapshot) {
         snapshot = snap
-        if let b = snap.state.battery { lastBattery = b }
-        checkBattery(snap.state.battery)
+        if let b = snap.state.primaryBattery { lastBattery = b }
+        checkBattery(snap.state.primaryBattery)
     }
 
     // MARK: - Bateria

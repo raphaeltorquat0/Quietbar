@@ -103,6 +103,10 @@ public enum MDRMessage: Hashable, Sendable {
     case supportFunctions([SupportFunction])
     case codec(AudioCodec)
     case battery(BatteryStatus)
+    /// Earbuds: esquerdo/direito (inquired type `0x01`, ou `0x09` com threshold).
+    case batteryLR(EarbudsBattery)
+    /// Estojo de carga (`0x02`, ou `0x0A` com threshold).
+    case batteryCase(BatteryStatus)
     case autoPowerOff(AutoPowerOff)
     case autoPowerOffOptions(wearingDetection: Bool, [UInt8])
     case powerOff
@@ -168,6 +172,15 @@ public enum MDRMessage: Hashable, Sendable {
             return b.withThreshold
                 ? p(.power, .status, [0x08, b.level, b.chargingRaw, b.threshold ?? 0])
                 : p(.power, .status, [0x00, b.level, b.chargingRaw])
+        case .batteryLR(let b):
+            let body = [b.left.level, b.left.chargingRaw, b.right.level, b.right.chargingRaw]
+            return b.left.withThreshold
+                ? p(.power, .status, [0x09] + body + [b.left.threshold ?? 0, b.right.threshold ?? 0])
+                : p(.power, .status, [0x01] + body)
+        case .batteryCase(let b):
+            return b.withThreshold
+                ? p(.power, .status, [0x0A, b.level, b.chargingRaw, b.threshold ?? 0])
+                : p(.power, .status, [0x02, b.level, b.chargingRaw])
         case .autoPowerOff(let a): return p(.power, .param, [a.inquiredType, a.current, a.last])
         case let .autoPowerOffOptions(w, els): return p(.power, .capability, [w ? 0x05 : 0x04, UInt8(els.count)] + els)
         case .powerOff: return p(.power, .status, [0x03, 0x01])
@@ -224,6 +237,16 @@ public enum MDRMessage: Hashable, Sendable {
             r.u8s(2).map { .battery(BatteryStatus(level: $0[0], chargingRaw: $0[1])) }
         case (.power, .status, 0x08):
             r.u8s(3).map { .battery(BatteryStatus(level: $0[0], chargingRaw: $0[1], threshold: $0[2])) }
+        case (.power, .status, 0x01):
+            r.u8s(4).map { .batteryLR(EarbudsBattery(left: BatteryStatus(level: $0[0], chargingRaw: $0[1]),
+                                                     right: BatteryStatus(level: $0[2], chargingRaw: $0[3]))) }
+        case (.power, .status, 0x09):
+            r.u8s(6).map { .batteryLR(EarbudsBattery(left: BatteryStatus(level: $0[0], chargingRaw: $0[1], threshold: $0[4]),
+                                                     right: BatteryStatus(level: $0[2], chargingRaw: $0[3], threshold: $0[5]))) }
+        case (.power, .status, 0x02):
+            r.u8s(2).map { .batteryCase(BatteryStatus(level: $0[0], chargingRaw: $0[1])) }
+        case (.power, .status, 0x0A):
+            r.u8s(3).map { .batteryCase(BatteryStatus(level: $0[0], chargingRaw: $0[1], threshold: $0[2])) }
         case (.power, .status, 0x03): r.u8() == 0x01 ? .powerOff : nil
         case (.power, .param, 0x04), (.power, .param, 0x05):
             r.u8s(2).map { .autoPowerOff(AutoPowerOff(wearingDetection: type == 0x05, current: $0[0], last: $0[1])) }
@@ -244,7 +267,7 @@ public enum MDRMessage: Hashable, Sendable {
         case (.eqebb, .status, 0x00): r.u8().map { .equalizerAvailable(isOn($0)) }
         case (.eqebb, .param, 0x00):
             r.u8().flatMap { id in r.list().map { .equalizer(EqualizerParam(presetID: id, steps: $0)) } }
-        case (.eqebb, .capability, 0x00), (.eqebb, .capability, 0x02), (.eqebb, .capability, 0x04):
+        case (.eqebb, .capability, 0x00), (.eqebb, .capability, 0x02), (.eqebb, .capability, 0x03), (.eqebb, .capability, 0x04):
             r.eqPresets().map { .equalizerPresets(inquiredType: type, bands: $0.0, steps: $0.1, $0.2) }
         case (.audio, .status, 0x01): r.u8().map { .dseeAvailable(isOn($0)) }
         case (.audio, .param, 0x01): r.u8().map { .dsee($0 == 0x01) }

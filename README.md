@@ -3,8 +3,8 @@
 <h1 align="center">Quietbar</h1>
 
 <p align="center">
-Controle o <b>Sony WH-1000XM5</b> pela barra de menus do macOS, sem o app da Sony no celular.<br>
-<i>Control your Sony WH-1000XM5 from the macOS menu bar — native, private, no phone app needed.</i>
+Controle seus fones <b>Sony</b> (WH-1000XM5, WF-1000XM5, LinkBuds…) pela barra de menus do macOS, sem o app da Sony no celular.<br>
+<i>Control your Sony headphones from the macOS menu bar — native, private, no phone app needed.</i>
 </p>
 
 <p align="center">
@@ -33,8 +33,20 @@ Nada passa pela internet.
 - Popup animado ao conectar, com um modelo 3D do fone gerado em código
 - Modo claro e escuro, cor de destaque do sistema, VoiceOver, PT-BR e inglês
 
-O app só mostra o que o fone anuncia na conexão. Testado no WH-1000XM5 (firmware 2.5.1), macOS 14 ou mais novo,
-Apple Silicon e Intel.
+O app só mostra o que o fone anuncia na conexão. macOS 14 ou mais novo, Apple Silicon e Intel.
+
+## Compatibilidade
+
+| Fone | Status |
+|---|---|
+| WH-1000XM5 | **Testado em hardware** (firmware 2.5.1) |
+| WF-1000XM5 | Validado com tráfego real gravado (fw 6.1.0): bateria esquerda/direita + estojo, cancelamento de ruído, EQ |
+| LinkBuds Clip (WF-LC900) | Validado com tráfego real gravado (fw 2.0.3): sem cancelamento de ruído, EQ de 10 bandas |
+| WH-1000XM6, WH-CH720N, ULT WEAR, WF-1000XM4/XM6, WF-C500/C510/C700N/C710N, LinkBuds, LinkBuds S/Open | Experimental: mesmo protocolo (MDR v2), ainda sem teste |
+| WH-1000XM4/XM3/XM2, WF-1000XM3, WF-SP800N | Ainda não: usam a versão antiga do protocolo (MDR v1) |
+
+Tem um desses fones? [Abra uma issue](https://github.com/raphaeltorquat0/Quietbar/issues/new?template=novo-modelo.md)
+com o diagnóstico da aba Desenvolvedor; é o que transforma "experimental" em "testado".
 
 ## Instalar
 
@@ -109,8 +121,8 @@ Nada do dia a dia precisa dele. `swift build -c release` gera `.build/release/md
 
 ## Limitações
 
-- Só o WH-1000XM5 foi testado. Outros modelos MDR v2 podem funcionar parcialmente.
 - Detecção "fone por perto" não existe: o XM5 não anunciou um model ID Fast Pair conectado (ver `DECISIONS.md` #18).
+- Earbuds usam um símbolo no lugar do modelo 3D (que é de um fone over-ear).
 - O XM5 não tem botão personalizável (função `0xF3`) nem envia nomes de presets de EQ.
 - Os comandos de escrita foram validados contra um fone simulado; o roteiro de conferência
   em aparelho real está em [`docs/HARDWARE_TEST.md`](docs/HARDWARE_TEST.md).

@@ -33,7 +33,13 @@ public struct MDRCapabilities: Hashable, Sendable {
     public var speakToChat: Bool { has(0xFC) }
     public var ncAmbButton: Bool { has(0x69) }
 
+    /// Bateria única (over-ear), esquerdo/direito e estojo (earbuds). Funções `0x20`/`0x28`,
+    /// `0x21`/`0x29` e `0x22`/`0x2A` de `MessageMdrV2FunctionType_Table1` em [M].
     public var batteryType: UInt8? { has(0x20) ? 0x00 : has(0x28) ? 0x08 : nil }
+    public var leftRightBatteryType: UInt8? { has(0x29) ? 0x09 : has(0x21) ? 0x01 : nil }
+    public var caseBatteryType: UInt8? { has(0x2A) ? 0x0A : has(0x22) ? 0x02 : nil }
+    /// Fone de dois lados (WF-*, LinkBuds): anuncia bateria esquerda/direita.
+    public var isEarbuds: Bool { leftRightBatteryType != nil }
     public var autoPowerOffType: UInt8? { has(0x25) ? 0x05 : has(0x24) ? 0x04 : nil }
 
     public var noiseControlType: UInt8? {

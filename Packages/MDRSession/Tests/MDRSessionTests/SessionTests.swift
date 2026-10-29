@@ -113,6 +113,31 @@ private func eventually(_ s: MDRSession, _ cond: @Sendable (MDRDeviceState) -> B
         #expect(await s.state.capabilities == .wh1000xm5)
     }
 
+    @Test func earbudsWithoutNoiseCancelling() async throws {
+        let fake = FakeHeadphones(current: FakeHeadphones.linkBudsClip)
+        let s = MDRSession(channel: fake, options: fastOptions())
+        try await s.connect()
+        #expect(await eventually(s) { $0.batteryLR != nil && $0.batteryCase != nil && $0.equalizer != nil })
+        let st = await s.state
+        #expect(st.capabilities.isEarbuds && st.noiseControl == nil)
+        #expect(st.primaryBattery?.level == 78) // só o lado presente conta
+        #expect(st.equalizer?.values.count == 10)
+        // EQ de 10 bandas passa pelo setter genérico sem cair no layout de 6.
+        try await s.setEqualizer(values: [4, 4, -1, -1, 0, 0, 0, 0, 0, 0])
+        #expect(await eventually(s) { $0.equalizer?.values.first == 4 })
+    }
+
+    @Test func fallbackProfileIsOnlyForXM5() async throws {
+        var other = FakeHeadphones.linkBudsClip
+        other[.supportFunctions(.t1)] = nil
+        let fake = FakeHeadphones(current: other)
+        await fake.configure { $0.silent = [.supportFunctions(.t1)] }
+        let s = MDRSession(channel: fake, options: fastOptions())
+        try await s.connect()
+        // Outro modelo sem lista de funções não herda o perfil do XM5.
+        #expect(await s.state.capabilities.table1.isEmpty)
+    }
+
     @Test func handshakeFailsWithoutProtocolInfo() async throws {
         let fake = FakeHeadphones()
         await fake.configure { $0.silent = [.protocolInfo] }

@@ -11,6 +11,8 @@ public struct MDRDeviceState: Hashable, Sendable {
 
     public var codec: AudioCodec?
     public var battery: BatteryStatus?
+    public var batteryLR: EarbudsBattery?
+    public var batteryCase: BatteryStatus?
     public var autoPowerOff: AutoPowerOff?
     public var autoPowerOffOptions: [UInt8] = []
     public var noiseControl: NoiseControl?
@@ -35,6 +37,12 @@ public struct MDRDeviceState: Hashable, Sendable {
 
     public init() {}
 
+    /// Bateria que representa o fone: a única (over-ear) ou o lado mais fraco presente (earbuds).
+    /// O estojo fica de fora: ele não toca música.
+    public var primaryBattery: BatteryStatus? {
+        battery ?? batteryLR?.present.min { $0.level < $1.level }
+    }
+
     /// Endereço Bluetooth se o fone o usa como uniqueId (caso do XM5 e WF-XM5 em [C]).
     public var macAddress: String? {
         guard let id = uniqueID, id.count == 17, id.filter({ $0 == ":" }).count == 5 else { return nil }
@@ -58,6 +66,8 @@ public struct MDRDeviceState: Hashable, Sendable {
             capabilities.isFallback = false
         case .codec(let c): codec = c
         case .battery(let b): battery = b
+        case .batteryLR(let b): batteryLR = b
+        case .batteryCase(let b): batteryCase = b
         case .autoPowerOff(let a): autoPowerOff = a
         case .autoPowerOffOptions(_, let els): autoPowerOffOptions = els
         case .powerOff: break
@@ -102,6 +112,8 @@ public extension MDRCapabilities {
         if dsee { c += [.dseeType] }
         if codec { c.append(.codec) }
         if let t = batteryType { c.append(.battery(t)) }
+        if let t = leftRightBatteryType { c.append(.battery(t)) }
+        if let t = caseBatteryType { c.append(.battery(t)) }
         if playback { c += [.volume, .playback] }
         if let t = noiseControlType { c.append(.noiseControl(t)) }
         if speakToChat { c += [.speakToChat, .speakToChatConfig] }

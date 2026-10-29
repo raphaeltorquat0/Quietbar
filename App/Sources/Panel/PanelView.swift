@@ -14,14 +14,26 @@ struct PanelState {
     var link: Link = .ready
     var battery: Int?
     var charging = false
+    /// Earbuds (WF-*, LinkBuds): nível de cada lado e do estojo; `nil` = lado ausente.
+    var earbuds: EarbudsLevels?
+
+    struct EarbudsLevels: Equatable {
+        var left: Int?
+        var right: Int?
+        var caseLevel: Int?
+    }
 
     var mode: SoundMode?
+    /// Modos que o fone oferece (só ambiente em alguns modelos, ex.: WF-C510).
+    var modes: [SoundMode] = SoundMode.allCases
     var ambientLevel = 10
     var focusOnVoice = false
 
     var presets: [Preset] = []
     var presetID: UInt8?
     var bands: [Int] = []
+    /// Limite em dB da curva (10 no layout Clear Bass + 5, 6 no de 10 bandas).
+    var bandsLimit = 10
 
     var speakToChat: Bool?
     var dsee: Bool?
@@ -112,9 +124,12 @@ struct PanelView: View {
                     if !state.subtitle.isEmpty {
                         Text(verbatim: state.subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                     }
+                    if let e = state.earbuds, state.phase == .ready {
+                        EarbudsBatteryRow(levels: e).padding(.top, 2)
+                    }
                 }
                 Spacer(minLength: 2)
-                if let b = state.battery, state.phase == .ready {
+                if state.earbuds == nil, let b = state.battery, state.phase == .ready {
                     BatteryRing(level: b, charging: state.charging)
                 }
             }
@@ -142,7 +157,7 @@ struct PanelView: View {
 
     private var soundModule: some View {
         PanelModule {
-            ModeButtons(mode: state.mode, select: actions.setMode)
+            ModeButtons(mode: state.mode, modes: state.modes, select: actions.setMode)
             if state.mode == .ambient {
                 VStack(spacing: 8) {
                     CapsuleSlider(value: state.ambientLevel, range: 1...20, icon: "ear", label: "Nível do som ambiente",
@@ -174,7 +189,7 @@ struct PanelView: View {
                         .accessibilityLabel("Equalizador")
                     }
                     Spacer()
-                    if !state.bands.isEmpty { EqualizerSparkline(bands: state.bands) }
+                    if !state.bands.isEmpty { EqualizerSparkline(bands: state.bands, limit: state.bandsLimit) }
                 }
             }
             if let stc = state.speakToChat {
@@ -275,8 +290,11 @@ private struct HeaderVisual: View {
     @Environment(\.panelSnapshot) private var snapshot
 
     var body: some View {
-        if let img = state.modelSnapshot, snapshot {
+        if let img = state.modelSnapshot, snapshot, state.earbuds == nil {
             Image(nsImage: img).resizable().scaledToFit()
+        } else if state.earbuds != nil, state.customModel == nil, state.customImage == nil {
+            // Earbuds: o 3D é de um fone over-ear; até existir um modelo de earbuds, vai o símbolo.
+            EarbudsVisual()
         } else if failed3D || !state.use3D {
             HeadphoneIllustration(battery: Double(state.battery ?? 0) / 100,
                                   accent: Color(red: Double(state.accent.x), green: Double(state.accent.y), blue: Double(state.accent.z)),
@@ -292,12 +310,13 @@ private struct HeaderVisual: View {
 /// Três botões circulares de 44 pt; o preenchimento de destaque desliza entre eles.
 struct ModeButtons: View {
     let mode: SoundMode?
+    var modes: [SoundMode] = SoundMode.allCases
     let select: (SoundMode) -> Void
     @Namespace private var ns
 
     var body: some View {
         HStack(spacing: 0) {
-            ForEach(SoundMode.allCases, id: \.self) { m in
+            ForEach(modes, id: \.self) { m in
                 Button { select(m) } label: {
                     VStack(spacing: 6) {
                         ZStack {
@@ -452,9 +471,52 @@ enum PresetNames {
         case 0x15: return String(localized: "Agudos realçados")
         case 0x16: return String(localized: "Graves realçados")
         case 0x17: return String(localized: "Fala")
+        case 0x30: return String(localized: "Pesado")
+        case 0x31: return String(localized: "Claro")
+        case 0x32: return String(localized: "Forte")
+        case 0x33: return String(localized: "Leve")
         case 0xA0: return String(localized: "Personalizado")
         case 0xA1...0xA5: return String(localized: "Personalizado \(Int(id - 0xA0))")
         default: return String(localized: "Predefinição \(Int(id))")
+        }
+    }
+}
+
+/// Símbolo de earbuds no lugar do modelo 3D over-ear.
+struct EarbudsVisual: View {
+    var body: some View {
+        Image(systemName: "earbuds")
+            .resizable()
+            .scaledToFit()
+            .fontWeight(.light)
+            .foregroundStyle(.primary.opacity(0.85))
+            .padding(14)
+    }
+}
+
+/// Esquerdo, direito e estojo em uma linha compacta; lado ausente some.
+struct EarbudsBatteryRow: View {
+    let levels: PanelState.EarbudsLevels
+
+    var body: some View {
+        HStack(spacing: 10) {
+            item("earbud.left", levels.left, label: "Esquerdo")
+            item("earbud.right", levels.right, label: "Direito")
+            item("earbuds.case", levels.caseLevel, label: "Estojo")
+        }
+        .font(.caption.monospacedDigit())
+    }
+
+    @ViewBuilder
+    private func item(_ symbol: String, _ level: Int?, label: LocalizedStringKey) -> some View {
+        if let level {
+            HStack(spacing: 3) {
+                Image(systemName: symbol).foregroundStyle(.secondary)
+                Text(verbatim: "\(level)%").foregroundStyle(level <= 10 ? .red : level <= 20 ? .orange : .primary)
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(label)
+            .accessibilityValue(Text(verbatim: "\(level)%"))
         }
     }
 }

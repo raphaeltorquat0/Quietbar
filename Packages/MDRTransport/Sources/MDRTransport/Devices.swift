@@ -25,9 +25,17 @@ public enum BluetoothDevices {
         }
     }
 
+    /// Prefixos de nome das famílias Sony com MDR v2 (over-ear, earbuds, LinkBuds, ULT).
+    static let sonyNamePrefixes = ["WH-", "WF-", "WI-", "LinkBuds", "ULT "]
+
+    /// Nome de fone Sony conhecido (o registro SDP pode ainda não estar em cache).
+    public static func looksLikeSony(_ name: String) -> Bool {
+        sonyNamePrefixes.contains { name.hasPrefix($0) } || name.localizedCaseInsensitiveContains("WH-1000XM")
+    }
+
     /// Fone Sony preferido: conectado e com serviço MDR, depois só com serviço, depois pelo nome.
     public static func preferredSony(among list: [PairedDevice] = paired()) -> PairedDevice? {
-        let sony = list.filter { $0.hasMDRService || $0.name.localizedCaseInsensitiveContains("WH-1000XM") }
+        let sony = list.filter { $0.hasMDRService || looksLikeSony($0.name) }
         return sony.first { $0.isConnected && $0.hasMDRService } ?? sony.first { $0.isConnected } ?? sony.first
     }
 

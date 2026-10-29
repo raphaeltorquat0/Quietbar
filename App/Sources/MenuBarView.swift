@@ -52,9 +52,14 @@ extension PanelState {
             p.phase = .disconnected(message: d.selectedAddress == nil ? "Nenhum fone pareado. Pareie o fone nos Ajustes do Sistema."
                                     : d.isBluetoothConnected ? "O controle do fone está em pausa." : "O fone não está conectado ao Mac.")
         }
-        if let b = s.battery { p.battery = Int(b.level); p.charging = b.isCharging }
+        if let b = s.primaryBattery { p.battery = Int(b.level); p.charging = b.isCharging }
+        if s.capabilities.isEarbuds || s.batteryLR != nil {
+            let level = { (b: BatteryStatus?) in b.flatMap { $0.level > 0 ? Int($0.level) : nil } }
+            p.earbuds = .init(left: level(s.batteryLR?.left), right: level(s.batteryLR?.right), caseLevel: level(s.batteryCase))
+        }
         if let n = s.noiseControl {
             p.mode = n.soundMode
+            if n.inquiredType == 0x22 { p.modes = [.ambient, .off] } // só ambiente (sem cancelamento)
             p.ambientLevel = Int(n.ambientLevel)
             p.focusOnVoice = n.focusOnVoice
         }
@@ -62,7 +67,8 @@ extension PanelState {
             p.presets = s.equalizerPresets.map { .init(id: $0.id, name: PresetNames.name($0.id, custom: d.settings.presetNames)) }
             p.presetID = eq.presetID
             // Clear Bass entra como 1º ponto: no XM5 o "Graves realçados" é só Clear Bass, com as bandas em 0.
-            p.bands = eq.clearBass.map { [$0] + eq.bands } ?? eq.bands
+            p.bands = eq.values
+            p.bandsLimit = eq.range.upperBound
         }
         if s.capabilities.speakToChat { p.speakToChat = s.speakToChat ?? false }
         if s.capabilities.dsee {

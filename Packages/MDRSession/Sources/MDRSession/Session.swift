@@ -144,8 +144,14 @@ public actor MDRSession {
                 _ = try await request(.supportFunctions(.t2), "funções T2") { if case .supportFunctions = $0 { true } else { false } }
             }
         } catch MDRSessionError.timeout {
-            state.capabilities = .wh1000xm5 // fone não anunciou: usa o perfil conhecido
-            publish()
+            // Sem a lista de funções. Uma T1 que já chegou fica (o timeout pode ter sido só na T2).
+            // O perfil de fallback é a lista real do WH-1000XM5: só vale para ele (ou modelo ainda
+            // desconhecido); outro modelo fica só com o que anunciou.
+            let isXM5 = state.modelName.map { $0.hasPrefix("WH-1000XM5") } ?? true
+            if state.capabilities.table1.isEmpty, isXM5 {
+                state.capabilities = .wh1000xm5
+                publish()
+            }
         }
 
         if state.capabilities.alerts { try await send(MDRMessage.alertsEnabled(true).command(.set)) }

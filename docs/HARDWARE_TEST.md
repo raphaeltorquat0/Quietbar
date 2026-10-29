@@ -48,3 +48,10 @@ relido impresso pela CLI bate. Ao final, volte ao valor original.
 | 22 | Com o fone desconectado do Mac, painel › Conectar | o macOS conecta o fone e o painel mostra os controles |
 | 23 | macOS 26+: Central de Controle › editar › adicionar "Modo de som do fone" e tocar | alterna Cancelamento ↔ Ambiente |
 | 24 | `set poweroff` (por último) | fone desliga |
+
+## Outros modelos
+
+Fones diferentes do WH-1000XM5 estão marcados como experimentais no README. Para validar um:
+Configurações › Geral › "Mostrar a aba Desenvolvedor" › **Copiar diagnóstico** + **Log do protocolo MDR › Exportar…**,
+anexados numa issue com o template "Meu fone Sony". Conferir em especial: bateria esquerda/direita/estojo
+(earbuds), modos de som disponíveis e o equalizador (6 ou 10 bandas).

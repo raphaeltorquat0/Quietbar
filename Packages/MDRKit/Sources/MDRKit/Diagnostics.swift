@@ -1,6 +1,7 @@
 import Foundation
 
 private func onOff(_ b: Bool?) -> String { b.map { $0 ? "on" : "off" } ?? "—" }
+private func pct(_ b: BatteryStatus) -> String { "\(b.level)%" + (b.isCharging ? " (carregando)" : "") }
 private func hex(_ b: UInt8) -> String { String(format: "0x%02X", b) }
 
 public extension MDRDeviceState {
@@ -17,7 +18,9 @@ public extension MDRDeviceState {
             + "T1 " + caps.table1.sorted().map(hex).joined(separator: " ")
             + (caps.table2.isEmpty ? "" : " | T2 " + caps.table2.sorted().map(hex).joined(separator: " "))),
         ("codec", s.codec?.description ?? "—"),
-        ("battery", s.battery.map { "\($0.level)%" + ($0.isCharging ? " (carregando)" : "") } ?? "—"),
+        ("battery", s.battery.map(pct) ?? "—"),
+        ("battery-lr", s.batteryLR.map { "L \(pct($0.left)) R \(pct($0.right))" } ?? "—"),
+        ("battery-case", s.batteryCase.map(pct) ?? "—"),
     ]
     if let n = s.noiseControl {
         f += [("mode", n.soundMode.rawValue), ("ambient", "\(n.ambientLevel)"), ("voice", onOff(n.focusOnVoice)),
@@ -26,7 +29,7 @@ public extension MDRDeviceState {
     if let e = s.equalizer {
         let name = EqPreset(id: e.presetID, name: s.equalizerPresets.first { $0.id == e.presetID }?.name ?? "").displayName
         f.append(("eq", name))
-        if let cb = e.clearBass { f.append(("eq-bands", ([cb] + e.bands).map(String.init).joined(separator: ","))) }
+        if e.isEditable { f.append(("eq-bands", e.values.map(String.init).joined(separator: ","))) }
     }
     if !s.equalizerPresets.isEmpty {
         f.append(("eq-presets", s.equalizerPresets.map { "\(hex($0.id))=\($0.displayName)" }.joined(separator: " ")))

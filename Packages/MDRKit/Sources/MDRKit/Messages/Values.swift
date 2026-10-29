@@ -49,6 +49,20 @@ public struct BatteryStatus: Hashable, Sendable {
     public var isCharging: Bool { charging == .charging }
 }
 
+/// Bateria de earbuds: um valor por lado. O fone manda nível 0 para o lado que não está conectado.
+public struct EarbudsBattery: Hashable, Sendable {
+    public var left: BatteryStatus
+    public var right: BatteryStatus
+
+    public init(left: BatteryStatus, right: BatteryStatus) {
+        self.left = left
+        self.right = right
+    }
+
+    /// Lados presentes (nível > 0), para exibir e para o aviso de bateria fraca.
+    public var present: [BatteryStatus] { [left, right].filter { $0.level > 0 } }
+}
+
 public enum SoundMode: String, CaseIterable, Sendable, Codable {
     case noiseCanceling, ambient, off
 }
@@ -108,13 +122,36 @@ public struct EqualizerParam: Hashable, Sendable {
 
     public static let customPresetID: UInt8 = 0xA0
     public static let fiveBandLabels = ["400", "1k", "2.5k", "6.3k", "16k"]
+    public static let tenBandLabels = ["31", "63", "125", "250", "500", "1k", "2k", "4k", "8k", "16k"]
 
-    /// Constrói o EQ de 5 bandas + Clear Bass a partir de valores em dB (−10…+10).
+    /// Construtor legado: 5 bandas + Clear Bass em dB (−10…+10).
     public init(presetID: UInt8 = customPresetID, clearBass: Int, bands: [Int]) {
-        precondition(bands.count == 5, "o XM5 tem 5 bandas")
-        self.presetID = presetID
-        self.steps = ([clearBass] + bands).map { UInt8(clamping: min(10, max(-10, $0)) + 10) }
+        self.init(presetID: presetID, values: [clearBass] + bands)
     }
+
+    /// EQ editável a partir dos valores em dB de todas as bandas, no layout que o fone usa:
+    /// 6 valores = Clear Bass + 5 bandas (−10…+10); 10 valores = 10 bandas (−6…+6, LinkBuds/WF-LC900).
+    public init(presetID: UInt8 = customPresetID, values: [Int]) {
+        self.presetID = presetID
+        let offset = Self.offset(forCount: values.count)
+        self.steps = values.map { UInt8(clamping: min(offset, max(-offset, $0)) + offset) }
+    }
+
+    static func offset(forCount n: Int) -> Int { n == 10 ? 6 : 10 }
+
+    /// Faixa em dB de cada banda neste layout.
+    public var range: ClosedRange<Int> { let o = Self.offset(forCount: steps.count); return -o...o }
+    /// Todos os valores editáveis em dB, na ordem do fone (com Clear Bass primeiro no layout de 6).
+    public var values: [Int] { isEditable ? steps.map { Int($0) - Self.offset(forCount: steps.count) } : [] }
+    /// Rótulos das bandas de `values`.
+    public var labels: [String] {
+        switch steps.count {
+        case 6: ["Clear Bass"] + Self.fiveBandLabels
+        case 10: Self.tenBandLabels
+        default: []
+        }
+    }
+    public var isEditable: Bool { steps.count == 6 || steps.count == 10 }
 
     public var isFiveBand: Bool { steps.count == 6 }
     public var clearBass: Int? { isFiveBand ? Int(steps[0]) - 10 : nil }

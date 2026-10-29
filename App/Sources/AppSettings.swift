@@ -6,6 +6,10 @@ struct SavedEqualizer: Codable, Hashable, Identifiable {
     var name: String
     var clearBass: Int
     var bands: [Int]
+    /// Curva completa no layout do fone (6 = Clear Bass + 5, 10 = 10 bandas). Presets antigos não têm.
+    var values: [Int]? = nil
+
+    var curve: [Int] { values ?? [clearBass] + bands }
 }
 
 /// Preferências locais do app (não ficam no fone).

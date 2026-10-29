@@ -30,9 +30,14 @@ public extension MDRSession {
     /// EQ de 5 bandas + Clear Bass em dB (−10…+10). Sem `presetID`, aplica sobre o preset atual
     /// se ele for editável (Custom / User Setting), senão sobre o Custom.
     func setEqualizer(clearBass: Int, bands: [Int], presetID: UInt8? = nil) async throws {
+        try await setEqualizer(values: [clearBass] + bands, presetID: presetID)
+    }
+
+    /// EQ em dB no layout do fone: 6 valores (Clear Bass + 5 bandas) ou 10 bandas.
+    func setEqualizer(values: [Int], presetID: UInt8? = nil) async throws {
         let current = state.equalizer?.presetID ?? EqualizerParam.customPresetID
         let preset = presetID ?? ((0xA0...0xA5).contains(current) ? current : EqualizerParam.customPresetID)
-        try await set(.equalizer(EqualizerParam(presetID: preset, clearBass: clearBass, bands: bands)))
+        try await set(.equalizer(EqualizerParam(presetID: preset, values: values)))
     }
 
     func setDSEE(_ on: Bool) async throws { try await set(.dsee(on)) }
