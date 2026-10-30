@@ -136,7 +136,7 @@ Nada do dia a dia precisa dele. `swift build -c release` gera `.build/release/md
 ## Limitações
 
 - Detecção "fone por perto" não existe: o XM5 não anunciou um model ID Fast Pair conectado (ver `DECISIONS.md` #18).
-- Earbuds usam um símbolo no lugar do modelo 3D (que é de um fone over-ear).
+- O modelo 3D existe para WH-1000XM5, WH-1000XM6 e LinkBuds S. Outros fones de arco usam a forma do XM5, e outros earbuds usam um símbolo.
 - O XM5 não tem botão personalizável (função `0xF3`) nem envia nomes de presets de EQ.
 - Os comandos de escrita foram validados contra um fone simulado; o roteiro de conferência
   em aparelho real está em [`docs/HARDWARE_TEST.md`](docs/HARDWARE_TEST.md).

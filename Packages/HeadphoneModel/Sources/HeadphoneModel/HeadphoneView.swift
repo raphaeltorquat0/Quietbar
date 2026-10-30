@@ -19,12 +19,14 @@ public struct HeadphoneView: View {
     private var reduceMotion: Bool { reduceMotionOverride ?? systemReduceMotion }
     @State private var rig: HeadphoneRig
 
+    /// `model`: mude a `id` da view junto com ele, porque o rig é criado uma vez.
     /// `entranceID`: mude o valor para tocar a entrada de novo. `onFailure`: o 3D não pôde ser montado (mostre o 2D).
     public init(battery: Double?, mode: SoundMode?, accent: SIMD3<Float> = HeadphoneSpec.default.accent,
-                customModel: URL? = nil, entranceID: Int = 0, idleRotation: Bool = true, reduceMotion: Bool? = nil,
+                model: String? = nil, customModel: URL? = nil, entranceID: Int = 0, idleRotation: Bool = true, reduceMotion: Bool? = nil,
                 lightRing: Bool = false, onFailure: @escaping () -> Void = {}) {
         self.reduceMotionOverride = reduceMotion
-        var spec = HeadphoneSpec.default
+        // Nome que o fone informa; sem modelo próprio, vale a forma padrão.
+        var spec = model.flatMap(HeadphoneSpec.forModel) ?? .default
         spec.lightRing = lightRing
         _rig = State(initialValue: HeadphoneRig(spec: spec))
         self.battery = battery

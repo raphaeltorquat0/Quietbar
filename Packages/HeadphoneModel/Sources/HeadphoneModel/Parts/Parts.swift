@@ -9,21 +9,27 @@ enum Parts {
         let d = s.cupDepth, g = s.lightRing ? s.ringChannelDepth : 0.001, ro = s.cupTopScale, rp = s.plateEdge
         let sideRun = (0...14).map { i -> SIMD2<Float> in
             let t = Float(i) / 14
-            return [ro + (1 - ro) * (1 - pow(t, 2.2)), d * pow(t, 0.75)]
+            return [ro + (1 - ro) * (1 - pow(t, s.cupFalloff)), d * pow(t, s.cupRise)]
         }
         return Geometry.ovalLathe([
             [[0, 0], [1, 0]],                       // costas (escondidas pela almofada)
             sideRun,
             [[ro, d], [ro, d - g]],                 // parede externa do vão
             [[ro, d - g], [rp, d - g]],             // fundo do vão
-        ], outline: s.outline(side), segments: s.radialSegments)
+        ], outline: s.outline(side), segments: s.radialSegments, drop: plateDrop(s, side))
+    }
+
+    /// Desce o centro da lateral aos poucos, até a placa ficar no ponto certo.
+    private static func plateDrop(_ s: HeadphoneSpec, _ side: Side) -> (Float) -> Float {
+        let shift = s.plateDrop * s.outline(side).bottomSign, depth = s.cupDepth
+        return { y in shift * pow(max(0, y / depth), 2) }
     }
 
     /// Placa frontal plana, levemente saliente.
     static func plate(_ s: HeadphoneSpec, _ side: Side) -> MeshData {
         let d = s.cupDepth, g = s.lightRing ? s.ringChannelDepth : 0.001, rp = s.plateEdge, top = d + 0.0003
         return Geometry.ovalLathe([[[rp, d - g], [rp, top]], [[rp, top], [rp * 0.5, top], [0, top]]],
-                                  outline: s.outline(side), segments: s.radialSegments)
+                                  outline: s.outline(side), segments: s.radialSegments, drop: plateDrop(s, side))
     }
 
     /// Um segmento do anel, dentro do vão entre a lateral e a placa.
@@ -71,9 +77,8 @@ struct Layout {
     var plateX: Float { cupCenterX + s.cupDepth / 2 }
     /// Dobradiça: na borda superior da carcaça, do lado da placa (o braço entra num entalhe e deixa
     /// a placa livre, como no XM5). Com a concha inclinada, ela aparece a ~1/3 da altura na vista frontal.
-    var hinge: SIMD3<Float> { [plateX - 0.003, s.cupHalfHeight * s.cupTopScale * 0.98, -0.003] }
+    var hinge: SIMD3<Float> { [plateX - 0.003, s.hingeHeight ?? s.cupHalfHeight * s.cupTopScale * 0.98, -0.003] }
     /// Base da haste deslizante = origem do yoke; o braço desce para fora até a dobradiça.
-    var slider: SIMD3<Float> { [plateX - 0.006, s.cupHalfHeight * s.cupTopScale + 0.036, -0.003] }
-    var rodLength: Float { 0.014 }
-    var bandEnd: SIMD3<Float> { slider + [0, rodLength, 0] }
+    var slider: SIMD3<Float> { [plateX - 0.006, s.cupHalfHeight * s.cupTopScale + s.sliderRise, -0.003] }
+    var bandEnd: SIMD3<Float> { slider + [0, s.rodLength, 0] }
 }

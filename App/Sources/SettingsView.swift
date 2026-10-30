@@ -59,13 +59,14 @@ struct GeneralTab: View {
         let s = device.state
         Form {
             Section {
-                if s.capabilities.isEarbuds, CustomMedia.modelURL == nil {
+                if s.capabilities.isEarbuds, !hasEarbudsModel(s.modelName), CustomMedia.modelURL == nil {
                     EarbudsVisual().frame(height: 170)
                 } else {
                     HeadphoneView(battery: s.primaryBattery.map { Double($0.level) / 100 }, mode: s.noiseControl?.soundMode,
-                                  accent: settings.ringAccent, customModel: CustomMedia.modelURL, lightRing: settings.modelLightRing)
+                                  accent: settings.ringAccent, model: s.modelName, customModel: CustomMedia.modelURL,
+                                  lightRing: settings.modelLightRing)
                         .frame(height: 170)
-                        .id(settings.modelLightRing)
+                        .id("\(settings.modelLightRing)\(s.modelName ?? "")")
                 }
             }
             Section("Fone") {

@@ -52,6 +52,8 @@ struct PanelState {
     var customImage: NSImage?
     /// Imagem fixa do modelo (previews renderizados; o ImageRenderer não desenha a view 3D).
     var modelSnapshot: NSImage?
+    /// Nome que o fone informa; escolhe o modelo 3D.
+    var modelName: String?
 
     enum Link { case ready, bluetoothOnly, off }
 }
@@ -321,8 +323,8 @@ private struct HeaderVisual: View {
     var body: some View {
         if let img = state.modelSnapshot, snapshot, state.earbuds == nil {
             Image(nsImage: img).resizable().scaledToFit()
-        } else if state.earbuds != nil, state.customModel == nil, state.customImage == nil {
-            // Earbuds: o 3D é de um fone over-ear; até existir um modelo de earbuds, vai o símbolo.
+        } else if state.earbuds != nil, !hasEarbudsModel(state.modelName), state.customModel == nil, state.customImage == nil {
+            // Earbuds sem modelo próprio: o 3D padrão é de um fone de arco, então vai o símbolo.
             EarbudsVisual()
         } else if failed3D || !state.use3D {
             HeadphoneIllustration(battery: Double(state.battery ?? 0) / 100,
@@ -330,8 +332,9 @@ private struct HeaderVisual: View {
                                   image: state.customImage)
         } else {
             HeadphoneView(battery: state.battery.map { Double($0) / 100 }, mode: state.mode, accent: state.accent,
-                          customModel: state.customModel, entranceID: entranceID, idleRotation: false,
+                          model: state.modelName, customModel: state.customModel, entranceID: entranceID, idleRotation: false,
                           lightRing: state.lightRing) { failed3D = true }
+                .id(state.modelName)
         }
     }
 }
@@ -567,6 +570,11 @@ enum PresetNames {
 }
 
 /// Símbolo de earbuds no lugar do modelo 3D over-ear.
+/// Earbuds com modelo 3D próprio (hoje, só o LinkBuds S).
+func hasEarbudsModel(_ name: String?) -> Bool {
+    name.flatMap(HeadphoneSpec.forModel)?.shape == .earbudsCase
+}
+
 struct EarbudsVisual: View {
     var body: some View {
         Image(systemName: "earbuds")

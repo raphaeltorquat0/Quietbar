@@ -47,6 +47,7 @@ extension PanelState {
         var p = PanelState()
         p.name = d.selectedDevice?.name ?? s.modelName ?? String(localized: "Fone")
         p.subtitle = [s.modelName, s.codec.map { "\($0)" }].compactMap { $0 }.joined(separator: " · ")
+        p.modelName = s.modelName
         p.link = d.isReady ? .ready : d.isBluetoothConnected ? .bluetoothOnly : .off
         switch d.snapshot.phase {
         case .ready: p.phase = .ready

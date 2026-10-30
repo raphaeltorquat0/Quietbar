@@ -15,6 +15,8 @@ import SwiftUI
         ("carregando", PanelFixtures.loading),
         ("wf", PanelFixtures.wf1000xm5),
         ("clip", PanelFixtures.linkBudsClip),
+        ("xm6", PanelFixtures.wh1000xm6),
+        ("linkbuds-s", PanelFixtures.linkBudsS),
     ]
 
     static func run(to dir: URL) async {

@@ -41,8 +41,10 @@ extension Geometry {
     /// Torno oval: cada trecho suave do perfil (r adimensional, y em metros) percorre o contorno
     /// escalado por r. Trechos separados = arestas vivas. `t0…t1` limita o ângulo (segmentos do anel).
     /// Normal exata para superfícies homotéticas: n = (nr / (N·S))·N + ny·Y.
+    /// `drop` desloca o centro de cada anel no X local, conforme a altura (lateral que desce até a placa).
     public static func ovalLathe(_ runs: [[SIMD2<Float>]], outline o: OvalOutline, segments: Int,
-                                 from t0: Float = 0, to t1: Float = 2 * .pi) -> MeshData {
+                                 from t0: Float = 0, to t1: Float = 2 * .pi,
+                                 drop: (Float) -> Float = { _ in 0 }) -> MeshData {
         var m = MeshData()
         let samples = (0...segments).map { o.sample(t0 + (t1 - t0) * Float($0) / Float(segments)) }
         for run in runs {
@@ -52,7 +54,7 @@ extension Geometry {
                 for (c, s) in samples.enumerated() {
                     let k = normals[i].x / max(1e-6, simd_dot(s.n, s.p))
                     let n = SIMD3(k * s.n.x, normals[i].y, k * s.n.y)
-                    _ = m.vertex(SIMD3(pt.x * s.p.x, pt.y, pt.x * s.p.y), simd_length(n) > 0 ? n : [0, 1, 0],
+                    _ = m.vertex(SIMD3(pt.x * s.p.x + drop(pt.y), pt.y, pt.x * s.p.y), simd_length(n) > 0 ? n : [0, 1, 0],
                                  SIMD2(Float(c) / Float(segments), Float(i) / Float(max(1, run.count - 1))))
                 }
             }

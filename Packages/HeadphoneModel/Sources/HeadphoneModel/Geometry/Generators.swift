@@ -61,7 +61,9 @@ public enum Geometry {
 
     /// Varre `section` ao longo de `path`. `up` fixa a orientação da seção (curvas planas não precisam
     /// de transporte paralelo). O eixo x da seção vai para `up × tangente`, o y para `up`.
-    public static func sweep(path: [SIMD3<Float>], up: SIMD3<Float>, section: [SectionPoint], caps: Bool) -> MeshData {
+    /// `widthScale` escala a seção no eixo y por ponto do caminho (arco mais estreito nas pontas).
+    public static func sweep(path: [SIMD3<Float>], up: SIMD3<Float>, section: [SectionPoint], caps: Bool,
+                             widthScale: (Int) -> Float = { _ in 1 }) -> MeshData {
         var m = MeshData()
         let ring = section + [section[0]]
         var frames: [(SIMD3<Float>, SIMD3<Float>, SIMD3<Float>)] = [] // (N, B, T)
@@ -74,7 +76,7 @@ public enum Geometry {
         for (i, p) in path.enumerated() {
             let (n, b, _) = frames[i]
             for (j, s) in ring.enumerated() {
-                _ = m.vertex(p + s.p.x * n + s.p.y * b, s.n.x * n + s.n.y * b,
+                _ = m.vertex(p + s.p.x * n + s.p.y * widthScale(i) * b, s.n.x * n + s.n.y * b,
                              SIMD2(Float(j) / Float(section.count), Float(i) / Float(path.count - 1)))
             }
         }
@@ -84,7 +86,8 @@ public enum Geometry {
             for (i, sign) in [(0, Float(-1)), (path.count - 1, Float(1))] {
                 let (n, b, t) = frames[i]
                 let c = m.vertex(path[i], sign * t, [0.5, 0.5])
-                let rim = section.map { m.vertex(path[i] + $0.p.x * n + $0.p.y * b, sign * t, $0.p * 10 + 0.5) }
+                let w = widthScale(i)
+                let rim = section.map { m.vertex(path[i] + $0.p.x * n + $0.p.y * w * b, sign * t, $0.p * 10 + 0.5) }
                 for k in rim.indices { m.triangle(c, rim[k], rim[(k + 1) % rim.count]) }
             }
         }
