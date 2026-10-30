@@ -22,7 +22,7 @@ Controle seus fones <b>Sony</b> (WH-1000XM5, WF-1000XM5, LinkBuds…) pela barra
 </p>
 
 App nativo em Swift/SwiftUI que fala o protocolo Sony MDR v2 direto pelo Bluetooth (RFCOMM).
-Nada passa pela internet.
+Seus ajustes ficam no Mac: a única conexão com a internet é a procura de atualizações, que dá para desligar.
 
 > Projeto independente. **Não é afiliado, endossado nem suportado pela Sony.**
 > "Sony", "WH-1000XM5", "WF-1000XM5", "LinkBuds" e os demais nomes de modelos são marcas de seus respectivos donos, citadas só para indicar compatibilidade.
@@ -64,7 +64,7 @@ brew install --cask raphaeltorquat0/tap/quietbar
 
 Nos dois casos, o macOS bloqueia a primeira abertura porque o app ainda não é notarizado pela Apple:
 
-1. Tente abrir o Quietbar e feche o aviso, sem mover o app para o Lixo.
+1. Tente abrir o Quietbar. No aviso "O Item Quietbar Não Foi Aberto", clique em **OK**, não em **Mover para o Lixo**.
 2. Vá em **Ajustes do Sistema › Privacidade e Segurança** e role até **Segurança**.
 3. Clique em **Abrir Mesmo Assim** ao lado do Quietbar e confirme com a sua senha.
 
@@ -91,7 +91,7 @@ Para desenvolver: `make dev` (roda o app em Debug no terminal), `make test` (tod
 ## Barra de menus
 
 Clique no ícone para abrir o painel (modo de som, nível de ambiente, equalizador, Speak-to-Chat,
-DSEE). Clique direito: Conectar/Desconectar, Configurações, Sair. **Option-clique** adiciona
+DSEE). Clique direito: Conectar/Desconectar, Configurações, Procurar atualizações, Sair. **Option-clique** adiciona
 "Ferramentas de desenvolvedor…". No macOS 26+ há também um botão "Modo de som do fone" para a
 Central de Controle (com o app aberto).
 
@@ -102,6 +102,10 @@ Central de Controle (com o app aberto).
 | Bluetooth | falar com o fone. Na CLI, quem pede é o Terminal — reinicie o Terminal depois de autorizar. |
 | Localização (opcional) | o macOS só revela o nome da rede Wi-Fi a apps com localização; usado apenas nos perfis por Wi-Fi |
 | Notificações (opcional) | alerta de bateria baixa |
+
+## Atualizações
+
+O app procura uma versão nova uma vez por dia pelo [Sparkle](https://sparkle-project.org). Essa consulta lê um arquivo no GitHub Pages, que vê o seu IP como em qualquer acesso, e nenhum dado do fone ou do Mac é enviado. Cada atualização é verificada por uma assinatura EdDSA. Para desligar: Configurações › Geral › "Procurar atualizações automaticamente". Clique direito no ícone › "Procurar atualizações…" faz a verificação na hora.
 
 ## Ferramentas de debug: aba Desenvolvedor
 
@@ -152,6 +156,7 @@ Nada do dia a dia precisa dele. `swift build -c release` gera `.build/release/md
 - [`DECISIONS.md`](DECISIONS.md) — escolhas feitas onde a especificação era ambígua
 - [`docs/HARDWARE_TEST.md`](docs/HARDWARE_TEST.md) — o que já foi e o que falta verificar no fone
 - [`docs/RELEASING.md`](docs/RELEASING.md) — como assinar, notarizar e publicar
+- [`docs/GATEKEEPER_TEST.md`](docs/GATEKEEPER_TEST.md) — roteiro da primeira abertura após um download real
 - [`Packages/MDRKit`](Packages/MDRKit/README.md) — o protocolo como pacote Swift independente
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) e [`SECURITY.md`](SECURITY.md) — como contribuir e reportar vulnerabilidades
 
@@ -162,6 +167,8 @@ O protocolo foi estudado a partir de projetos abertos, citados item a item em [`
 capturados publicados nele), [sony-headphones-linux](https://github.com/vyomjain6904/sony-headphones-linux) (MIT)
 e [Gadgetbridge](https://codeberg.org/Freeyourgadget/Gadgetbridge) (AGPL — usado só como referência de
 comportamento, nenhum código copiado).
+
+O [Sparkle](https://github.com/sparkle-project/Sparkle) (licença MIT) cuida das atualizações; o aviso de licença acompanha o app.
 
 ## Licença
 

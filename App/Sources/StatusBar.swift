@@ -157,6 +157,7 @@ import SwiftUI
             Task { connected ? await d.disconnectDevice() : await d.connectDevice() }
         })
         menu.addItem(ClosureItem("Configurações do fone…") { StatusBar.openSettingsWindow() })
+        menu.addItem(ClosureItem("Procurar atualizações…") { Updates.shared.check() })
         if developer {
             menu.addItem(ClosureItem("Ferramentas de desenvolvedor…") {
                 AppSettings.shared.developerMode = true

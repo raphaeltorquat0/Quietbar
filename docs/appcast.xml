@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Quietbar</title>
+    <link>https://github.com/raphaeltorquat0/Quietbar</link>
+    <description>Atualizações do Quietbar</description>
+    <language>pt-BR</language>
+    <!-- novas versões entram aqui -->
+  </channel>
+</rss>

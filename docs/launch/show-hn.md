@@ -26,6 +26,6 @@ The limits:
 - The app isn't notarized, so macOS asks you to approve it in System Settings on first launch.
 - The Liquid Glass panel has only been checked by eye on macOS 27. macOS 14 and 15 build but haven't been checked visually.
 
-It's MIT licensed, needs no account, and doesn't use the network.
+It's MIT licensed and needs no account. Its only network use is a daily update check through Sparkle, which you can turn off.
 
 If you own an experimental model, a report would help a lot. The Developer tab has a diagnostics button, and the issue template explains how to remove your Bluetooth address first.

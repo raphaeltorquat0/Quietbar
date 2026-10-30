@@ -38,17 +38,36 @@ Checklist, nesta ordem:
 - [ ] `make release`
 - [ ] `make notarize`
 - [ ] `scripts/update-cask.sh`
-- [ ] Commit da versão e do cask, e push do `main`
-- [ ] Crie a tag e a release com o `.dmg` de `dist/`, que é o arquivo do sha256 do cask:
+- [ ] Commit da versão e push do `main`, sem `docs/appcast.xml` nem `Casks/quietbar.rb`
+- [ ] Crie a tag e a release com o `.dmg` de `dist/`, que é o arquivo assinado no appcast e no cask:
   ```sh
   VERSION=1.3.0
   gh release create "v$VERSION" "dist/Quietbar-$VERSION.dmg" --title "Quietbar $VERSION" --notes-file notas.md
   ```
 - [ ] Baixe o `.dmg` da release e confira o sha256 com `shasum -a 256`
+- [ ] Só agora faça commit e push de `docs/appcast.xml` e `Casks/quietbar.rb`: publicar o appcast antes do arquivo oferece um download que ainda não existe
 - [ ] Copie `Casks/quietbar.rb` para o tap e faça push
 - [ ] Instale pelo cask em outra conta ou máquina e abra o app
 
-Se você recompilar depois de `scripts/update-cask.sh`, o sha256 muda: o `.dmg` não é reproduzível. Rode o script de novo.
+Se você recompilar depois de `scripts/update-cask.sh`, o sha256 e a assinatura mudam: o `.dmg` não é reproduzível. `make release` e `make notarize` refazem a entrada do appcast. Rode `scripts/update-cask.sh` de novo.
+
+## Atualizações pelo Sparkle
+
+O app lê `https://raphaeltorquat0.github.io/Quietbar/appcast.xml`, que é o `docs/appcast.xml` deste repositório.
+
+**Ativar o GitHub Pages (uma vez):** em **Settings › Pages**, escolha **Deploy from a branch**, `main` e a pasta `/docs`. A partir daí, tudo em `docs/` fica público nesse endereço.
+
+**Chave de assinatura:** a chave privada EdDSA fica só no Keychain do seu login, na conta `quietbar`. A chave pública está em `App/Support/Info.plist`. `scripts/appcast.sh` assina o `.dmg` com ela e grava a entrada no appcast; sem a chave, a etapa é pulada com um aviso.
+
+**Faça um backup da chave agora.** Sem ela, nenhuma atualização nova é aceita pelos apps já instalados, e não há como recuperá-la. Guarde o arquivo no seu gerenciador de senhas e apague a cópia, sem nunca colocá-la no repositório:
+
+```sh
+.build/release-app/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_keys --account quietbar -x ~/quietbar-sparkle.key
+```
+
+**Build ad-hoc:** a atualização funciona, porque o Sparkle valida a assinatura EdDSA. Mas cada build ad-hoc tem uma identidade diferente, então o macOS pode pedir de novo o acesso ao Bluetooth depois de atualizar. Com Developer ID, isso não acontece.
+
+**Build number:** o Sparkle compara `CURRENT_PROJECT_VERSION`. Suba esse número em toda release, ou a atualização não é oferecida.
 
 ## Tap do Homebrew
 

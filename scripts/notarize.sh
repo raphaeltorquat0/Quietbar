@@ -27,3 +27,4 @@ xcrun stapler staple "$DMG"
 spctl --assess --type execute --verbose "$APP"
 xcrun stapler validate "$DMG"
 echo "$DMG notarizado"
+scripts/appcast.sh # o .dmg mudou: a assinatura do update precisa ser refeita

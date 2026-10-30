@@ -5,7 +5,10 @@ O que depende de você, nesta ordem. Os comandos da release estão em `docs/RELE
 - [ ] **Rodar o roteiro no fone:** siga `docs/HARDWARE_TEST.md` com o fone conectado. Confira também o painel novo com o fone real e os alertas do fone, que ainda não foram vistos nele.
 - [ ] **Ver o painel no macOS 14 e 15:** rode `/Applications/Quietbar.app/Contents/MacOS/Quietbar --demo-panel nc` e teste clique no ícone, Esc e clique fora. Essas versões só foram compiladas.
 - [ ] **Configurar Developer ID e notarização:** siga `docs/RELEASING.md`. Sem isso, o lançamento sai com o aviso do Gatekeeper, e os textos já dizem isso.
+- [ ] **Fazer backup da chave do Sparkle:** siga `docs/RELEASING.md`. Se você perder a chave, os apps instalados não aceitam mais atualizações.
+- [ ] **Testar a primeira abertura:** siga `docs/GATEKEEPER_TEST.md` com uma pre-release, no Safari e num usuário novo.
 - [ ] **Criar o tap:** crie o repositório `raphaeltorquat0/homebrew-tap` e publique `Casks/quietbar.rb` depois da release.
+- [ ] **Ativar o GitHub Pages:** em **Settings › Pages**, use `main` e a pasta `/docs`. Sem isso, a procura de atualizações dá erro.
 - [ ] **Publicar a release:** gere a 1.3.0, confira o sha256 do arquivo publicado e confirme que o CI passou no GitHub. O workflow ainda não rodou lá.
 - [ ] **Ativar relatórios privados de vulnerabilidade:** ligue **Private vulnerability reporting** nas configurações de segurança do repositório. O `SECURITY.md` depende disso.
 - [ ] **Revisar os rascunhos:** preencha os colchetes em `docs/launch/` e atualize o que mudou nos itens acima.

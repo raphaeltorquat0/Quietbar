@@ -1,6 +1,7 @@
 #!/bin/sh
 # `make release`: build Release universal, assinatura e .dmg em dist/.
 #   QUIETBAR_SIGN_IDENTITY  identidade Developer ID; sem ela, o build sai ad-hoc
+# A entrada do appcast exige a chave do Sparkle no Keychain; sem ela, a etapa é pulada.
 set -eu
 cd "$(dirname "$0")/.."
 if [ -z "${QUIETBAR_SIGN_IDENTITY:-}" ]; then
@@ -8,3 +9,4 @@ if [ -z "${QUIETBAR_SIGN_IDENTITY:-}" ]; then
 fi
 scripts/build-app.sh
 scripts/make-dmg.sh
+scripts/appcast.sh

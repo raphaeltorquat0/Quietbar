@@ -25,6 +25,7 @@ struct QuietbarApp: App {
         PopupController.shared.start()
         Self.prewarm3D()
         StatusBar.shared.install()
+        Updates.shared.start()
         DemoPanel.openIfRequested()
         ControlCenterBridge.start()
     }

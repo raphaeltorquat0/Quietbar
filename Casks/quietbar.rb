@@ -1,6 +1,6 @@
 cask "quietbar" do
   version "1.3.0"
-  sha256 "0fde360e6f13deb9c3814e3d58765dcc4cb0730b50ee56e24d79a82d02164cce"
+  sha256 "34a676b17b03d01e139b88655126b89a375882f5fb320fb742d0db4b8bf5fa0c"
 
   url "https://github.com/raphaeltorquat0/Quietbar/releases/download/v#{version}/Quietbar-#{version}.dmg"
   name "Quietbar"
@@ -12,6 +12,7 @@ cask "quietbar" do
     strategy :github_latest
   end
 
+  auto_updates true
   depends_on macos: :sonoma
 
   app "Quietbar.app"

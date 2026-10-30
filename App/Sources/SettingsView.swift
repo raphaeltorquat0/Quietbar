@@ -50,6 +50,7 @@ struct DeviceSection<Content: View>: View {
 struct GeneralTab: View {
     @Environment(DeviceController.self) private var device
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+    @State private var autoUpdate = Updates.shared.automaticChecks
     @State private var confirmPowerOff = false
 
     var body: some View {
@@ -104,6 +105,8 @@ struct GeneralTab: View {
             }
             Section("App") {
                 Toggle("Mostrar a % da bateria ao lado do ícone", isOn: $settings.menuBarShowsPercent)
+                Toggle("Procurar atualizações automaticamente", isOn: $autoUpdate)
+                    .onChange(of: autoUpdate) { Updates.shared.automaticChecks = autoUpdate }
                 Toggle("Mostrar a aba Desenvolvedor", isOn: $settings.developerMode)
                 Toggle("Abrir ao iniciar sessão", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, on in

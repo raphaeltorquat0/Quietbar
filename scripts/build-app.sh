@@ -49,7 +49,14 @@ cp -R "$BUILT" dist/
 APP=dist/Quietbar.app
 
 if [ "$SIGN_IDENTITY" != "-" ]; then
-  # De dentro para fora: a extensão primeiro, com os entitlements dela.
+  # De dentro para fora, sem --deep: o Sparkle pede os serviços e auxiliares um a um.
+  SPARKLE="$APP/Contents/Frameworks/Sparkle.framework"
+  sign() { codesign --force --options runtime --timestamp -s "$SIGN_IDENTITY" "$@"; }
+  sign "$SPARKLE/Versions/B/XPCServices/Installer.xpc"
+  sign --preserve-metadata=entitlements "$SPARKLE/Versions/B/XPCServices/Downloader.xpc"
+  sign "$SPARKLE/Versions/B/Autoupdate"
+  sign "$SPARKLE/Versions/B/Updater.app"
+  sign "$SPARKLE"
   for ext in "$APP"/Contents/PlugIns/*.appex; do
     codesign --force --options runtime --timestamp --entitlements Controls/QuietbarControls.entitlements -s "$SIGN_IDENTITY" "$ext"
   done

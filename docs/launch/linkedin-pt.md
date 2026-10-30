@@ -10,7 +10,7 @@ Separei a camada do protocolo em um pacote Swift, o MDRKit, para quem quiser con
 
 O projeto ainda é cedo. Testei em um WH-1000XM5, os outros modelos com o mesmo protocolo são experimentais, e o XM4 e o XM3 estão no roadmap. O app ainda não é notarizado.
 
-É gratuito, licença MIT, sem conta e sem acesso à rede. Não tem afiliação com a Sony.
+É gratuito, licença MIT e sem conta. O único uso de rede é a procura de atualizações, que dá para desligar. Não tem afiliação com a Sony.
 
 Quem tiver outro fone Sony e quiser testar ajuda muito: https://github.com/raphaeltorquat0/Quietbar
 

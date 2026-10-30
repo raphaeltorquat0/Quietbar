@@ -15,16 +15,19 @@
 		27A3BA1E4227E02F9E3E96E6 /* MDRKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5E6AD44C85C96598AE9489C9 /* MDRKit */; };
 		30B5AFDF470B79D7D2E0B5C0 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 0528E04F6642BDBBB82B90AE /* Localizable.xcstrings */; };
 		3BC6EE86C1310F1F16334F7C /* QuietbarControls.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = EFDDB74D13EAD0A8486AC2B8 /* QuietbarControls.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		444D9008C2CE459DB413CAE8 /* Sparkle-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 5450C3163EF32382EA56FFB7 /* Sparkle-LICENSE.txt */; };
 		4EE2AD566D8518B672A610A9 /* ProtocolLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64FCB687A295807BCC467D05 /* ProtocolLog.swift */; };
 		55575B2ABBF47CF3559C7906 /* StatusBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6765529F3829519180CD6F /* StatusBar.swift */; };
 		669E0DDD1CD604F0C7BEF3E6 /* PanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7293F759BEDD528E9841E932 /* PanelView.swift */; };
 		6E825011F722CF70EC0F9805 /* PanelControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8999D82FE5D45F03AE5247 /* PanelControls.swift */; };
 		7D1AA783287C66799FDAA0C4 /* QuietbarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A5F3C7054A1D2754390EC94 /* QuietbarApp.swift */; };
 		8249C76B689F489AE270576B /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BFDD4022653354E2552EB540 /* WidgetKit.framework */; };
+		97829A26D6AF70F4F9ECDD88 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 15BF06F3DBFD9D88EF19588C /* Sparkle */; };
 		A62F23B59BB5B25402306ACB /* MDRSession in Frameworks */ = {isa = PBXBuildFile; productRef = FAD7807A0489F2F72F8609BF /* MDRSession */; };
 		A668E326F360720412943C8E /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D4526A10BD3500F2860F0A2 /* Components.swift */; };
 		A7ADD00688CC326586E22F04 /* ControlCenterBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C191D66CBB722B4503ADE4CE /* ControlCenterBridge.swift */; };
 		AD9FC4A606565CED254FA8AE /* Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621C215115C7F95676029BE6 /* Shortcuts.swift */; };
+		AF1168603033131E4704FF97 /* Updates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 285EF06533C520AFDA960E52 /* Updates.swift */; };
 		B2D72CE5891642BEEDCC6D0C /* DeviceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E689B6483FC7D446807B1524 /* DeviceController.swift */; };
 		C2C73A7935414E007E2FDF47 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C9EADF4AEA31E57C5D2E018 /* SwiftUI.framework */; };
 		D50AC8A5F68C7E99ADE65F0F /* DeveloperTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5026D463C4EF96FAE5805490 /* DeveloperTab.swift */; };
@@ -68,11 +71,13 @@
 		0D4526A10BD3500F2860F0A2 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		20FAB22704C32D5DF6553C38 /* sonyctl_macos */ = {isa = PBXFileReference; lastKnownFileType = folder; name = sonyctl_macos; path = .; sourceTree = SOURCE_ROOT; };
 		22A44C60BD66C3FC3B1A8B34 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		285EF06533C520AFDA960E52 /* Updates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Updates.swift; sourceTree = "<group>"; };
 		2A8999D82FE5D45F03AE5247 /* PanelControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelControls.swift; sourceTree = "<group>"; };
 		2B1A7D6751AA76BE8A2FFCF0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		43C257976F7F3F5B27D0A311 /* PressKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PressKit.swift; sourceTree = "<group>"; };
 		4C9EADF4AEA31E57C5D2E018 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		5026D463C4EF96FAE5805490 /* DeveloperTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperTab.swift; sourceTree = "<group>"; };
+		5450C3163EF32382EA56FFB7 /* Sparkle-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Sparkle-LICENSE.txt"; sourceTree = "<group>"; };
 		55AA52EA50BAEEF2BC5C922E /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		621C215115C7F95676029BE6 /* Shortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shortcuts.swift; sourceTree = "<group>"; };
 		64FCB687A295807BCC467D05 /* ProtocolLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolLog.swift; sourceTree = "<group>"; };
@@ -112,6 +117,7 @@
 				0CA5A0CEE926A96ED6397367 /* MDRTransport in Frameworks */,
 				27A3BA1E4227E02F9E3E96E6 /* MDRKit in Frameworks */,
 				E766A8A621897E61A98C6EC2 /* HeadphoneModel in Frameworks */,
+				97829A26D6AF70F4F9ECDD88 /* Sparkle in Frameworks */,
 				F8E13853253718D9A471C746 /* IOBluetooth.framework in Frameworks */,
 				17D44908CE935FEDADFD47C1 /* CoreWLAN.framework in Frameworks */,
 			);
@@ -146,6 +152,7 @@
 				22A44C60BD66C3FC3B1A8B34 /* SettingsView.swift */,
 				621C215115C7F95676029BE6 /* Shortcuts.swift */,
 				AA6765529F3829519180CD6F /* StatusBar.swift */,
+				285EF06533C520AFDA960E52 /* Updates.swift */,
 				B54FFB63207BB3E28ACA9FAB /* Panel */,
 			);
 			path = Sources;
@@ -214,6 +221,7 @@
 			children = (
 				2B1A7D6751AA76BE8A2FFCF0 /* Assets.xcassets */,
 				0528E04F6642BDBBB82B90AE /* Localizable.xcstrings */,
+				5450C3163EF32382EA56FFB7 /* Sparkle-LICENSE.txt */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -241,6 +249,7 @@
 				011E8A8A201E1764AD8D4448 /* MDRTransport */,
 				5E6AD44C85C96598AE9489C9 /* MDRKit */,
 				D11F9DC88DDACE026C1BAE93 /* HeadphoneModel */,
+				15BF06F3DBFD9D88EF19588C /* Sparkle */,
 			);
 			productName = Quietbar;
 			productReference = D2098E44906205C3E301EA24 /* Quietbar.app */;
@@ -293,6 +302,7 @@
 			mainGroup = 7ACD02B3FB7E9E57B4826466;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				8378AFDEFA79EA9D11C7C111 /* XCRemoteSwiftPackageReference "Sparkle" */,
 				83777E9A176BE9BA17C9C41B /* XCLocalSwiftPackageReference "." */,
 			);
 			preferredProjectObjectVersion = 54;
@@ -312,6 +322,7 @@
 			files = (
 				DC358D01EF23714EB03ABB5B /* Assets.xcassets in Resources */,
 				30B5AFDF470B79D7D2E0B5C0 /* Localizable.xcstrings in Resources */,
+				444D9008C2CE459DB413CAE8 /* Sparkle-LICENSE.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -340,6 +351,7 @@
 				F3C5495A8F31D9DA79CC9BC7 /* SettingsView.swift in Sources */,
 				AD9FC4A606565CED254FA8AE /* Shortcuts.swift in Sources */,
 				55575B2ABBF47CF3559C7906 /* StatusBar.swift in Sources */,
+				AF1168603033131E4704FF97 /* Updates.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -429,7 +441,7 @@
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
-				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = App/Support/Info.plist;
@@ -499,10 +511,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "$(QUIETBAR_APP_ENTITLEMENTS)";
 				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
-				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = App/Support/Info.plist;
@@ -622,10 +635,26 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		8378AFDEFA79EA9D11C7C111 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		011E8A8A201E1764AD8D4448 /* MDRTransport */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MDRTransport;
+		};
+		15BF06F3DBFD9D88EF19588C /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8378AFDEFA79EA9D11C7C111 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
 		};
 		5E6AD44C85C96598AE9489C9 /* MDRKit */ = {
 			isa = XCSwiftPackageProductDependency;

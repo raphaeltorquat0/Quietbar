@@ -15,7 +15,7 @@ Control your Sony headphones (WH-1000XM5, WF-1000XM5, LinkBuds…) from the macO
 <img src="docs/media/demo.gif" width="640" alt="Connection popup and sound mode switching in the panel">
 </p>
 
-Quietbar is a native Swift/SwiftUI app that speaks the Sony MDR v2 protocol directly over Bluetooth (RFCOMM). Nothing goes through the internet, and there's no account.
+Quietbar is a native Swift/SwiftUI app that speaks the Sony MDR v2 protocol directly over Bluetooth (RFCOMM). Your settings stay on your Mac, and there's no account. The only internet use is the update check, which you can turn off.
 
 > Independent project. **Not affiliated with, endorsed by or supported by Sony.**
 > "Sony", "WH-1000XM5", "WF-1000XM5", "LinkBuds" and other model names are trademarks of their respective owners, used only to indicate compatibility.
@@ -56,7 +56,7 @@ brew install --cask raphaeltorquat0/tap/quietbar
 
 Either way, macOS blocks the first launch because the app isn't notarized by Apple yet:
 
-1. Try to open Quietbar and close the warning. Don't move the app to the Trash.
+1. Try to open Quietbar. Close the warning with **OK** or **Done**, not **Move to Trash**.
 2. Go to **System Settings › Privacy & Security** and scroll to **Security**.
 3. Click **Open Anyway** next to Quietbar and confirm with your password.
 
@@ -73,6 +73,10 @@ make install
 
 Requires macOS 14 or later and Xcode 26 or later.
 
+## Updates
+
+The app checks for a new version once a day with [Sparkle](https://sparkle-project.org). The check reads a file on GitHub Pages, which sees your IP address like any web request, and no headphone or Mac data is sent. Every update is verified with an EdDSA signature. To turn it off, go to Settings › General. To check right away, right-click the icon.
+
 ## For developers
 
 - [`Packages/MDRKit`](Packages/MDRKit/README.md): the protocol as a standalone Swift package
@@ -87,6 +91,8 @@ Firmware updates, voice guide language, 360 Reality Audio and Sony account featu
 ## Credits
 
 The protocol was studied from open projects, cited item by item in `docs/PROTOCOL.md`: [SonyHeadphonesClient](https://github.com/mos9527/SonyHeadphonesClient) (MIT), [sony-headphones-linux](https://github.com/vyomjain6904/sony-headphones-linux) (MIT) and [Gadgetbridge](https://codeberg.org/Freeyourgadget/Gadgetbridge) (AGPL, used only as a behavior reference, with no code copied).
+
+[Sparkle](https://github.com/sparkle-project/Sparkle) (MIT) handles updates, and its license notice ships with the app.
 
 ## License
 

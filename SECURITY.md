@@ -1,6 +1,6 @@
 # Security
 
-Quietbar talks to your headphones over local Bluetooth and doesn't use the network.
+Quietbar talks to your headphones over local Bluetooth. Its only internet use is the daily update check through Sparkle, and every update is verified with an EdDSA signature.
 
 ## Report a vulnerability
 

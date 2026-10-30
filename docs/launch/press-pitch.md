@@ -9,7 +9,7 @@ Hi [name],
 
 I read your piece on [topic of the article]. I've built something related that may interest you and your readers.
 
-Quietbar is a free, open-source macOS menu bar app that controls Sony headphones without the phone app. It speaks Sony's Bluetooth protocol directly, needs no account and doesn't use the network. On macOS 26 and later, its panel follows the look of Control Center.
+Quietbar is a free, open-source macOS menu bar app that controls Sony headphones without the phone app. It speaks Sony's Bluetooth protocol directly, and needs no account. Its only network use is an update check that you can turn off. On macOS 26 and later, its panel follows the look of Control Center.
 
 It's an independent project, not affiliated with Sony. I've tested it on the WH-1000XM5, and support for other models is experimental. The app isn't notarized yet, so it takes one approval in System Settings to open.
 
