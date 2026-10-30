@@ -21,7 +21,7 @@ App nativo em Swift/SwiftUI que fala o protocolo Sony MDR v2 direto pelo Bluetoo
 Nada passa pela internet.
 
 > Projeto independente. **Não é afiliado, endossado nem suportado pela Sony.**
-> "Sony" e "WH-1000XM5" são marcas da Sony Group Corporation.
+> "Sony", "WH-1000XM5", "WF-1000XM5", "LinkBuds" e os demais nomes de modelos são marcas de seus respectivos donos, citadas só para indicar compatibilidade.
 
 ## O que faz
 
@@ -51,16 +51,25 @@ com o diagnóstico da aba Desenvolvedor; é o que transforma "experimental" em "
 
 ## Instalar
 
-1. Baixe o `Quietbar-<versão>.dmg` em [Releases](https://github.com/raphaeltorquat0/Quietbar/releases/latest)
-   e arraste o Quietbar para **Aplicativos**.
-2. Abra o Quietbar. Como o app não é notarizado pela Apple (é um projeto independente, sem conta de
-   desenvolvedor paga), o macOS bloqueia a primeira abertura. Vá em **Ajustes do Sistema › Privacidade e
-   Segurança**, role até o aviso do Quietbar e clique em **Abrir Mesmo Assim**. Isso só é preciso uma vez.
-   <br>Pelo Terminal, o equivalente é `xattr -dr com.apple.quarantine /Applications/Quietbar.app`.
-3. Permita o acesso ao **Bluetooth** quando o macOS pedir. O fone precisa estar pareado com o Mac.
+**Homebrew:**
 
-O ícone de fone aparece na barra de menus. Para abrir junto com o Mac: Configurações › Geral ›
-"Abrir ao iniciar sessão".
+```sh
+brew install --cask raphaeltorquat0/tap/quietbar
+```
+
+**Download:** baixe o `Quietbar-<versão>.dmg` em [Releases](https://github.com/raphaeltorquat0/Quietbar/releases/latest) e arraste o Quietbar para **Aplicativos**.
+
+Nos dois casos, o macOS bloqueia a primeira abertura porque o app ainda não é notarizado pela Apple:
+
+1. Tente abrir o Quietbar e feche o aviso, sem mover o app para o Lixo.
+2. Vá em **Ajustes do Sistema › Privacidade e Segurança** e role até **Segurança**.
+3. Clique em **Abrir Mesmo Assim** ao lado do Quietbar e confirme com a sua senha.
+
+No macOS 14, também funciona Control-clique no app › **Abrir**; desde o macOS 15, só os Ajustes do Sistema liberam. Isso só é preciso uma vez.
+
+Depois, permita o acesso ao **Bluetooth** quando o macOS pedir. O fone precisa estar pareado com o Mac.
+
+O ícone de fone aparece na barra de menus. Para abrir junto com o Mac: Configurações › Geral › "Abrir ao iniciar sessão".
 
 ### Compilar do código
 
@@ -70,12 +79,11 @@ make install
 ```
 
 Compila, assina localmente, instala em `/Applications/Quietbar.app` (fechando a versão anterior), liga
-"abrir ao iniciar sessão" e abre o app. Requisitos: macOS 14+ e Xcode 16+;
+"abrir ao iniciar sessão" e abre o app. Requisitos: macOS 14+ e Xcode 26+;
 [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`) só se você mudar o `project.yml`.
 
 Para desenvolver: `make dev` (roda o app em Debug no terminal), `make test` (todos os testes),
-`make dmg` (gera o `.dmg` de distribuição pelo `scripts/release.sh`; `SIGN_IDENTITY` e
-`NOTARY_PROFILE` assinam com Developer ID e notarizam). `make` sozinho lista os alvos.
+`make release` (gera o `.dmg`; veja [`docs/RELEASING.md`](docs/RELEASING.md)). `make` sozinho lista os alvos.
 
 ## Barra de menus
 
@@ -91,8 +99,6 @@ Central de Controle (com o app aberto).
 | Bluetooth | falar com o fone. Na CLI, quem pede é o Terminal — reinicie o Terminal depois de autorizar. |
 | Localização (opcional) | o macOS só revela o nome da rede Wi-Fi a apps com localização; usado apenas nos perfis por Wi-Fi |
 | Notificações (opcional) | alerta de bateria baixa |
-
-Build ad-hoc: na primeira abertura, libere o app em **Ajustes › Privacidade e Segurança**.
 
 ## Ferramentas de debug: aba Desenvolvedor
 
@@ -142,6 +148,7 @@ Nada do dia a dia precisa dele. `swift build -c release` gera `.build/release/md
 - [`docs/PROTOCOL.md`](docs/PROTOCOL.md) — protocolo consolidado, com a origem de cada item
 - [`DECISIONS.md`](DECISIONS.md) — escolhas feitas onde a especificação era ambígua
 - [`docs/HARDWARE_TEST.md`](docs/HARDWARE_TEST.md) — o que já foi e o que falta verificar no fone
+- [`docs/RELEASING.md`](docs/RELEASING.md) — como assinar, notarizar e publicar
 
 ## Créditos
 

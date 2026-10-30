@@ -4,7 +4,7 @@ DEST     := /Applications/$(APP_NAME).app
 DEV_DD   := .build/xcode-debug
 
 .DEFAULT_GOAL := help
-.PHONY: help install dev test dmg
+.PHONY: help install dev test release notarize
 
 help: ## Lista os alvos
 	@grep -E '^[a-z]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -29,5 +29,8 @@ dev: ## Compila em Debug e roda o app no terminal (logs aqui; Ctrl-C para sair)
 test: ## Roda todos os testes (MDRKit, MDRSession, HeadphoneModel)
 	swift test
 
-dmg: ## Gera o .dmg de distribuição (scripts/release.sh)
+release: ## Build Release universal e .dmg em dist/ (Developer ID com QUIETBAR_SIGN_IDENTITY; senão, ad-hoc)
 	scripts/release.sh
+
+notarize: ## Notariza e grampeia o .app e o .dmg (exige QUIETBAR_SIGN_IDENTITY e QUIETBAR_NOTARY_PROFILE)
+	scripts/notarize.sh
