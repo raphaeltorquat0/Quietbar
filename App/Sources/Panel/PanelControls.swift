@@ -19,20 +19,29 @@ func panelAnimation(_ reduceMotion: Bool) -> Animation {
 
 // MARK: - Fundo
 
-/// Liquid Glass no macOS 26+, material `.popover` ativo antes disso, sólido com Reduzir transparência.
+/// Liquid Glass só vale na janela real do macOS 26+; o ImageRenderer (snapshot) não desenha vidro.
+func panelUsesGlass(snapshot: Bool) -> Bool {
+    if #available(macOS 26, *) { return !snapshot }
+    return false
+}
+
+/// macOS 26+: sem fundo, como a Central de Controle (cada módulo é uma plataforma de vidro solta).
+/// Antes disso, material `.popover`; sólido com Reduzir transparência.
 struct PanelBackground: View {
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.panelSnapshot) private var snapshot
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        if reduceTransparency || snapshot {
+        if panelUsesGlass(snapshot: snapshot) {
+            Color.clear
+        } else if reduceTransparency || snapshot {
             Rectangle().fill(Color(nsColor: .windowBackgroundColor))
                 .overlay(snapshot ? Rectangle().fill(scheme == .dark ? Color(white: 0.13) : Color(white: 0.95)) : nil)
-        } else if #available(macOS 26, *) {
-            Rectangle().fill(.clear).glassEffect(.regular, in: .rect(cornerRadius: 18))
+                .clipShape(.rect(cornerRadius: 12))
         } else {
-            VisualEffect(material: .popover)
+            // A janela do painel não tem borda: o arredondamento é nosso.
+            VisualEffect(material: .popover).clipShape(.rect(cornerRadius: 12))
         }
     }
 }
@@ -51,20 +60,39 @@ struct VisualEffect: NSViewRepresentable {
 
 // MARK: - Módulo (card)
 
+/// Raio das plataformas de vidro, o mesmo dos módulos da Central de Controle.
+let panelPlatterRadius: CGFloat = 22
+
 struct PanelModule<Content: View>: View {
-    @Environment(\.colorSchemeContrast) private var contrast
     @ViewBuilder var content: Content
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) { content }
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.quaternary.opacity(contrast == .increased ? 0.25 : 0.55), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .overlay {
-                if contrast == .increased {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color.primary.opacity(0.55), lineWidth: 1)
-                }
+            .modifier(PanelPlatter())
+    }
+}
+
+/// Fundo de um módulo: vidro no macOS 26+, cartão cinza antes. Contraste alto ganha contorno.
+struct PanelPlatter: ViewModifier {
+    var interactive = false
+    @Environment(\.colorSchemeContrast) private var contrast
+    @Environment(\.panelSnapshot) private var snapshot
+
+    func body(content: Content) -> some View {
+        let radius = panelUsesGlass(snapshot: snapshot) ? panelPlatterRadius : 14
+        let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
+        Group {
+            if #available(macOS 26, *), panelUsesGlass(snapshot: snapshot) {
+                content.glassEffect(.regular.interactive(interactive), in: shape)
+            } else {
+                content.background(.quaternary.opacity(contrast == .increased ? 0.25 : 0.55), in: shape)
             }
+        }
+        .overlay {
+            if contrast == .increased { shape.strokeBorder(Color.primary.opacity(0.55), lineWidth: 1) }
+        }
     }
 }
 
@@ -174,6 +202,47 @@ struct CapsuleSlider: View {
     private func step(_ d: Int) -> KeyPress.Result {
         commit(min(range.upperBound, max(range.lowerBound, value + d)))
         return .handled
+    }
+}
+
+/// macOS 26+: slider nativo (botão de vidro, teclado e VoiceOver do sistema), com o mesmo contrato do
+/// `CapsuleSlider`: envia ao soltar; teclado e VoiceOver enviam a cada passo.
+struct PanelSlider: View {
+    let value: Int
+    let range: ClosedRange<Int>
+    let icon: String
+    let label: LocalizedStringKey
+    let commit: (Int) -> Void
+
+    @State private var draft: Double?
+    @State private var editing = false
+    @Environment(\.panelSnapshot) private var snapshot
+
+    var body: some View {
+        if panelUsesGlass(snapshot: snapshot) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 18)
+                    .accessibilityHidden(true)
+                Slider(value: Binding(get: { draft ?? Double(value) }, set: { v in
+                    draft = v
+                    if !editing { commit(Int(v.rounded())) }
+                    // Sem `step`: com ele o slider desenha uma marca por passo.
+                }), in: Double(range.lowerBound)...Double(range.upperBound)) {
+                    Text(label)
+                } onEditingChanged: { e in
+                    editing = e
+                    if !e, let d = draft { commit(Int(d.rounded())) }
+                }
+                .labelsHidden()
+                .accessibilityValue(Text(verbatim: "\(Int((draft ?? Double(value)).rounded()))"))
+            }
+            .onChange(of: value) { if !editing { draft = nil } }
+        } else {
+            CapsuleSlider(value: value, range: range, icon: icon, label: label, commit: commit)
+        }
     }
 }
 

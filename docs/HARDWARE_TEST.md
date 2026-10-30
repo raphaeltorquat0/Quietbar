@@ -16,6 +16,7 @@ Os SETs abaixo podem ser feitos pelo app (painel/Configurações) ou, para quem 
 | `dump` (handshake, capacidades, estado) | OK — WH-1000XM5 fw 2.5.1 | 2026-10-29 |
 | App `--selftest` sem App Sandbox | `phase=ready` | 2026-10-29 |
 | App `--selftest` com App Sandbox | `phase=ready` | 2026-10-29 |
+| Ícone da barra (macOS 27, sem fone): clique abre/fecha o painel, clique fora e Esc fecham; clique direito e Option-clique mostram o menu curto (com Option, "Ferramentas de desenvolvedor…"); "Configurações do fone…" abre as Configurações mesmo antes de o painel abrir | OK (era o item 21) | 2026-10-29 |
 
 ## A verificar (escreve no fone)
 
@@ -44,7 +45,6 @@ relido impresso pela CLI bate. Ao final, volte ao valor original.
 | 18 | Ajustes › Acessibilidade › Reduzir movimento, depois Desenvolvedor › Testar popup | popup só faz fade, modelo parado |
 | 19 | Ajustes › Popup: importar um `.usdz` | o popup e a aba Geral mostram o seu modelo girando; com > 20 MB, recusa |
 | 20 | **Fast Pair**: fone em modo de pareamento (segurar o botão de liga 7 s) e Desenvolvedor › Procurar fone em modo de pareamento | anotar se aparece "Fast Pair · model ID" — decide a reabertura de DECISIONS #18 |
-| 21 | Clique direito e Option-clique no ícone da barra | menu curto; com Option aparece "Ferramentas de desenvolvedor…" |
 | 22 | Com o fone desconectado do Mac, painel › Conectar | o macOS conecta o fone e o painel mostra os controles |
 | 23 | macOS 26+: Central de Controle › editar › adicionar "Modo de som do fone" e tocar | alterna Cancelamento ↔ Ambiente |
 | 24 | `set poweroff` (por último) | fone desliga |

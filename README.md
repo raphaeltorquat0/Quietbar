@@ -31,6 +31,7 @@ Nada passa pela internet.
 - Bateria na barra de menus, com alerta de bateria baixa
 - Atalhos globais e perfis automáticos por app em primeiro plano ou rede Wi-Fi
 - Popup animado ao conectar, com um modelo 3D do fone gerado em código
+- Liquid Glass no macOS 26+, no estilo da Central de Controle
 - Modo claro e escuro, cor de destaque do sistema, VoiceOver, PT-BR e inglês
 
 O app só mostra o que o fone anuncia na conexão. macOS 14 ou mais novo, Apple Silicon e Intel.

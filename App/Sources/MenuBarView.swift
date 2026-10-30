@@ -9,10 +9,13 @@ struct MenuBarView: View {
     @State private var opened = 0
 
     var body: some View {
-        PanelView(state: .from(device), actions: actions, entranceID: opened)
+        PanelView(state: DemoPanel.state ?? .from(device), actions: actions, entranceID: opened)
             .keepsChannelOpen()
             .deviceAlerts()
-            .onAppear { opened += 1 }
+            .onAppear {
+                opened += 1
+                StatusBar.openSettings = { openSettings() }
+            }
     }
 
     private var actions: PanelActions {
@@ -33,7 +36,7 @@ struct MenuBarView: View {
             setVolume: { v in d.perform { try await $0.setVolume(v) } },
             connect: { Task { await d.connectDevice() } },
             disconnect: { Task { await d.disconnectDevice() } },
-            openSettings: { NSApp.activate(); openSettings() },
+            openSettings: { StatusBar.openSettingsWindow() },
             quit: { NSApp.terminate(nil) })
     }
 }
@@ -91,41 +94,6 @@ extension PanelState {
     }
 }
 
-/// Ícone da barra: template do SF Symbol `headphones`; apagado quando desconectado, com ponto
-/// quando a bateria está baixa e, opcionalmente, a % ao lado.
-struct MenuBarLabel: View {
-    @Environment(DeviceController.self) private var device
-    @Environment(\.openSettings) private var openSettings
-
-    var body: some View {
-        HStack(spacing: 3) {
-            Image(nsImage: Self.icon(connected: device.isBluetoothConnected, lowBattery: device.isBatteryLow))
-            if device.settings.menuBarShowsPercent, let b = device.lastBattery {
-                Text("\(b.level)%").monospacedDigit()
-            }
-        }
-        .onAppear { StatusItemMenu.openSettings = { openSettings() } }
-        .accessibilityLabel("Quietbar")
-    }
-
-    static func icon(connected: Bool, lowBattery: Bool) -> NSImage {
-        let config = NSImage.SymbolConfiguration(pointSize: 14, weight: .regular)
-        let symbol = NSImage(systemSymbolName: "headphones", accessibilityDescription: nil)!.withSymbolConfiguration(config)!
-        let size = NSSize(width: symbol.size.width + 3, height: symbol.size.height)
-        let img = NSImage(size: size, flipped: false) { _ in
-            symbol.draw(in: NSRect(origin: .zero, size: symbol.size), from: .zero, operation: .sourceOver, fraction: connected ? 1 : 0.35)
-            if lowBattery {
-                NSColor.black.setFill()
-                NSBezierPath(ovalIn: NSRect(x: size.width - 6, y: 0, width: 6, height: 6)).fill()
-            }
-            return true
-        }
-        img.isTemplate = true
-        img.accessibilityDescription = connected ? (lowBattery ? "Fone conectado, bateria baixa" : "Fone conectado") : "Fone desconectado"
-        return img
-    }
-}
-
 func batterySymbol(_ level: UInt8) -> String {
     switch level {
     case 0..<13: "battery.0"
@@ -135,3 +103,4 @@ func batterySymbol(_ level: UInt8) -> String {
     default: "battery.100"
     }
 }
+

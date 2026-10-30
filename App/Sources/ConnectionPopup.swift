@@ -182,9 +182,7 @@ struct PopupView: View {
             .frame(width: 160, alignment: .leading)
         }
         .padding(16)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).strokeBorder(.white.opacity(0.12)))
-        .shadow(color: .black.opacity(0.25), radius: 14, y: 6)
+        .modifier(PopupCard())
         .padding(18) // espaço para a sombra dentro do painel
         .scaleEffect(shown || reduceMotion ? 1 : 0.86)
         .offset(y: shown || reduceMotion ? 0 : -14)
@@ -307,4 +305,20 @@ enum CustomMedia {
 struct CustomMediaError: LocalizedError {
     let errorDescription: String?
     init(_ m: String) { errorDescription = m }
+}
+
+/// Cartão do popup: Liquid Glass no macOS 26+ (o vidro traz borda e sombra), material antes.
+private struct PopupCard: ViewModifier {
+    private let shape = RoundedRectangle(cornerRadius: 24, style: .continuous)
+
+    func body(content: Content) -> some View {
+        if #available(macOS 26, *) {
+            content.glassEffect(.regular, in: shape)
+        } else {
+            content
+                .background(.regularMaterial, in: shape)
+                .overlay(shape.strokeBorder(.white.opacity(0.12)))
+                .shadow(color: .black.opacity(0.25), radius: 14, y: 6)
+        }
+    }
 }

@@ -15,6 +15,7 @@
 		30B5AFDF470B79D7D2E0B5C0 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 0528E04F6642BDBBB82B90AE /* Localizable.xcstrings */; };
 		3BC6EE86C1310F1F16334F7C /* QuietbarControls.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = EFDDB74D13EAD0A8486AC2B8 /* QuietbarControls.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4EE2AD566D8518B672A610A9 /* ProtocolLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64FCB687A295807BCC467D05 /* ProtocolLog.swift */; };
+		55575B2ABBF47CF3559C7906 /* StatusBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6765529F3829519180CD6F /* StatusBar.swift */; };
 		669E0DDD1CD604F0C7BEF3E6 /* PanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7293F759BEDD528E9841E932 /* PanelView.swift */; };
 		6E825011F722CF70EC0F9805 /* PanelControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8999D82FE5D45F03AE5247 /* PanelControls.swift */; };
 		7D1AA783287C66799FDAA0C4 /* QuietbarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A5F3C7054A1D2754390EC94 /* QuietbarApp.swift */; };
@@ -32,7 +33,6 @@
 		E3E70312A2884E5EA8D92294 /* ConnectionPopup.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5B1E7BC89D8E3FC8678E979 /* ConnectionPopup.swift */; };
 		E766A8A621897E61A98C6EC2 /* HeadphoneModel in Frameworks */ = {isa = PBXBuildFile; productRef = D11F9DC88DDACE026C1BAE93 /* HeadphoneModel */; };
 		E80843557ADC5D34F74C47B8 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95BB0AFD5218FDDCF1F6DAB /* AppSettings.swift */; };
-		F125FB401F15103C6B4F376D /* StatusItemMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43C8C8C6F4A2B2BF22ED9BD /* StatusItemMenu.swift */; };
 		F3C5495A8F31D9DA79CC9BC7 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22A44C60BD66C3FC3B1A8B34 /* SettingsView.swift */; };
 		F8E13853253718D9A471C746 /* IOBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E3FAD409812AC26310D97661 /* IOBluetooth.framework */; };
 		FDCD271225078D0994CC81DA /* Profiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB21389603CDC1E949FC6D25 /* Profiles.swift */; };
@@ -79,6 +79,7 @@
 		7A837D05662D77D3D91B3C5F /* PanelPreviews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelPreviews.swift; sourceTree = "<group>"; };
 		A0A1D70B5F7ACD718F8431E5 /* EqualizerTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EqualizerTab.swift; sourceTree = "<group>"; };
 		A7BA4B97DEE65BACB7F355C9 /* QuietbarControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuietbarControls.swift; sourceTree = "<group>"; };
+		AA6765529F3829519180CD6F /* StatusBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBar.swift; sourceTree = "<group>"; };
 		BB21389603CDC1E949FC6D25 /* Profiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profiles.swift; sourceTree = "<group>"; };
 		BFDD4022653354E2552EB540 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		C191D66CBB722B4503ADE4CE /* ControlCenterBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlCenterBridge.swift; sourceTree = "<group>"; };
@@ -89,7 +90,6 @@
 		E689B6483FC7D446807B1524 /* DeviceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceController.swift; sourceTree = "<group>"; };
 		E95BB0AFD5218FDDCF1F6DAB /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		EFDDB74D13EAD0A8486AC2B8 /* QuietbarControls.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuietbarControls.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		F43C8C8C6F4A2B2BF22ED9BD /* StatusItemMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusItemMenu.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -142,7 +142,7 @@
 				6A5F3C7054A1D2754390EC94 /* QuietbarApp.swift */,
 				22A44C60BD66C3FC3B1A8B34 /* SettingsView.swift */,
 				621C215115C7F95676029BE6 /* Shortcuts.swift */,
-				F43C8C8C6F4A2B2BF22ED9BD /* StatusItemMenu.swift */,
+				AA6765529F3829519180CD6F /* StatusBar.swift */,
 				B54FFB63207BB3E28ACA9FAB /* Panel */,
 			);
 			path = Sources;
@@ -335,7 +335,7 @@
 				7D1AA783287C66799FDAA0C4 /* QuietbarApp.swift in Sources */,
 				F3C5495A8F31D9DA79CC9BC7 /* SettingsView.swift in Sources */,
 				AD9FC4A606565CED254FA8AE /* Shortcuts.swift in Sources */,
-				F125FB401F15103C6B4F376D /* StatusItemMenu.swift in Sources */,
+				55575B2ABBF47CF3559C7906 /* StatusBar.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

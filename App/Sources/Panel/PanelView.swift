@@ -79,6 +79,8 @@ struct PanelView: View {
     var entranceID = 0
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.panelSnapshot) private var snapshot
+    private var glass: Bool { panelUsesGlass(snapshot: snapshot) }
 
     var body: some View {
         VStack(spacing: 8) {
@@ -155,19 +157,33 @@ struct PanelView: View {
 
     // MARK: 2. Modo de som
 
+    @ViewBuilder
     private var soundModule: some View {
-        PanelModule {
-            ModeButtons(mode: state.mode, modes: state.modes, select: actions.setMode)
+        if glass {
+            // Como a Central de Controle: um bloco de vidro por modo; os ajustes do ambiente em outro.
+            ModeTiles(mode: state.mode, modes: state.modes, select: actions.setMode)
             if state.mode == .ambient {
-                VStack(spacing: 8) {
-                    CapsuleSlider(value: state.ambientLevel, range: 1...20, icon: "ear", label: "Nível do som ambiente",
-                                  commit: actions.setAmbient)
-                    ToggleRow(title: "Foco na voz", subtitle: "Deixa vozes mais claras que o resto",
-                              isOn: state.focusOnVoice, set: actions.setFocusOnVoice)
-                }
-                .padding(.top, 4)
-                .transition(.opacity.combined(with: .move(edge: .top)))
+                PanelModule { ambientControls }
+                    .transition(.opacity.combined(with: .move(edge: .top)))
             }
+        } else {
+            PanelModule {
+                ModeButtons(mode: state.mode, modes: state.modes, select: actions.setMode)
+                if state.mode == .ambient {
+                    ambientControls
+                        .padding(.top, 4)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+            }
+        }
+    }
+
+    private var ambientControls: some View {
+        VStack(spacing: 8) {
+            PanelSlider(value: state.ambientLevel, range: 1...20, icon: "ear", label: "Nível do som ambiente",
+                        commit: actions.setAmbient)
+            ToggleRow(title: "Foco na voz", subtitle: "Deixa vozes mais claras que o resto",
+                      isOn: state.focusOnVoice, set: actions.setFocusOnVoice)
         }
     }
 
@@ -222,7 +238,7 @@ struct PanelView: View {
                 Spacer()
             }
             if let v = state.volume {
-                CapsuleSlider(value: v, range: 0...30, icon: "speaker.wave.2.fill", label: "Volume", commit: actions.setVolume)
+                PanelSlider(value: v, range: 0...30, icon: "speaker.wave.2.fill", label: "Volume", commit: actions.setVolume)
             }
         }
     }
@@ -268,15 +284,29 @@ struct PanelView: View {
             Button(action: actions.openSettings) {
                 Label("Configurações…", systemImage: "gearshape")
             }
-            .buttonStyle(HoverButtonStyle(padding: 6))
+            .modifier(FooterButton())
             Spacer()
-            PanelMenu(icon: "ellipsis") {
+            PanelMenu(icon: "ellipsis", glass: glass) {
                 if state.link != .off { Button("Desconectar", action: actions.disconnect) }
                 Button("Sair do Quietbar", action: actions.quit)
             }
             .accessibilityLabel("Mais opções")
         }
         .padding(.horizontal, 2)
+    }
+}
+
+/// Botão do rodapé: cápsula de vidro no macOS 26+ (fica sobre a área de trabalho, como o
+/// "Editar Controles" da Central de Controle); sem chrome antes.
+private struct FooterButton: ViewModifier {
+    @Environment(\.panelSnapshot) private var snapshot
+
+    func body(content: Content) -> some View {
+        if #available(macOS 26, *), panelUsesGlass(snapshot: snapshot) {
+            content.buttonStyle(.glass).buttonBorderShape(.capsule)
+        } else {
+            content.buttonStyle(HoverButtonStyle(padding: 6))
+        }
     }
 }
 
@@ -341,6 +371,52 @@ struct ModeButtons: View {
     }
 }
 
+/// macOS 26+: um bloco de vidro por modo. O ativo tem o círculo branco com o símbolo na cor de
+/// destaque, como os botões ligados da Central de Controle.
+struct ModeTiles: View {
+    let mode: SoundMode?
+    var modes: [SoundMode] = SoundMode.allCases
+    let select: (SoundMode) -> Void
+    @Namespace private var ns
+
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach(modes, id: \.self) { m in
+                let on = m == mode
+                Button { select(m) } label: {
+                    VStack(spacing: 7) {
+                        ZStack {
+                            Circle().fill(Color.primary.opacity(0.10))
+                            if on {
+                                Circle().fill(Color.white)
+                                    .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
+                                    .matchedGeometryEffect(id: "active", in: ns)
+                            }
+                            Image(systemName: m.panelSymbol)
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(on ? Color.accentColor : Color.primary)
+                        }
+                        .frame(width: 38, height: 38)
+                        Text(m.panelLabel)
+                            .font(.caption.weight(on ? .semibold : .regular))
+                            .foregroundStyle(on ? .primary : .secondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                    .padding(.vertical, 11)
+                    .padding(.horizontal, 4)
+                    .frame(maxWidth: .infinity)
+                    .contentShape(.rect(cornerRadius: panelPlatterRadius))
+                }
+                .buttonStyle(.plain)
+                .modifier(PanelPlatter(interactive: true))
+                .accessibilityLabel(m.panelLabel)
+                .accessibilityAddTraits(on ? .isSelected : [])
+            }
+        }
+    }
+}
+
 struct ToggleRow: View {
     let title: LocalizedStringKey
     let subtitle: LocalizedStringKey
@@ -390,6 +466,8 @@ struct PanelSwitch: View {
 struct PanelMenu<Items: View>: View {
     var title: String? = nil
     var icon: String? = nil
+    /// Botão circular de vidro (rodapé no macOS 26+).
+    var glass = false
     @ViewBuilder let items: () -> Items
     @Environment(\.panelSnapshot) private var snapshot
 
@@ -405,6 +483,13 @@ struct PanelMenu<Items: View>: View {
     var body: some View {
         if snapshot {
             label
+        } else if #available(macOS 26, *), glass {
+            Menu { items() } label: { label }
+                .menuStyle(.button)
+                .buttonStyle(.glass)
+                .buttonBorderShape(.circle)
+                .menuIndicator(.hidden)
+                .fixedSize()
         } else {
             Menu { items() } label: { label }
                 .menuStyle(.borderlessButton)

@@ -19,7 +19,8 @@ struct QuietbarApp: App {
         ProfileEngine.shared.start()
         PopupController.shared.start()
         Self.prewarm3D()
-        StatusItemMenu.install()
+        StatusBar.shared.install()
+        DemoPanel.openIfRequested()
         ControlCenterBridge.start()
     }
 
@@ -44,13 +45,6 @@ struct QuietbarApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra {
-            MenuBarView().environment(device)
-        } label: {
-            MenuBarLabel().environment(device)
-        }
-        .menuBarExtraStyle(.window)
-
         Settings {
             SettingsView().environment(device)
         }

@@ -121,3 +121,31 @@ import SwiftUI
 #Preview("Carregando") { PanelView(state: PanelFixtures.loading) }
 #Preview("Modo claro") { PanelView(state: PanelFixtures.connected(.noiseCanceling)).preferredColorScheme(.light) }
 #Preview("Modo escuro") { PanelView(state: PanelFixtures.connected(.noiseCanceling)).preferredColorScheme(.dark) }
+
+/// `Quietbar --demo-panel <caso>`: o painel real da barra mostra um estado de exemplo e abre sozinho.
+/// Casos: nc (padrão), ambiente, desconectado, carregando, wf, clip.
+/// Serve para conferir o Liquid Glass (que o ImageRenderer não desenha) com `screencapture`.
+@MainActor enum DemoPanel {
+    static let state: PanelState? = {
+        guard let i = CommandLine.arguments.firstIndex(of: "--demo-panel") else { return nil }
+        let name = CommandLine.arguments.dropFirst(i + 1).first ?? "nc"
+        return switch name {
+        case "ambiente": PanelFixtures.connected(.ambient)
+        case "desconectado": PanelFixtures.disconnected
+        case "carregando": PanelFixtures.loading
+        case "wf": PanelFixtures.wf1000xm5
+        case "clip": PanelFixtures.linkBudsClip
+        default: PanelFixtures.connected(.noiseCanceling)
+        }
+    }()
+
+    /// `--demo-popup` mostra o popup de conexão com dados fictícios.
+    static func openIfRequested() {
+        let popup = CommandLine.arguments.contains("--demo-popup")
+        guard state != nil || popup else { return }
+        Task {
+            try? await Task.sleep(for: .seconds(1))
+            if popup { PopupController.shared.present(force: true, demo: PopupDemo()) } else { StatusBar.shared.openPanel() }
+        }
+    }
+}
