@@ -176,6 +176,7 @@ private func eventually(_ s: MDRSession, _ cond: @Sendable (MDRDeviceState) -> B
 
     @Test func alertResponse() async throws {
         let fake = FakeHeadphones()
+        await fake.configure { $0.echoSets = false } // o eco da resposta recriaria o alerta
         let s = MDRSession(channel: fake, options: fastOptions())
         try await s.connect()
         await fake.notify(.alert(messageType: 0x07, action: 0x01))
