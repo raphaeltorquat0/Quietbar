@@ -13,6 +13,7 @@ struct DeveloperTab: View {
             SimulatorSection()
             #endif
             DiagnosticsSection()
+            MacSoundDeveloperSection()
             PopupTestSection()
             ModelViewerSection()
             PairingScanSection()

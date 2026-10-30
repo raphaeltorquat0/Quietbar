@@ -1,6 +1,5 @@
 {
   "sourceLanguage": "pt-BR",
-  "version": "1.0",
   "strings": {
     "%lld%%, carregando": {
       "localizations": {
@@ -8,6 +7,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld%%, charging"
+          }
+        }
+      }
+    },
+    "Aguardando áudio": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for audio"
           }
         }
       }
@@ -38,6 +47,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Excited"
+          }
+        }
+      }
+    },
+    "Ativo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Active"
           }
         }
       }
@@ -128,6 +147,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Settings…"
+          }
+        }
+      }
+    },
+    "Correção": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Correction"
           }
         }
       }
@@ -252,6 +281,16 @@
         }
       }
     },
+    "Exige macOS 14.2 ou mais novo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Requires macOS 14.2 or later."
+          }
+        }
+      }
+    },
     "Faixa anterior": {
       "localizations": {
         "en": {
@@ -342,12 +381,32 @@
         }
       }
     },
+    "Mais grave": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More bass"
+          }
+        }
+      }
+    },
     "Mais opções": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "More options"
+          }
+        }
+      }
+    },
+    "Melhora o som do seu fone no Mac": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Improves your headphones' sound on your Mac"
           }
         }
       }
@@ -412,12 +471,32 @@
         }
       }
     },
+    "Pausado durante chamadas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paused during calls"
+          }
+        }
+      }
+    },
     "Pausar": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Pause"
+          }
+        }
+      }
+    },
+    "Personalizada": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom"
           }
         }
       }
@@ -452,12 +531,32 @@
         }
       }
     },
+    "Plano": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flat"
+          }
+        }
+      }
+    },
     "Predefinição %lld": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Preset %lld"
+          }
+        }
+      }
+    },
+    "Preset do Som no Mac": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mac Sound preset"
           }
         }
       }
@@ -492,12 +591,42 @@
         }
       }
     },
+    "Sem processamento: o áudio segue normal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not processing: audio plays normally"
+          }
+        }
+      }
+    },
+    "Som no Mac": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mac Sound"
+          }
+        }
+      }
+    },
     "Suave": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Mellow"
+          }
+        }
+      }
+    },
+    "Só atua quando o fone é a saída do Mac": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only works when the headphones are the Mac's output"
           }
         }
       }
@@ -531,6 +660,17 @@
           }
         }
       }
+    },
+    "Voz": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voice"
+          }
+        }
+      }
     }
-  }
+  },
+  "version": "1.0"
 }

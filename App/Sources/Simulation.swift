@@ -14,6 +14,7 @@ import SwiftUI
     private(set) var transport: VirtualTransport?
     private(set) var running: Scenario?
     private(set) var result: String?
+    @ObservationIgnored private var window: NSWindow?
 
     func start(_ profile: DeviceProfile) async {
         self.profile = profile
@@ -57,7 +58,15 @@ import SwiftUI
             await start(profile)
             try? await Task.sleep(for: .seconds(1))
             NSApp.activate() // aberto pelo terminal: sem isso, o painel perde o foco e fecha
-            StatusBar.shared.openPanel()
+            if args.contains("--mac-sound-window") { // a aba numa janela própria, para conferir com `screencapture -l`
+                let w = NSWindow(contentRect: NSRect(x: 200, y: 100, width: 560, height: 900), styleMask: [.titled], backing: .buffered, defer: false)
+                w.contentView = NSHostingView(rootView: MacSoundTab().environment(DeviceController.shared))
+                w.level = .floating
+                w.makeKeyAndOrderFront(nil)
+                window = w
+            } else {
+                StatusBar.shared.openPanel()
+            }
             try? await Task.sleep(for: .seconds(1))
             if let scenario { await run(scenario) }
         }

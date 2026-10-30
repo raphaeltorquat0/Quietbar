@@ -43,6 +43,17 @@ struct PanelState {
     var dseeTitle = "DSEE Extreme"
     var dseeAvailable = true
 
+    /// Bloco "Som no Mac": só existe com o fone controlado como saída de áudio.
+    var macSound: MacSoundBlock?
+
+    struct MacSoundBlock {
+        struct Preset: Identifiable { let id: String; let name: String; let available: Bool }
+        var enabled = false
+        var presetID = ""
+        var status = ""
+        var presets: [Preset] = []
+    }
+
     var showPlayback = false
     var isPlaying = false
     var volume: Int?
@@ -71,6 +82,8 @@ struct PanelActions {
     var setPreset: @MainActor @Sendable (UInt8) -> Void = { _ in }
     var setSpeakToChat: @MainActor @Sendable (Bool) -> Void = { _ in }
     var setDSEE: @MainActor @Sendable (Bool) -> Void = { _ in }
+    var setMacSound: @MainActor @Sendable (Bool) -> Void = { _ in }
+    var setMacPreset: @MainActor @Sendable (String) -> Void = { _ in }
     var previous: @MainActor @Sendable () -> Void = {}
     var playPause: @MainActor @Sendable () -> Void = {}
     var next: @MainActor @Sendable () -> Void = {}
@@ -106,6 +119,7 @@ struct PanelView: View {
             case .disconnected(let message):
                 disconnectedModule(message)
             }
+            if let m = state.macSound { macSoundModule(m) }
             footer
         }
         .padding(14)
@@ -224,6 +238,25 @@ struct PanelView: View {
             if let dsee = state.dsee {
                 ToggleRow(title: LocalizedStringKey(state.dseeTitle), subtitle: "Melhora áudio comprimido", isOn: dsee, set: actions.setDSEE)
                     .disabled(!state.dseeAvailable)
+            }
+        }
+    }
+
+    // MARK: Som no Mac
+
+    private func macSoundModule(_ m: PanelState.MacSoundBlock) -> some View {
+        PanelModule {
+            ToggleRow(title: "Som no Mac", subtitle: "Melhora o som do seu fone no Mac", isOn: m.enabled, set: actions.setMacSound)
+            HStack(spacing: 6) {
+                PanelMenu(title: m.presets.first { $0.id == m.presetID }?.name ?? "—") {
+                    ForEach(m.presets) { p in
+                        Toggle(p.name, isOn: Binding(get: { p.id == m.presetID }, set: { _ in actions.setMacPreset(p.id) }))
+                            .disabled(!p.available)
+                    }
+                }
+                .accessibilityLabel("Preset do Som no Mac")
+                Spacer()
+                if m.enabled { Text(verbatim: m.status).font(.caption).foregroundStyle(.secondary).lineLimit(1) }
             }
         }
     }

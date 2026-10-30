@@ -31,7 +31,10 @@ final class DeviceController {
     var selectedAddress: String? {
         didSet {
             UserDefaults.standard.set(selectedAddress, forKey: "selectedAddress")
-            if oldValue != selectedAddress { Task { await reset() } }
+            if oldValue != selectedAddress {
+                MacSound.shared.targetChanged(selectedAddress)
+                Task { await reset() }
+            }
         }
     }
 

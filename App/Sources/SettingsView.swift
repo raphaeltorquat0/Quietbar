@@ -13,6 +13,7 @@ struct SettingsView: View {
             GeneralTab().tabItem { Label("Geral", systemImage: "headphones") }.tag("general")
             SoundTab().tabItem { Label("Som", systemImage: "waveform") }.tag("sound")
             EqualizerTab().tabItem { Label("Equalizador", systemImage: "slider.vertical.3") }.tag("eq")
+            MacSoundTab().tabItem { Label("Som no Mac", systemImage: "waveform.badge.magnifyingglass") }.tag("macsound")
             ControlsTab().tabItem { Label("Controles", systemImage: "hand.tap") }.tag("controls")
             ShortcutsTab().tabItem { Label("Atalhos", systemImage: "keyboard") }.tag("shortcuts")
             ProfilesTab().tabItem { Label("Perfis", systemImage: "person.crop.rectangle.stack") }.tag("profiles")

@@ -6,6 +6,8 @@ import SwiftUI
 
 enum ShortcutAction: String, CaseIterable, Codable, Identifiable {
     case toggleNcAmbient, cycleMode, noiseCanceling, ambient, off, focusOnVoice, playPause, showPopup
+    // Sempre no fim: o ID do atalho registrado é o índice aqui.
+    case toggleMacSound
 
     var id: String { rawValue }
 
@@ -19,11 +21,13 @@ enum ShortcutAction: String, CaseIterable, Codable, Identifiable {
         case .focusOnVoice: "Alternar Focus on Voice"
         case .playPause: "Play / pausa"
         case .showPopup: "Mostrar o popup do fone"
+        case .toggleMacSound: "Ligar ou desligar o Som no Mac"
         }
     }
 
     @MainActor func run(_ device: DeviceController) {
         if self == .showPopup { return PopupController.shared.present() }
+        if self == .toggleMacSound { return MacSound.shared.toggle() }
         device.perform { s in
             let st = await s.state
             let mode = st.noiseControl?.soundMode
@@ -37,7 +41,7 @@ enum ShortcutAction: String, CaseIterable, Codable, Identifiable {
             case .off: try await s.setSoundMode(.off)
             case .focusOnVoice: try await s.setNoiseControl { $0.soundMode = .ambient; $0.focusOnVoice.toggle() }
             case .playPause: try await s.playback(st.playback?.isPlaying == true ? .pause : .play)
-            case .showPopup: break
+            case .showPopup, .toggleMacSound: break
             }
         }
     }

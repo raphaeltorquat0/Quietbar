@@ -22,6 +22,14 @@ struct Profile: Codable, Hashable, Identifiable {
     var focusOnVoice: Bool?
     var equalizerPresetID: UInt8?
     var speakToChat: Bool?
+    /// Som no Mac ligado/desligado e preset; opcionais, então perfis antigos continuam lendo.
+    var macSound: Bool?
+    var macPreset: String?
+
+    /// Só abre o canal com o fone se houver o que mudar nele.
+    var changesHeadphone: Bool {
+        soundMode != nil || ambientLevel != nil || focusOnVoice != nil || equalizerPresetID != nil || speakToChat != nil
+    }
 
     var triggerLabel: String {
         switch trigger {
@@ -105,7 +113,8 @@ final class ProfileEngine: NSObject {
             return
         }
         activeProfileID = match.id
-        DeviceController.shared.perform { try await match.apply($0) }
+        MacSound.shared.apply(enabled: match.macSound, preset: match.macPreset)
+        if match.changesHeadphone { DeviceController.shared.perform { try await match.apply($0) } }
     }
 }
 
@@ -220,6 +229,15 @@ struct ProfileEditor: View {
                     }
                 }
                 optionalBool("Speak-to-Chat", $profile.speakToChat)
+            }
+            if MacSound.shared.available {
+                Section("Som no Mac") {
+                    optionalBool("Processamento", $profile.macSound)
+                    Picker("Preset", selection: $profile.macPreset) {
+                        Text("Não alterar").tag(String?.none)
+                        ForEach(MacPreset.allCases) { Text($0.label).tag(String?.some($0.rawValue)) }
+                    }
+                }
             }
         }
         .formStyle(.grouped)
