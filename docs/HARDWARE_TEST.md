@@ -17,6 +17,7 @@ Os SETs abaixo podem ser feitos pelo app (painel/Configurações) ou, para quem 
 | `dump --log-hex --trace` somente leitura: 58 frames recebidos, só GET enviado | OK, 8 de 8 rodadas | 2026-10-30 |
 | App `--selftest` sem App Sandbox | `phase=ready` | 2026-10-29 |
 | App `--selftest` com App Sandbox | `phase=ready` | 2026-10-29 |
+| Escrita, reflexo no app e Som no Mac no fone real ([relatório](test-runs/2026-10-30-xm5.md)) | OK, com as ressalvas do relatório | 2026-10-30 |
 | Ícone da barra (macOS 27, sem fone): clique abre/fecha o painel, clique fora e Esc fecham; clique direito e Option-clique mostram o menu curto (com Option, "Ferramentas de desenvolvedor…"); "Configurações do fone…" abre as Configurações mesmo antes de o painel abrir | OK (era o item 21) | 2026-10-29 |
 
 ## A verificar (escreve no fone)
@@ -63,11 +64,11 @@ scripts/sanitize-capture.sh captures/wh1000xm5/escrita.log wh-1000xm5-2.5.1-escr
 | 4 | `set dsee on` / `off` | relido igual |
 | 5 | `set stc on`, `set stc-sens high`, `set stc-time short` | Speak-to-Chat responde à voz |
 | 6 | `set autopause off` / `on` | tirar o fone não pausa / pausa |
-| 7 | **`set autooff 15m`** | **relido = 15m** — confirma a escolha "último byte `00`" (DECISIONS #6) |
+| 7 | `set autooff never` / `removed` | relido igual. No XM5 fw 2.5.1 só existem essas duas opções (`autooff-options`) |
 | 8 | **`set multipoint off`** / `on` | fone pede confirmação; CLI responde positivo; relido igual (DECISIONS #7) |
 | 9 | `set touch off` / `on` | toque no painel deixa de / volta a funcionar |
 | 10 | `set priority stability` / `quality` | relido igual |
-| 11 | `set volume 10` | volume muda no fone |
+| 11 | `set volume 10` | volume muda no fone. Com áudio do Mac, o volume do Mac volta a valer no fluxo seguinte: ajuste os dois para restaurar |
 | 12 | `set play`, `pause`, `next`, `prev` | mídia do sistema responde |
 | 13 | App: alerta de bateria baixa com threshold acima da carga atual | notificação aparece uma vez |
 | 14 | App sandbox: perfil por Wi-Fi | troca de rede aplica o perfil (pede localização) |

@@ -76,7 +76,9 @@ No fluxo padrão, o diálogo vem do `coreaudiod`, quando o áudio começa a toca
 | Cadeia sozinha, offline | **0,6% de um núcleo** | < 2% | `mdr-cli audio-probe --bench` |
 | Original com a tap mutando | **0,0000** | zero | Teste de eco, com o tom a 0,1 |
 
-Medido em 2026-10-30 num Apple M2 Pro, no dispositivo virtual `Steam Streaming Speakers`, pelo `mdr-cli`. **Falta medir no fone por Bluetooth**, onde o HAL pode impor um buffer maior, e num Apple Silicon base. A aba Desenvolvedor mostra os mesmos números ao vivo.
+Medido em 2026-10-30 num Apple M2 Pro, no dispositivo virtual `Steam Streaming Speakers`, pelo `mdr-cli`. A aba Desenvolvedor mostra os mesmos números ao vivo. Falta medir num Apple Silicon base.
+
+No WH-1000XM5 real, por Bluetooth AAC a 44,1 kHz, deu o mesmo buffer de 256 quadros: 11,61 ms e CPU de 0,90 a 1,03% ([relatório](test-runs/2026-10-30-xm5.md)). Esse número vem dos carimbos do HAL e não inclui o enlace: o próprio fone informa cerca de 203 ms, que existem com ou sem o Quietbar.
 
 ## Limitações
 
