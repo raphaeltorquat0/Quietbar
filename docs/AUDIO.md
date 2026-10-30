@@ -82,7 +82,7 @@ Medido em 2026-10-30 num Apple M2 Pro, no dispositivo virtual `Steam Streaming S
 
 - Exige macOS 14.2; antes disso o recurso não aparece.
 - O pedido de permissão só sai do botão do onboarding. Quando o diálogo veio do `coreaudiod`, ele parou de atender clientes novos enquanto estava aberto. Agora o pedido vem do app (`DECISIONS.md` #106), mas isso só se confirma no primeiro clique real, por isso o aviso continua.
-- **O app não mede o som antes da permissão.** Só a tap lê o nível, e a tap sem permissão é o que abre o diálogo. Com um app de saída aberta, o botão mostra o nome dele e **Continuar mesmo assim**, sem saber se está tocando ou em silêncio (`DECISIONS.md` #111).
+- **O app não confere se há som antes de pedir.** Só a tap lê o nível, e a tap sem permissão é o que abre o diálogo. O onboarding traz uma instrução fixa: pausar o áudio e responder ao diálogo na hora (`DECISIONS.md` #111).
 - Em build ad-hoc, cada atualização é uma identidade nova para o macOS: a permissão some e o Som no Mac espera o botão de novo.
 - Modo chamada (HFP, mono) não é processado. O bloco mostra "Pausado durante chamadas".
 - No começo de cada áudio, e depois de 5 s de silêncio, a primeira fração de segundo sai sem processamento.
@@ -126,4 +126,4 @@ JSON próprio:
 
 `swift test --filter QuietAudioTests --skip CoreAudioTests`. Resposta de cada filtro contra a fórmula analógica, pré-amplificação, limitador, bypass, zipper, render offline de arquivo e máquina de estados com dispositivos falsos rodam sem hardware. `SystemPermissionTests` injeta símbolos ausentes e funções falsas, sem tocar no TCC. `CoreAudioTests` precisa de Core Audio real e de um dispositivo com loopback, e é pulado no CI com o motivo. Ele monta tap: rode só com a permissão já concedida ao terminal, porque sem ela o sistema abre o diálogo.
 
-No app, em Debug, `Quietbar --simulate WH-1000XM5 --no-tcc-symbols --mac-sound-window` simula um macOS sem os símbolos, e `--demo-curve-import` mostra o aviso e o import sem clicar no botão de permissão.
+No app, em Debug, `Quietbar --simulate WH-1000XM5 --no-tcc-symbols --mac-sound-window` simula um macOS sem os símbolos, e `--demo-curve-import` mostra o import sem abrir a página no navegador.

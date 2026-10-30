@@ -51,8 +51,6 @@ final class MacSound {
     private(set) var asking = false
     /// Resultado do último clique no botão de pedir a permissão.
     private(set) var askMessage: String?
-    /// Nomes dos apps com a saída aberta, à espera de "Continuar mesmo assim". Vazio: não se sabe quais.
-    private(set) var openOutputs: [String]?
     /// Sem os símbolos do TCC, o usuário clicou para ligar e deixar o macOS pedir. Vale só nesta execução:
     /// gravado, um update ad-hoc abriria o diálogo ao iniciar, sem clique (DECISIONS.md #112).
     private(set) var systemFlowAccepted = false
@@ -115,10 +113,7 @@ final class MacSound {
             engine = nil // sem process taps
         }
         #if DEBUG
-        if CommandLine.arguments.contains("--demo-curve-import") { // para ver o aviso e o import sem clicar no botão de permissão
-            openOutputs = ["WhatsApp"]
-            curvePageOpened = true
-        }
+        if CommandLine.arguments.contains("--demo-curve-import") { curvePageOpened = true } // sem abrir a página no navegador
         #endif
     }
 
@@ -159,43 +154,27 @@ final class MacSound {
         if canProcess { enabled.toggle() } else { StatusBar.openSettingsWindow(tab: "macsound") }
     }
 
-    /// Único caminho que abre o diálogo: chamado pelos botões do onboarding. Sem resposta, não tenta de novo.
-    /// `confirmed`: o usuário viu o aviso de saída aberta e escolheu continuar.
-    func requestPermission(confirmed: Bool = false) {
+    /// Único caminho que abre o diálogo: chamado pelo botão do onboarding. Sem resposta, não tenta de novo.
+    func requestPermission() {
         guard !asking else { return }
         askMessage = nil
-        openOutputs = nil
+        guard permission != .unavailable else {
+            systemFlowAccepted = true
+            ProtocolLog.shared.note("Som no Mac: ligado pelo fluxo padrão do macOS, a pedido do usuário.")
+            enabled = true
+            return syncEngine()
+        }
+        asking = true
+        permissions.request(.audioCapture) { granted in
+            Task { @MainActor in MacSound.shared.answered(granted) }
+        }
         Task {
-            let outputs = confirmed ? nil : await Task.detached { AudioDevices.playingApps() }.value
-            switch SystemPermission.route(permission, openOutputs: outputs, confirmed: confirmed) {
-            case .warn(let apps):
-                openOutputs = Self.appNames(apps)
-            case .systemFlow:
-                systemFlowAccepted = true
-                ProtocolLog.shared.note("Som no Mac: ligado pelo fluxo padrão do macOS, a pedido do usuário.")
-                enabled = true
-                syncEngine()
-            case .request:
-                asking = true
-                permissions.request(.audioCapture) { granted in
-                    Task { @MainActor in MacSound.shared.answered(granted) }
-                }
-                try? await Task.sleep(for: Self.askTimeout)
-                if asking {
-                    asking = false
-                    askMessage = String(localized: "Sem resposta ao pedido. O Quietbar não vai pedir de novo sozinho.")
-                }
+            try? await Task.sleep(for: Self.askTimeout)
+            if asking {
+                asking = false
+                askMessage = String(localized: "Sem resposta ao pedido. O Quietbar não vai pedir de novo sozinho.")
             }
         }
-    }
-
-    /// Nome que o usuário reconhece, sem repetir os processos auxiliares de um mesmo app.
-    private static func appNames(_ bundleIDs: [String]) -> [String] {
-        var seen = Set<String>()
-        return bundleIDs.map { id in
-            NSRunningApplication.runningApplications(withBundleIdentifier: id).first?.localizedName
-                ?? id.split(separator: ".").last.map(String.init) ?? String(localized: "Processo do sistema")
-        }.filter { seen.insert($0).inserted }
     }
 
     private func answered(_ granted: Bool) {

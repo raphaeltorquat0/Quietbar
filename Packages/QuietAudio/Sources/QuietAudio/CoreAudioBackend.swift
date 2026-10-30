@@ -88,17 +88,6 @@ public enum AudioDevices {
                 && channelCount($0, kAudioObjectPropertyScopeInput) > 0 && channelCount($0, kAudioObjectPropertyScopeOutput) > 0
         }.map(describe)
     }
-
-    /// Bundle IDs dos outros apps com a saída de áudio aberta. `nil` se o sistema não respondeu:
-    /// quem decide pedir a permissão trata isso como "pode haver áudio".
-    public static func playingApps() -> [String]? {
-        let processes = objects(kAudioHardwarePropertyProcessObjectList)
-        guard !processes.isEmpty else { return nil }
-        let me = ProcessInfo.processInfo.processIdentifier
-        return processes.filter {
-            read($0, kAudioProcessPropertyIsRunningOutput, default: UInt32(0)) != 0 && read($0, kAudioProcessPropertyPID, default: pid_t(0)) != me
-        }.map { readString($0, kAudioProcessPropertyBundleID) }
-    }
 }
 
 /// Tap escopada no dispositivo + aggregate privado + IOProc. Só `arm` silencia o original.

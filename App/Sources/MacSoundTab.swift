@@ -45,13 +45,6 @@ struct MacSoundTab: View {
                     .buttonStyle(.borderedProminent)
                     .disabled(sound.asking)
             }
-            if let apps = sound.openOutputs {
-                Text(apps.isEmpty ? String(localized: "O macOS não informou quais apps estão usando a saída de áudio.")
-                                  : String(localized: "Com a saída de áudio aberta: \(apps.formatted(.list(type: .and)))."))
-                Text("Antes da permissão, o Quietbar não consegue medir se há som. Se algo estiver tocando, pause. Se estiver em silêncio, pode continuar.")
-                    .font(.caption).foregroundStyle(.secondary)
-                Button("Continuar mesmo assim") { sound.requestPermission(confirmed: true) }
-            }
             if let m = sound.askMessage { Text(m).font(.caption).foregroundStyle(.orange) }
         }
     }

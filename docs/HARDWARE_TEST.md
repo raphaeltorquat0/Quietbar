@@ -96,7 +96,7 @@ O pedido de permissão só sai do botão do onboarding. **Pause tudo antes e res
 
 | # | Ação | Esperado |
 |---|---|---|
-| 0 | Com um app de saída aberta, tocando ou não, clique em "Pedir permissão e ligar" | Aparece o nome do app e "Continuar mesmo assim"; nenhum diálogo abre até esse clique |
+| 0 | Abra a aba Som no Mac, sem clicar em nada | A instrução de pausar o áudio e responder na hora aparece no onboarding; nenhum diálogo abre |
 | 1 | Pause tudo, clique no botão e responda **Permitir** | Estado vai para "Aguardando áudio"; nada muda no som. Enquanto o diálogo estiver aberto, confira se outro app ainda consegue começar a tocar |
 | 2 | Toque música | Em menos de 1 s o Estado vira "Ativo"; sem estalo nem eco |
 | 3 | Preset "Mais grave", depois "Plano" | Grave muda sem clique nem chiado durante a troca |

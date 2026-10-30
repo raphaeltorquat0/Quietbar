@@ -78,27 +78,3 @@ import Testing
         #expect(d.string(forKey: "tccCallInFlight") == nil)
     }
 }
-
-@Suite struct PermissionRouteTests {
-    @Test func nothingOpenGoesStraightToTheRequest() {
-        #expect(SystemPermission.route(.notAsked, openOutputs: [], confirmed: false) == .request)
-    }
-
-    @Test func openOutputWarnsAndNamesTheApp() {
-        #expect(SystemPermission.route(.notAsked, openOutputs: ["WhatsApp"], confirmed: false) == .warn(apps: ["WhatsApp"]))
-    }
-
-    @Test func noAnswerFromTheSystemAlsoWarns() {
-        #expect(SystemPermission.route(.notAsked, openOutputs: nil, confirmed: false) == .warn(apps: []))
-    }
-
-    @Test func continueAnywayPassesTheWarning() {
-        #expect(SystemPermission.route(.notAsked, openOutputs: nil, confirmed: true) == .request)
-    }
-
-    @Test func withoutSymbolsUsesTheSystemFlowAfterTheSameWarning() {
-        #expect(SystemPermission.route(.unavailable, openOutputs: ["Música"], confirmed: false) == .warn(apps: ["Música"]))
-        #expect(SystemPermission.route(.unavailable, openOutputs: nil, confirmed: true) == .systemFlow)
-        #expect(SystemPermission.route(.unavailable, openOutputs: [], confirmed: false) == .systemFlow)
-    }
-}

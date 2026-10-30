@@ -13,22 +13,6 @@ public final class SystemPermission: @unchecked Sendable {
 
     public enum Status: Equatable, Sendable { case granted, denied, notAsked, unavailable }
 
-    /// O que o clique no botão do onboarding faz.
-    public enum Route: Equatable, Sendable {
-        case request
-        /// Sem os símbolos: ligar a tap e deixar o macOS pedir.
-        case systemFlow
-        /// Há apps com a saída aberta, ou o sistema não disse. Vazio: não se sabe quais.
-        case warn(apps: [String])
-    }
-
-    /// `openOutputs` nil: o sistema não respondeu. Nível de áudio não entra aqui: sem a permissão, nada
-    /// no sistema distingue saída aberta em silêncio de som tocando (DECISIONS.md #111).
-    public static func route(_ status: Status, openOutputs: [String]?, confirmed: Bool) -> Route {
-        if !confirmed, openOutputs != [] { return .warn(apps: openOutputs ?? []) }
-        return status == .unavailable ? .systemFlow : .request
-    }
-
     /// Resolve um símbolo pelo nome. Os testes injetam a falha aqui.
     public typealias Lookup = @Sendable (String) -> UnsafeMutableRawPointer?
 

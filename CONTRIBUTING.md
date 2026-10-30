@@ -34,5 +34,5 @@ These rules apply to people and to AI coding agents alike.
 
 - **Never capture the whole screen.** Capture only the app's own windows, by ID (`screencapture -l <id>`). If a capture picks up content from other apps, delete the file right away and mention it when you report the work.
 - **Never trigger a permission prompt in a test.** Tests must not request audio capture, the microphone or any other permission, by a direct request or as a side effect such as starting a process tap without the permission. While the audio prompt is open, `coreaudiod` stops serving new clients and other apps can't start playing sound. Only a person triggers it, with the onboarding button.
-- Use fakes instead. `SystemPermissionTests` injects missing symbols and fake functions, and `--no-tcc-symbols` and `--demo-curve-import` show those states in a Debug build without touching the button.
+- Use fakes instead. `SystemPermissionTests` injects missing symbols and fake functions, and `--no-tcc-symbols` shows that state in a Debug build without touching the button. `--demo-curve-import` shows the curve import without opening the browser.
 - `CoreAudioTests` starts real taps. Unless your terminal already has the permission, skip it: `swift test --skip CoreAudioTests`.
