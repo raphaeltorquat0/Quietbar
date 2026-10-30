@@ -158,6 +158,7 @@ Nada do dia a dia precisa dele. `swift build -c release` gera `.build/release/md
 - [`docs/RELEASING.md`](docs/RELEASING.md) — como assinar, notarizar e publicar
 - [`docs/GATEKEEPER_TEST.md`](docs/GATEKEEPER_TEST.md) — roteiro da primeira abertura após um download real
 - [`Packages/MDRKit`](Packages/MDRKit/README.md) — o protocolo como pacote Swift independente
+- [`docs/SIMULATOR.md`](docs/SIMULATOR.md) — simulador de fones para desenvolver sem hardware, com a fidelidade de cada modelo
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) e [`SECURITY.md`](SECURITY.md) — como contribuir e reportar vulnerabilidades
 
 ## Créditos
