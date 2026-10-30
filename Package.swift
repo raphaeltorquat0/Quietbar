@@ -9,6 +9,7 @@ let package = Package(
         .library(name: "MDRTransport", targets: ["MDRTransport"]),
         .library(name: "MDRSession", targets: ["MDRSession"]),
         .library(name: "HeadphoneModel", targets: ["HeadphoneModel"]),
+        .library(name: "MDRSimulator", targets: ["MDRSimulator"]),
         .executable(name: "mdr-cli", targets: ["mdr-cli"]),
     ],
     targets: [
@@ -24,6 +25,11 @@ let package = Package(
 
         .target(name: "MDRSession", dependencies: ["MDRKit"], path: "Packages/MDRSession/Sources/MDRSession"),
         .testTarget(name: "MDRSessionTests", dependencies: ["MDRSession"], path: "Packages/MDRSession/Tests/MDRSessionTests"),
+
+        // Ferramenta de desenvolvimento e teste: nunca entra no binário de release (DECISIONS.md #83).
+        .target(name: "MDRSimulator", dependencies: ["MDRKit"], path: "Packages/MDRSimulator/Sources/MDRSimulator"),
+        .testTarget(name: "MDRSimulatorTests", dependencies: ["MDRSimulator", "MDRSession", "MDRKit"],
+                    path: "Packages/MDRSimulator/Tests/MDRSimulatorTests"),
 
         .target(name: "HeadphoneModel", dependencies: ["MDRKit"], path: "Packages/HeadphoneModel/Sources/HeadphoneModel"),
         .testTarget(name: "HeadphoneModelTests", dependencies: ["HeadphoneModel", "MDRKit"], path: "Packages/HeadphoneModel/Tests/HeadphoneModelTests"),

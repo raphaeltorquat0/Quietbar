@@ -174,8 +174,51 @@ private func eventually(_ s: MDRSession, _ cond: @Sendable (MDRDeviceState) -> B
         #expect(await fake.maxInFlight == 1)
     }
 
+    /// Reproduz o dump que falhava: o primeiro pedido de abertura se perde e nada chega ao fone.
+    @Test func retriesWhenTheOpenRequestIsLost() async throws {
+        let fake = FakeHeadphones()
+        await fake.configure { $0.openTimeouts = 2 }
+        let s = MDRSession(channel: fake, options: fastOptions())
+        try await s.connect()
+        #expect(await s.phase == .ready)
+        #expect(await fake.openCalls == 3)
+    }
+
+    @Test func givesUpAfterTheLastOpenAttempt() async throws {
+        let fake = FakeHeadphones()
+        await fake.configure { $0.openTimeouts = 3 }
+        let s = MDRSession(channel: fake, options: fastOptions())
+        await #expect(throws: MDRChannelOpenTimeout.self) { try await s.connect() }
+        #expect(await fake.openCalls == 3)
+        if case .failed = await s.phase {} else { Issue.record("a sessão deveria falhar") }
+    }
+
+    @Test func doesNotRetryAPermanentOpenError() async throws {
+        struct NoService: Error {}
+        let fake = FakeHeadphones()
+        await fake.configure { $0.openError = NoService() }
+        let s = MDRSession(channel: fake, options: fastOptions())
+        await #expect(throws: NoService.self) { try await s.connect() }
+        #expect(await fake.openCalls == 1)
+    }
+
+    /// `dump` e `get` rodam contra o fone real: nada além de GET pode sair.
+    @Test func readOnlySendsOnlyGets() async throws {
+        let fake = FakeHeadphones()
+        var options = fastOptions()
+        options.readOnly = true
+        let s = MDRSession(channel: fake, options: options)
+        try await s.connect()
+        let sent = await fake.received
+        #expect(!sent.isEmpty)
+        #expect(sent.allSatisfy { MDRCommand($0.payload).isRead }, "\(sent.map(\.payload))")
+        await #expect(throws: MDRSessionError.self) { try await s.setDSEE(true) }
+        #expect(await fake.received.count == sent.count)
+    }
+
     @Test func alertResponse() async throws {
         let fake = FakeHeadphones()
+        await fake.configure { $0.echoSets = false } // o eco da resposta recriaria o alerta
         let s = MDRSession(channel: fake, options: fastOptions())
         try await s.connect()
         await fake.notify(.alert(messageType: 0x07, action: 0x01))

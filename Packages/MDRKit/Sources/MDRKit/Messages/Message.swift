@@ -15,6 +15,13 @@ public struct MDRCommand: Hashable, Sendable, CustomStringConvertible {
     }
 
     public var description: String { "\(table) " + payload.hex }
+
+    /// `true` só para GET: não altera nada no fone (`docs/PROTOCOL.md` §3.1 e §3.2).
+    public var isRead: Bool {
+        guard let cmd = payload.first else { return false }
+        if cmd < 0x10 { return cmd & 1 == 0 }
+        return [0x0, 0x2, 0x6, 0xA].contains(cmd & 0x0F)
+    }
 }
 
 // MARK: - Códigos de comando (docs/PROTOCOL.md §3.1)

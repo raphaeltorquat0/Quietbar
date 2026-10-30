@@ -201,13 +201,15 @@ struct PopupView: View {
 
     @ViewBuilder
     private func visual(level: Double?, mode: SoundMode?, settings: AppSettings) -> some View {
-        if model.demo == nil, device.state.capabilities.isEarbuds, CustomMedia.modelURL == nil, CustomMedia.image == nil {
+        let name = model.demo == nil ? device.state.modelName : nil
+        if model.demo == nil, device.state.capabilities.isEarbuds, !hasEarbudsModel(name), CustomMedia.modelURL == nil, CustomMedia.image == nil {
             EarbudsVisual()
         } else if failed3D || !settings.popupUse3D {
             HeadphoneIllustration(battery: shownBattery, accent: Color(nsColor: settings.ringNSColor), image: CustomMedia.image)
         } else {
-            HeadphoneView(battery: level, mode: mode, accent: settings.ringAccent, customModel: CustomMedia.modelURL,
+            HeadphoneView(battery: level, mode: mode, accent: settings.ringAccent, model: name, customModel: CustomMedia.modelURL,
                           entranceID: model.entrance, idleRotation: false, lightRing: settings.modelLightRing) { failed3D = true }
+                .id(name)
         }
     }
 

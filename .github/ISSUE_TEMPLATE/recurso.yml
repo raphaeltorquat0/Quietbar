@@ -1,0 +1,14 @@
+name: Feature request / Pedido de recurso
+description: Suggest an improvement. / Sugira uma melhoria.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What do you want to do? / O que você quer fazer?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How should it work? / Como deveria funcionar?

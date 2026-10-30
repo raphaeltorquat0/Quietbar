@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-and-build:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fixtures sem identificadores
+        run: |
+          scripts/sanitize-capture.sh --check
+          git diff --exit-code Packages/MDRSimulator/Sources/MDRSimulator/Profiles/CapturedFrames.generated.swift
+      - name: Testes
+        run: make test
+      - name: Build
+        run: scripts/build-app.sh

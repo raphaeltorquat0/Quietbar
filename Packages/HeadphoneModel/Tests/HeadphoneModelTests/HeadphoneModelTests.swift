@@ -5,8 +5,38 @@ import MDRKit
 import simd
 import Testing
 
+/// `CI` é definida pelo GitHub Actions: os runners são VMs sem GPU garantida e com tempo instável.
+private let onCI = ProcessInfo.processInfo.environment["CI"] != nil
+
 @Suite struct HeadphoneModelTests {
     let root = HeadphoneAssembly.build(.default)
+
+    @Test func modelIsChosenByReportedName() {
+        #expect(HeadphoneSpec.forModel("WH-1000XM6") == .wh1000xm6)
+        #expect(HeadphoneSpec.forModel("WF-LS900N") == .linkBudsS)
+        #expect(HeadphoneSpec.forModel("LinkBuds S") == .linkBudsS)
+        #expect(HeadphoneSpec.forModel("WH-1000XM5") == nil)
+        #expect(HeadphoneSpec.forModel("WF-1000XM5") == nil)
+    }
+
+    @Test(arguments: [HeadphoneSpec.wh1000xm6, .linkBudsS])
+    func otherModelsAreWellFormedAndCentered(_ s: HeadphoneSpec) {
+        let root = HeadphoneAssembly.build(s)
+        #expect(root.triangleCount > 1000)
+        root.visit { _, _ in }
+        let b = root.bounds
+        #expect(simd_length((b.min + b.max) / 2) < 1e-4)
+        #expect(b.max.y - b.min.y > 0.1, "precisa preencher o enquadramento da câmera")
+    }
+
+    @MainActor @Test func rigRunsOnEarbudsWithoutOverEarParts() {
+        let rig = HeadphoneRig(spec: .linkBudsS)
+        rig.setSoundMode(.ambient)
+        rig.setBattery(0.5)
+        rig.playEntrance()
+        rig.settle()
+        rig.stop()
+    }
 
     @Test func triangleBudget() {
         var withRing = HeadphoneSpec.default
@@ -61,7 +91,8 @@ import Testing
         #expect(abs(b.max.x + b.min.x) < 1e-4)
     }
 
-    @Test func generationIsFast() {
+    @Test(.disabled(if: onCI, "Mede tempo de geração; a VM do CI não tem desempenho previsível"))
+    func generationIsFast() {
         _ = HeadphoneAssembly.build(.default) // aquece
         let t0 = Date()
         _ = HeadphoneAssembly.build(.default)
@@ -100,7 +131,7 @@ import Testing
 
 /// Snapshots só existem aqui: renderiza cada estado offscreen e confere que o modelo apareceu
 /// e que o fundo ficou transparente.
-@MainActor @Suite struct SnapshotTests {
+@MainActor @Suite(.disabled(if: onCI, "Render 3D offscreen exige GPU, que o runner do CI não garante")) struct SnapshotTests {
     @Test(arguments: [SoundModeArg.nc, .ambient, .off])
     func rendersEachState(_ m: SoundModeArg) throws {
         let url = FileManager.default.temporaryDirectory.appending(path: "quietbar-\(m).png")

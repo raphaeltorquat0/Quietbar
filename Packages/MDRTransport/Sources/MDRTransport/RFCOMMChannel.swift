@@ -22,7 +22,6 @@ public enum MDRTransportError: Error, LocalizedError, Sendable {
     case noChannelID
     case openFailed(IOReturn)
     case writeFailed(IOReturn)
-    case timeout
     case notOpen
 
     public var errorDescription: String? {
@@ -32,7 +31,6 @@ public enum MDRTransportError: Error, LocalizedError, Sendable {
         case .noChannelID: "O registro SDP do serviço Sony não tem canal RFCOMM"
         case .openFailed(let r): String(format: "Falha ao abrir o canal RFCOMM (0x%08X)", r)
         case .writeFailed(let r): String(format: "Falha ao escrever no RFCOMM (0x%08X)", r)
-        case .timeout: "O fone não respondeu a tempo ao abrir o canal"
         case .notOpen: "Canal RFCOMM fechado"
         }
     }
@@ -48,8 +46,11 @@ public final class RFCOMMChannel: NSObject, MDRChannel {
     private var incoming: AsyncStream<[UInt8]>.Continuation?
     private var pendingOpen: CheckedContinuation<Void, Error>?
     private var pendingSDP: CheckedContinuation<Void, Never>?
+    /// Etapas da conexão, para `mdr-cli --trace`.
+    public var trace: ((String) -> Void)?
 
-    public init(address: String, openTimeout: Duration = .seconds(10)) {
+    /// Abrir o canal leva menos de 0,5 s; a sessão tenta de novo em caso de timeout.
+    public init(address: String, openTimeout: Duration = .seconds(4)) {
         self.address = address
         self.openTimeout = openTimeout
     }
@@ -57,8 +58,10 @@ public final class RFCOMMChannel: NSObject, MDRChannel {
     public func open() async throws -> AsyncStream<[UInt8]> {
         closeChannel()
         guard let device = IOBluetoothDevice(addressString: address) else { throw MDRTransportError.deviceNotFound(address) }
+        trace?("dispositivo: conectado=\(device.isConnected()) emparelhado=\(device.isPaired())")
 
         var record = device.getServiceRecord(for: MDRServiceUUID.v2SDP)
+        trace?("SDP \(MDRServiceUUID.v2): \(record == nil ? "fora do cache, consultando o fone" : "em cache")")
         if record == nil {
             // Registro SDP ainda não está em cache: consulta o fone.
             await withCheckedContinuation { c in
@@ -67,21 +70,26 @@ public final class RFCOMMChannel: NSObject, MDRChannel {
             }
             record = device.getServiceRecord(for: MDRServiceUUID.v2SDP)
         }
-        guard let record else { throw MDRTransportError.serviceNotFound }
+        guard let record else {
+            trace?("SDP: serviço não encontrado")
+            throw MDRTransportError.serviceNotFound
+        }
         var channelID: BluetoothRFCOMMChannelID = 0
         guard record.getRFCOMMChannelID(&channelID) == kIOReturnSuccess else { throw MDRTransportError.noChannelID }
+        trace?("SDP: canal RFCOMM \(channelID)")
 
         let (stream, continuation) = AsyncStream.makeStream(of: [UInt8].self)
         incoming = continuation
         let timeout = Task { [openTimeout] in
             try? await Task.sleep(for: openTimeout)
-            self.failOpen(MDRTransportError.timeout)
+            self.failOpen(MDRChannelOpenTimeout())
         }
         defer { timeout.cancel() }
         try await withCheckedThrowingContinuation { (c: CheckedContinuation<Void, Error>) in
             pendingOpen = c
             var ch: IOBluetoothRFCOMMChannel?
             let r = device.openRFCOMMChannelAsync(&ch, withChannelID: channelID, delegate: self)
+            trace?(String(format: "RFCOMM: abertura pedida, retorno 0x%08X", UInt32(bitPattern: r)))
             if r != kIOReturnSuccess { failOpen(MDRTransportError.openFailed(r)) } else { channel = ch }
         }
         return stream
@@ -126,7 +134,9 @@ public final class RFCOMMChannel: NSObject, MDRChannel {
 
 extension RFCOMMChannel: IOBluetoothRFCOMMChannelDelegate {
     public nonisolated func rfcommChannelOpenComplete(_ rfcommChannel: IOBluetoothRFCOMMChannel!, status error: IOReturn) {
+        let mtu = Int(rfcommChannel?.getMTU() ?? 0)
         MainActor.assumeIsolated {
+            trace?(String(format: "RFCOMM: abertura concluída, status 0x%08X, MTU %d", UInt32(bitPattern: error), mtu))
             if error == kIOReturnSuccess {
                 pendingOpen?.resume()
                 pendingOpen = nil
@@ -145,6 +155,7 @@ extension RFCOMMChannel: IOBluetoothRFCOMMChannelDelegate {
     public nonisolated func rfcommChannelClosed(_ rfcommChannel: IOBluetoothRFCOMMChannel!) {
         let closed = rfcommChannel.map(ObjectIdentifier.init)
         MainActor.assumeIsolated {
+            trace?("RFCOMM: canal fechado pelo outro lado")
             guard closed == channel.map(ObjectIdentifier.init) else { return }
             channel = nil
             incoming?.finish()

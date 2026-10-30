@@ -7,8 +7,9 @@ import SwiftUI
 @MainActor enum PanelFixtures {
     static func connected(_ mode: SoundMode, battery: Int = 72) -> PanelState {
         var p = PanelState()
-        p.name = "Fone do Raphael"
+        p.name = "Meu fone"
         p.subtitle = "WH-1000XM5 · AAC"
+        p.modelName = "WH-1000XM5"
         p.link = .ready
         p.battery = battery
         p.mode = mode
@@ -46,6 +47,23 @@ import SwiftUI
         p.bands = [4, 4, -1, -1, 0, 0, 0, 0, 0, 0]
         p.bandsLimit = 6
         p.speakToChat = nil
+        return p
+    }
+
+    static var wh1000xm6: PanelState {
+        var p = connected(.noiseCanceling)
+        p.subtitle = "WH-1000XM6 · LDAC"
+        p.modelName = "WH-1000XM6"
+        return p
+    }
+
+    /// LinkBuds S: earbuds com modelo 3D próprio, o estojo aberto.
+    static var linkBudsS: PanelState {
+        var p = connected(.noiseCanceling, battery: 81)
+        p.name = "LinkBuds S"
+        p.subtitle = "WF-LS900N · AAC"
+        p.modelName = "WF-LS900N"
+        p.earbuds = .init(left: 81, right: 79, caseLevel: 60)
         return p
     }
 
@@ -123,7 +141,7 @@ import SwiftUI
 #Preview("Modo escuro") { PanelView(state: PanelFixtures.connected(.noiseCanceling)).preferredColorScheme(.dark) }
 
 /// `Quietbar --demo-panel <caso>`: o painel real da barra mostra um estado de exemplo e abre sozinho.
-/// Casos: nc (padrão), ambiente, desconectado, carregando, wf, clip.
+/// Casos: nc (padrão), ambiente, desconectado, carregando, wf, clip, xm6, linkbuds.
 /// Serve para conferir o Liquid Glass (que o ImageRenderer não desenha) com `screencapture`.
 @MainActor enum DemoPanel {
     static let state: PanelState? = {
@@ -135,6 +153,8 @@ import SwiftUI
         case "carregando": PanelFixtures.loading
         case "wf": PanelFixtures.wf1000xm5
         case "clip": PanelFixtures.linkBudsClip
+        case "xm6": PanelFixtures.wh1000xm6
+        case "linkbuds": PanelFixtures.linkBudsS
         default: PanelFixtures.connected(.noiseCanceling)
         }
     }()

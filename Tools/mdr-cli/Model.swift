@@ -3,7 +3,7 @@ import HeadphoneModel
 import MDRKit
 
 /// `mdr-cli model --icon <pasta.appiconset>` / `--export out.usdz` / `--snapshot out.png [--state nc|ambient|off] [--battery 0.62]
-///  [--view three-quarter|front|side|top] [--renderer scenekit|realitykit] [--entrance <s>] [--size <px>]`
+///  [--view three-quarter|front|side|top] [--model WH-1000XM6] [--renderer scenekit|realitykit] [--entrance <s>] [--size <px>]`
 @MainActor func runModel(_ args: [String]) async throws {
     func value(_ flag: String) -> String? {
         args.firstIndex(of: flag).flatMap { $0 + 1 < args.count ? args[$0 + 1] : nil }
@@ -28,6 +28,7 @@ import MDRKit
     }
     st.entranceTime = value("--entrance").flatMap(Float.init)
     let px = value("--size").flatMap(Double.init) ?? 900
+    let spec = value("--model").flatMap(HeadphoneSpec.forModel) ?? .default
 
     if let dir = value("--icon") {
         try AppIconGenerator.write(to: URL(fileURLWithPath: dir))
@@ -39,9 +40,9 @@ import MDRKit
         let url = URL(fileURLWithPath: out), size = CGSize(width: px, height: px)
         if value("--renderer") == "realitykit" {
             guard #available(macOS 15, *) else { throw CLIError("RealityKit offscreen exige macOS 15") }
-            try await HeadphoneExport.snapshotRealityKit(to: url, size: size, state: st)
+            try await HeadphoneExport.snapshotRealityKit(to: url, size: size, spec: spec, state: st)
         } else {
-            try HeadphoneExport.snapshotSceneKit(to: url, size: size, state: st)
+            try HeadphoneExport.snapshotSceneKit(to: url, size: size, spec: spec, state: st)
         }
         print(out)
     } else {

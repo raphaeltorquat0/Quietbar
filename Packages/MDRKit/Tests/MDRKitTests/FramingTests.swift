@@ -5,7 +5,7 @@ import Testing
 enum Captured {
     static let ack = "3e010100000000023c"
     static let protocolInfo = "3e0c01000000080100030030180000613c"
-    static let capabilityInfo = "3e0c000000001503000b1141433a38303a30413a43313a46333a42301e3c"
+    static let capabilityInfo = "3e0c000000001503000b1130323a30303a30303a44323a42303a3536d73c" // endereço trocado por um falso
     static let firmware = "3e0c0100000008050205362e312e30143c"
     static let model = "3e0c000000000d05010a57462d31303030584d358e3c"
     static let series = "3e0c0100000004050330034c3c"

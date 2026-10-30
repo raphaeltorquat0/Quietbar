@@ -10,3 +10,7 @@ xcuserdata/
 # Vistas de referência de terceiros usadas só para modelar; não vão para o repositório
 images/
 .DS_Store
+
+# Capturas brutas podem ter MAC, nomes e faixas; só as fixtures sanitizadas são versionadas
+captures/
+__pycache__/

@@ -9,6 +9,9 @@ import UniformTypeIdentifiers
 struct DeveloperTab: View {
     var body: some View {
         Form {
+            #if DEBUG
+            SimulatorSection()
+            #endif
             DiagnosticsSection()
             PopupTestSection()
             ModelViewerSection()
@@ -101,11 +104,11 @@ private struct ModelViewerSection: View {
 
     var body: some View {
         Section("Modelo 3D") {
-            HeadphoneView(battery: battery, mode: mode, accent: device.settings.ringAccent, customModel: CustomMedia.modelURL,
+            HeadphoneView(battery: battery, mode: mode, accent: device.settings.ringAccent, model: device.state.modelName, customModel: CustomMedia.modelURL,
                           entranceID: entrance, idleRotation: idle, reduceMotion: reduceMotion,
                           lightRing: device.settings.modelLightRing)
                 .frame(height: 240)
-                .id("\(reduceMotion)\(device.settings.modelLightRing)") // recria o rig ao trocar o modo de movimento
+                .id("\(reduceMotion)\(device.settings.modelLightRing)\(device.state.modelName ?? "")") // recria o rig ao trocar o modo de movimento
             Picker("Estado", selection: $mode) {
                 ForEach(SoundMode.allCases, id: \.self) { Text($0.label).tag($0) }
             }

@@ -47,6 +47,12 @@ extension PanelState {
         var p = PanelState()
         p.name = d.selectedDevice?.name ?? s.modelName ?? String(localized: "Fone")
         p.subtitle = [s.modelName, s.codec.map { "\($0)" }].compactMap { $0 }.joined(separator: " · ")
+        p.modelName = s.modelName
+        #if DEBUG
+        // Nada do Bluetooth real entra num painel simulado: o nome pareado é dado pessoal.
+        p.simulated = Simulation.shared.profile
+        if let model = p.simulated?.modelName { p.name = model }
+        #endif
         p.link = d.isReady ? .ready : d.isBluetoothConnected ? .bluetoothOnly : .off
         switch d.snapshot.phase {
         case .ready: p.phase = .ready

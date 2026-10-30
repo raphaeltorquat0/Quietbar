@@ -50,6 +50,7 @@ struct DeviceSection<Content: View>: View {
 struct GeneralTab: View {
     @Environment(DeviceController.self) private var device
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+    @State private var autoUpdate = Updates.shared.automaticChecks
     @State private var confirmPowerOff = false
 
     var body: some View {
@@ -58,13 +59,14 @@ struct GeneralTab: View {
         let s = device.state
         Form {
             Section {
-                if s.capabilities.isEarbuds, CustomMedia.modelURL == nil {
+                if s.capabilities.isEarbuds, !hasEarbudsModel(s.modelName), CustomMedia.modelURL == nil {
                     EarbudsVisual().frame(height: 170)
                 } else {
                     HeadphoneView(battery: s.primaryBattery.map { Double($0.level) / 100 }, mode: s.noiseControl?.soundMode,
-                                  accent: settings.ringAccent, customModel: CustomMedia.modelURL, lightRing: settings.modelLightRing)
+                                  accent: settings.ringAccent, model: s.modelName, customModel: CustomMedia.modelURL,
+                                  lightRing: settings.modelLightRing)
                         .frame(height: 170)
-                        .id(settings.modelLightRing)
+                        .id("\(settings.modelLightRing)\(s.modelName ?? "")")
                 }
             }
             Section("Fone") {
@@ -104,6 +106,8 @@ struct GeneralTab: View {
             }
             Section("App") {
                 Toggle("Mostrar a % da bateria ao lado do ícone", isOn: $settings.menuBarShowsPercent)
+                Toggle("Procurar atualizações automaticamente", isOn: $autoUpdate)
+                    .onChange(of: autoUpdate) { Updates.shared.automaticChecks = autoUpdate }
                 Toggle("Mostrar a aba Desenvolvedor", isOn: $settings.developerMode)
                 Toggle("Abrir ao iniciar sessão", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, on in

@@ -58,6 +58,7 @@ public enum HeadphoneAssembly {
     }
 
     static func build(_ s: HeadphoneSpec) -> PartNode {
+        if s.shape == .earbudsCase { return EarbudsAssembly.build(s) }
         let L = Layout(s: s)
         var band = PartNode(name: "band", transform: .identity, meshes: bandMeshes(s, L))
         band.children = Side.allCases.map { yoke(s, L, $0) }
@@ -80,9 +81,9 @@ public enum HeadphoneAssembly {
         let toZ = simd_float4x4.rotation(.pi / 2, [1, 0, 0])
 
         // Haste deslizante (metal) com dois anéis, e o braço fino descendo até a dobradiça.
-        var rod = Geometry.chamferedCylinder(radius: 0.0042, height: L.rodLength, chamfer: 0.0008)
-            .transformed(.translation([0, L.rodLength / 2, 0]))
-        for y: Float in [0.005, 0.009] {
+        var rod = Geometry.chamferedCylinder(radius: 0.0042, height: s.rodLength, chamfer: 0.0008)
+            .transformed(.translation([0, s.rodLength / 2, 0]))
+        for y: Float in [0.005, 0.009] where y < s.rodLength {
             rod.append(Geometry.chamferedCylinder(radius: 0.0049, height: 0.0016, chamfer: 0.0005).transformed(.translation([0, y, 0])))
         }
         let mid = toHinge * 0.5
@@ -91,7 +92,7 @@ public enum HeadphoneAssembly {
             let p0: SIMD3<Float> = [0, 0.004, 0]
             return u * u * p0 + 2 * u * t * mid + t * t * toHinge
         }
-        let arm = Parts.bar(armPath, up: [0, 0, 1], width: 0.011, depth: 0.017)
+        let arm = Parts.bar(armPath, up: [0, 0, 1], width: s.armWidth, depth: s.armDepth)
 
         // Pino curto escondido no fim do braço (o XM5 não mostra dobradiça aparente).
         let knuckle = Geometry.chamferedCylinder(radius: 0.0035, height: 0.012, chamfer: 0.001).transformed(toZ)
@@ -120,16 +121,22 @@ public enum HeadphoneAssembly {
     private static func bandMeshes(_ s: HeadphoneSpec, _ L: Layout) -> [PartMesh] {
         let e = L.bandEnd
         // Laterais verticais e topo arredondado (altura ≈ 1,1 × meia largura, como no XM5).
-        let rise = 1.45 * e.x
+        let rise = s.bandRise * e.x
         let path = Geometry.cubicBezier([-e.x, e.y, e.z], [-e.x, e.y + rise, e.z],
                                         [e.x, e.y + rise, e.z], [e.x, e.y, e.z], samples: s.curveSegments)
-        let band = Geometry.sweep(path: path, up: [0, 0, 1],
-                                  section: Geometry.roundedRectSection(width: s.bandThickness, height: s.bandWidth, radius: 0.0055),
-                                  caps: true)
+        let section = Geometry.roundedRectSection(width: s.bandThickness, height: s.bandWidth,
+                                                  radius: min(0.0055, s.bandThickness * 0.45))
+        // Largura do topo às pontas, com transição suave (a seção é escalada só na largura).
+        let tip = (s.bandTipWidth ?? s.bandWidth) / s.bandWidth
+        let band = Geometry.sweep(path: path, up: [0, 0, 1], section: section, caps: true) { i in
+            let u = abs(2 * Float(i) / Float(path.count - 1) - 1), w = min(1, u * 1.25)
+            return tip + (1 - tip) * (1 - w * w * (3 - 2 * w))
+        }
         // Luvas nas pontas: um pouco mais largas, cobrindo o fim do arco e o topo da haste.
         let n = s.curveSegments * 6 / 100
         var sleeves = MeshData()
-        let sleeveSection = Geometry.roundedRectSection(width: s.bandThickness + 0.0025, height: s.bandWidth + 0.0015, radius: 0.009)
+        let sleeveSection = Geometry.roundedRectSection(width: s.bandThickness + 0.0025, height: (s.bandTipWidth ?? s.bandWidth) + 0.0015,
+                                                        radius: min(0.009, (s.bandThickness + 0.0025) * 0.47))
         for part in [[path[0] - [0, 0.006, 0]] + Array(path[...n]),
                      Array(path[(path.count - 1 - n)...]) + [path[path.count - 1] - [0, 0.006, 0]]] {
             sleeves.append(Geometry.sweep(path: part, up: [0, 0, 1], section: sleeveSection, caps: true))

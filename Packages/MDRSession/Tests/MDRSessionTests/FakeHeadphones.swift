@@ -10,6 +10,11 @@ actor FakeHeadphones: MDRChannel {
     var silent: Set<MDRCommand> = []
     var ackDelay: Duration = .zero
     var neverAck = false
+    /// Quantas aberturas falham por timeout, como o pedido que o IOBluetooth perde ao iniciar.
+    var openTimeouts = 0
+    /// Erro definitivo ao abrir: fone sem o serviço, por exemplo.
+    var openError: (any Error)?
+    private(set) var openCalls = 0
     /// `false` = confirma SETs mas não ecoa NOTIFY.
     var echoSets = true
 
@@ -67,6 +72,12 @@ actor FakeHeadphones: MDRChannel {
     // MARK: MDRChannel
 
     func open() async throws -> AsyncStream<[UInt8]> {
+        openCalls += 1
+        if let openError { throw openError }
+        if openTimeouts > 0 {
+            openTimeouts -= 1
+            throw MDRChannelOpenTimeout()
+        }
         let (s, c) = AsyncStream.makeStream(of: [UInt8].self)
         out = c
         parser = MDRFrameParser()

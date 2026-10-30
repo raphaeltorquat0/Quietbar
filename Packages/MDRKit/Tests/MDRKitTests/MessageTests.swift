@@ -9,7 +9,7 @@ private func decoded(_ hex: String) throws -> (MDRVerb, MDRMessage) {
 @Suite struct CapturedMessageTests {
     @Test func identity() throws {
         #expect(try decoded(Captured.protocolInfo).1 == .protocolInfo(version: 0x0300_3018, table1: true, table2: true))
-        #expect(try decoded(Captured.capabilityInfo).1 == .capabilityInfo(counter: 0x0B, uniqueID: "AC:80:0A:C1:F3:B0"))
+        #expect(try decoded(Captured.capabilityInfo).1 == .capabilityInfo(counter: 0x0B, uniqueID: "02:00:00:D2:B0:56"))
         #expect(try decoded(Captured.firmware).1 == .firmwareVersion("6.1.0"))
         #expect(try decoded(Captured.model).1 == .modelName("WF-1000XM5"))
         #expect(try decoded(Captured.series).1 == .seriesAndColor(series: 0x30, color: 0x03))
@@ -199,8 +199,8 @@ private func decoded(_ hex: String) throws -> (MDRVerb, MDRMessage) {
 
     @Test func stateHelpers() {
         var s = MDRDeviceState()
-        s.apply(.capabilityInfo(counter: 1, uniqueID: "AC:80:0A:C1:F3:B0"))
-        #expect(s.macAddress == "AC:80:0A:C1:F3:B0")
+        s.apply(.capabilityInfo(counter: 1, uniqueID: "02:00:00:D2:B0:56"))
+        #expect(s.macAddress == "02:00:00:D2:B0:56")
         s.apply(.generalSettingCapability(GeneralSettingCapability(inquiredType: 0xD2, subject: "MULTIPOINT_SETTING", summary: "")))
         s.apply(.generalSetting(inquiredType: 0xD2, on: true))
         #expect(s.generalSetting(subject: "MULTIPOINT_SETTING")?.on == true)

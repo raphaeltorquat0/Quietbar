@@ -6,6 +6,7 @@ public enum MDRSessionError: Error, Equatable, Sendable, LocalizedError {
     case noAck(MDRCommand)
     case timeout(String)
     case unsupportedProtocol
+    case readOnly(MDRCommand)
 
     public var errorDescription: String? {
         switch self {
@@ -13,6 +14,7 @@ public enum MDRSessionError: Error, Equatable, Sendable, LocalizedError {
         case .noAck(let c): "O fone não confirmou o comando \(c)"
         case .timeout(let what): "Sem resposta do fone (\(what))"
         case .unsupportedProtocol: "O fone não fala MDR v2 Tabela 1"
+        case .readOnly(let c): "Comando recusado no modo somente leitura: \(c)"
         }
     }
 }
@@ -41,6 +43,12 @@ public actor MDRSession {
         public var attempts = 3
         public var backoff: Duration = .milliseconds(150)
         public var responseTimeout: Duration = .seconds(3)
+        /// Só GET sai para o fone: o handshake pula a inscrição em alertas, que é um SET.
+        public var readOnly = false
+        /// Tentativas de abrir o canal. Logo depois de iniciar o processo, o IOBluetooth pode perder o
+        /// pedido sem avisar: o fone nem chega a recebê-lo (DECISIONS.md #88).
+        public var openAttempts = 3
+        public var openRetryDelay: Duration = .milliseconds(300)
         public init() {}
     }
 
@@ -91,7 +99,7 @@ public actor MDRSession {
         generation += 1
         let gen = generation
         do {
-            let incoming = try await channel.open()
+            let incoming = try await openChannel()
             seq = 0
             parser = MDRFrameParser()
             state = MDRDeviceState()
@@ -107,6 +115,17 @@ public actor MDRSession {
             setPhase(.failed(error.localizedDescription))
             throw error
         }
+    }
+
+    private func openChannel() async throws -> AsyncStream<[UInt8]> {
+        for _ in 1..<max(1, options.openAttempts) {
+            do {
+                return try await channel.open()
+            } catch is MDRChannelOpenTimeout {
+                try? await Task.sleep(for: options.openRetryDelay)
+            }
+        }
+        return try await channel.open()
     }
 
     public func disconnect() async {
@@ -154,7 +173,7 @@ public actor MDRSession {
             }
         }
 
-        if state.capabilities.alerts { try await send(MDRMessage.alertsEnabled(true).command(.set)) }
+        if state.capabilities.alerts, !options.readOnly { try await send(MDRMessage.alertsEnabled(true).command(.set)) }
         try await sync()
     }
 
@@ -168,6 +187,7 @@ public actor MDRSession {
     /// Envia um comando e espera o ACK (retry com backoff). Não espera a resposta.
     public func send(_ command: MDRCommand) async throws {
         guard reader != nil else { throw MDRSessionError.notConnected }
+        guard !options.readOnly || command.isRead else { throw MDRSessionError.readOnly(command) }
         await acquire()
         defer { release() }
         let frame = MDRFrame(type: command.table.dataType, seq: seq, payload: command.payload).encoded()

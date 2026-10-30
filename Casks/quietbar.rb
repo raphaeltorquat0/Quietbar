@@ -1,0 +1,28 @@
+cask "quietbar" do
+  version "1.3.0"
+  sha256 "34a676b17b03d01e139b88655126b89a375882f5fb320fb742d0db4b8bf5fa0c"
+
+  url "https://github.com/raphaeltorquat0/Quietbar/releases/download/v#{version}/Quietbar-#{version}.dmg"
+  name "Quietbar"
+  desc "Menu bar controls for Sony headphones"
+  homepage "https://github.com/raphaeltorquat0/Quietbar"
+
+  livecheck do
+    url :url
+    strategy :github_latest
+  end
+
+  auto_updates true
+  depends_on macos: :sonoma
+
+  app "Quietbar.app"
+
+  uninstall quit: "io.github.raphaeltorquat0.Quietbar"
+
+  zap trash: [
+    "~/Library/Application Support/Quietbar",
+    "~/Library/Containers/io.github.raphaeltorquat0.Quietbar",
+    "~/Library/Containers/io.github.raphaeltorquat0.Quietbar.Controls",
+    "~/Library/Preferences/io.github.raphaeltorquat0.Quietbar.plist",
+  ]
+end

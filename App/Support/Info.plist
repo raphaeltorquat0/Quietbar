@@ -32,5 +32,17 @@
 	<string>O macOS só informa o nome da rede Wi-Fi a apps com acesso à localização. O Quietbar usa isso apenas para os perfis por rede.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Projeto independente, sem afiliação com a Sony.</string>
+	<key>SUFeedURL</key>
+	<string>https://raphaeltorquat0.github.io/Quietbar/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>1k+05MzSIRyClqxHzl1FsqcvXSlNUV+qUuoq+wwcxX0=</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUScheduledCheckInterval</key>
+	<integer>86400</integer>
+	<key>SUEnableInstallerLauncherService</key>
+	<true/>
+	<key>SUEnableDownloaderService</key>
+	<true/>
 </dict>
 </plist>
