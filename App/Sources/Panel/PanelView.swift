@@ -197,9 +197,8 @@ struct PanelView: View {
                         Text("Equalizador")
                         PanelMenu(title: state.presets.first { $0.id == state.presetID }?.name ?? "—") {
                             ForEach(state.presets) { p in
-                                Button { actions.setPreset(p.id) } label: {
-                                    if p.id == state.presetID { Label(p.name, systemImage: "checkmark") } else { Text(verbatim: p.name) }
-                                }
+                                // Toggle é o que o menu do macOS desenha com a marca nativa.
+                                Toggle(p.name, isOn: Binding(get: { p.id == state.presetID }, set: { _ in actions.setPreset(p.id) }))
                             }
                         }
                         .accessibilityLabel("Equalizador")

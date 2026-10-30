@@ -7,7 +7,7 @@ import SwiftUI
 @MainActor enum PanelFixtures {
     static func connected(_ mode: SoundMode, battery: Int = 72) -> PanelState {
         var p = PanelState()
-        p.name = "Fone do Raphael"
+        p.name = "Meu fone"
         p.subtitle = "WH-1000XM5 · AAC"
         p.link = .ready
         p.battery = battery

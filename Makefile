@@ -22,7 +22,7 @@ install: ## Compila em Release, assina, instala em /Applications, ativa abrir no
 dev: ## Compila em Debug e roda o app no terminal (logs aqui; Ctrl-C para sair)
 	@command -v xcodegen >/dev/null && xcodegen generate --quiet || true
 	xcodebuild -project $(APP_NAME).xcodeproj -scheme $(APP_NAME) -configuration Debug \
-	  -derivedDataPath $(DEV_DD) build -quiet 2>&1 | grep -v 'IDERunDestination\|appintentsmetadataprocessor' || true
+	  -derivedDataPath $(DEV_DD) build -quiet
 	@pkill -x $(APP_NAME) 2>/dev/null; true
 	$(DEV_DD)/Build/Products/Debug/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)
 
