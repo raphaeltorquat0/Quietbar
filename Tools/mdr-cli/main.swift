@@ -14,6 +14,8 @@ uso: mdr-cli <comando> [--address AA:BB:CC:DD:EE:FF] [--log-hex] [--trace]
   sniff                     conecta e imprime todo o tráfego até Ctrl-C
   popup                     pede ao app aberto para mostrar o popup de conexão
   ble-scan [s] [--all]      procura anúncios BLE Fast Pair (0xFE2C); padrão 15 s
+  audio-probe --device <uid> [--seconds s] [--mute] [--tone] [--hold]
+                            mede a tap de áudio do Mac (docs/AUDIO.md); não fala com o fone
   model --export <f.usdz>   exporta o modelo 3D do app (Quick Look)
   model --snapshot <f.png>  renderiza offscreen [--state nc|ambient|off] [--battery 0-1]
                             [--view three-quarter|front|side|top] [--renderer scenekit|realitykit]
@@ -164,6 +166,7 @@ func run(_ argv: [String]) async throws {
         return
     }
     if command == "bench" { return try await runBench() }
+    if command == "audio-probe" { return try await runAudioProbe(args) }
     if command == "model" { return try await runModel(Array(args.dropFirst())) }
     if command == "popup" {
         // O app escuta esta notificação; sem userInfo para funcionar com App Sandbox.

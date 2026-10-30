@@ -10,6 +10,7 @@ let package = Package(
         .library(name: "MDRSession", targets: ["MDRSession"]),
         .library(name: "HeadphoneModel", targets: ["HeadphoneModel"]),
         .library(name: "MDRSimulator", targets: ["MDRSimulator"]),
+        .library(name: "QuietAudio", targets: ["QuietAudio"]),
         .executable(name: "mdr-cli", targets: ["mdr-cli"]),
     ],
     targets: [
@@ -34,9 +35,18 @@ let package = Package(
         .target(name: "HeadphoneModel", dependencies: ["MDRKit"], path: "Packages/HeadphoneModel/Sources/HeadphoneModel"),
         .testTarget(name: "HeadphoneModelTests", dependencies: ["HeadphoneModel", "MDRKit"], path: "Packages/HeadphoneModel/Tests/HeadphoneModelTests"),
 
+        // O que roda na thread de áudio fica em C: sem ARC nem runtime Swift no render (docs/AUDIO.md).
+        .target(
+            name: "CQuietAudio",
+            path: "Packages/QuietAudio/Sources/CQuietAudio",
+            linkerSettings: [.linkedFramework("CoreAudio")]
+        ),
+        .target(name: "QuietAudio", dependencies: ["CQuietAudio"], path: "Packages/QuietAudio/Sources/QuietAudio"),
+        .testTarget(name: "QuietAudioTests", dependencies: ["QuietAudio"], path: "Packages/QuietAudio/Tests/QuietAudioTests"),
+
         .executableTarget(
             name: "mdr-cli",
-            dependencies: ["MDRKit", "MDRTransport", "MDRSession", "HeadphoneModel"],
+            dependencies: ["MDRKit", "MDRTransport", "MDRSession", "HeadphoneModel", "QuietAudio"],
             path: "Tools/mdr-cli"
         ),
     ]
