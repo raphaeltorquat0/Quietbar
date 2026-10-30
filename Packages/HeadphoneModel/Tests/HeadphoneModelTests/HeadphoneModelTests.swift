@@ -5,6 +5,9 @@ import MDRKit
 import simd
 import Testing
 
+/// `CI` é definida pelo GitHub Actions: os runners são VMs sem GPU garantida e com tempo instável.
+private let onCI = ProcessInfo.processInfo.environment["CI"] != nil
+
 @Suite struct HeadphoneModelTests {
     let root = HeadphoneAssembly.build(.default)
 
@@ -61,7 +64,8 @@ import Testing
         #expect(abs(b.max.x + b.min.x) < 1e-4)
     }
 
-    @Test func generationIsFast() {
+    @Test(.disabled(if: onCI, "Mede tempo de geração; a VM do CI não tem desempenho previsível"))
+    func generationIsFast() {
         _ = HeadphoneAssembly.build(.default) // aquece
         let t0 = Date()
         _ = HeadphoneAssembly.build(.default)
@@ -100,7 +104,7 @@ import Testing
 
 /// Snapshots só existem aqui: renderiza cada estado offscreen e confere que o modelo apareceu
 /// e que o fundo ficou transparente.
-@MainActor @Suite struct SnapshotTests {
+@MainActor @Suite(.disabled(if: onCI, "Render 3D offscreen exige GPU, que o runner do CI não garante")) struct SnapshotTests {
     @Test(arguments: [SoundModeArg.nc, .ambient, .off])
     func rendersEachState(_ m: SoundModeArg) throws {
         let url = FileManager.default.temporaryDirectory.appending(path: "quietbar-\(m).png")
