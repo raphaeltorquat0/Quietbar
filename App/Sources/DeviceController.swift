@@ -270,31 +270,6 @@ final class DeviceController {
     }
 }
 
-/// Avisa quando um dispositivo Bluetooth conecta/desconecta (API de notificações do IOBluetooth).
-@MainActor
-final class BluetoothWatcher: NSObject {
-    var onChange: ((String, Bool) -> Void)?
-
-    func start() {
-        IOBluetoothDevice.register(forConnectNotifications: self, selector: #selector(connected(_:device:)))
-    }
-
-    @objc private func connected(_ note: IOBluetoothUserNotification, device: IOBluetoothDevice) {
-        device.register(forDisconnectNotification: self, selector: #selector(disconnected(_:device:)))
-        report(device, true)
-    }
-
-    @objc private func disconnected(_ note: IOBluetoothUserNotification, device: IOBluetoothDevice) {
-        note.unregister()
-        report(device, false)
-    }
-
-    private func report(_ device: IOBluetoothDevice, _ connected: Bool) {
-        let a = (device.addressString ?? "").replacingOccurrences(of: "-", with: ":").uppercased()
-        onChange?(a, connected)
-    }
-}
-
 enum Notifier {
     static func requestAuthorization() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
