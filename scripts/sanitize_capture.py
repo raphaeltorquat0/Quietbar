@@ -116,7 +116,7 @@ def read_capture(path: pathlib.Path):
         log = re.search(r"(>>|<<) ((?:[0-9a-fA-F]{2} ?)+)", line)  # mdr-cli --log-hex
         if log:
             yield ("tx" if log.group(1) == ">>" else "rx"), bytes.fromhex(log.group(2))
-        elif line and not line.startswith("#"):
+        elif re.match(r"(?i)(rx|tx)\s", line):
             direction, data = line.split(None, 1)
             yield direction.lower(), bytes.fromhex(data)
 

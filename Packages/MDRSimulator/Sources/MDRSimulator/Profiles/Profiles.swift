@@ -37,7 +37,7 @@ public enum Profiles {
     // MARK: Captura real
 
     public static let wh1000xm5 = DeviceProfile(
-        id: "wh1000xm5", modelName: "WH-1000XM5", firmware: "2.5.1", protocolVersion: 0x0300_2016,
+        id: "wh1000xm5", modelName: "WH-1000XM5", firmware: "2.5.1", series: 0x30, protocolVersion: 0x0300_2016,
         features: features {
             $0.sound = .noiseCanceling
             $0.equalizer = .clearBassFiveBands
@@ -49,10 +49,10 @@ public enum Profiles {
             $0.connectionPriority = true
             $0.generalSettings = [touch1, multipoint2]
         },
-        origin: .capture(fixtures: ["wh-1000xm5-2.5.1"], source: "mdr-cli dump --log-hex de um WH-1000XM5 fw 2.5.1, em 2026-10-29"),
-        gaps: ["A captura tem 12 frames, sem sessão completa: codec, volume, reprodução, DSEE, Falar para conversar, pausa automática e prioridade vêm dos recursos, sem bytes reais",
-               "Série e cor não foram capturadas: usam 0",
-               "Capability info foi retirado da captura por privacidade e usa um endereço falso"])
+        origin: .capture(fixtures: ["wh-1000xm5-2.5.1", "wh-1000xm5-2.5.1-sessao"],
+                         source: "mdr-cli dump --log-hex somente leitura de um WH-1000XM5 fw 2.5.1, em 2026-10-29 e 2026-10-30"),
+        gaps: ["Sessão somente leitura: a reação real a cada SET não foi observada",
+               "O endereço e os nomes de aparelhos pareados foram trocados por valores falsos"])
 
     public static let wf1000xm5 = DeviceProfile(
         id: "wf1000xm5", modelName: "WF-1000XM5", firmware: "6.1.0", protocolVersion: 0x0300_3018,
