@@ -42,15 +42,17 @@ O app só mostra o que o fone anuncia na conexão. macOS 14 ou mais novo, Apple 
 
 ## Compatibilidade
 
-| Fone | Status |
-|---|---|
-| WH-1000XM5 | **Testado em hardware** (firmware 2.5.1) |
-| WF-1000XM5 | Validado com tráfego real gravado (fw 6.1.0): bateria esquerda/direita + estojo, cancelamento de ruído, EQ |
-| LinkBuds Clip (WF-LC900) | Validado com tráfego real gravado (fw 2.0.3): sem cancelamento de ruído, EQ de 10 bandas |
-| WH-1000XM6, WH-CH720N, ULT WEAR, WF-1000XM4/XM6, WF-C500/C510/C700N/C710N, LinkBuds, LinkBuds S/Open | **Experimental:** mesmo protocolo (MDR v2), ainda sem teste |
-| WH-1000XM4/XM3/XM2, WF-1000XM3, WF-SP800N | **No roadmap:** usam a versão antiga do protocolo (MDR v1) |
+| Status | Fones | O que isso significa |
+|---|---|---|
+| **Testado em hardware** | WH-1000XM5 (firmware 2.5.1) | Sessão completa de leitura num fone real. Os comandos de escrita ainda seguem o roteiro de [`docs/HARDWARE_TEST.md`](docs/HARDWARE_TEST.md) |
+| **Validado com tráfego real** | WF-1000XM5 (fw 6.1.0), LinkBuds Clip / WF-LC900 (fw 2.0.3) | O app entende capturas públicas desses fones, mas não foi usado com eles |
+| **Experimental** (protocolo conhecido, sem teste) | WH-1000XM6, WH-CH720N, ULT WEAR, WF-1000XM6, WF-C510, WF-C700N, WF-C710N, LinkBuds S, LinkBuds Open | Fontes públicas indicam MDR v2, mas o Quietbar nunca rodou com eles |
+| **Não verificado** (pode ser MDR v1) | WF-1000XM4, WF-C500, LinkBuds | Nenhuma fonte confirma a versão do protocolo. Podem não funcionar |
+| **No roadmap** (MDR v1) | WH-1000XM4/XM3/XM2, WF-1000XM3, WF-SP800N | Usam a versão antiga do protocolo, ainda não implementada |
 
-**Tem um fone experimental?** Teste e [envie um relatório](https://github.com/raphaeltorquat0/Quietbar/issues/new?template=relatorio-de-fone.yml); é o que transforma "experimental" em "testado".
+**Tem um desses fones?** Teste e [envie um relatório](https://github.com/raphaeltorquat0/Quietbar/issues/new?template=relatorio-de-fone.yml); é o que tira um modelo de "experimental" ou "não verificado".
+
+Os perfis de referência do [simulador](docs/SIMULATOR.md) testam só a interface, porque os frames são gerados pelo próprio MDRKit. Eles não mostram que um fone funciona.
 
 ## Instalar
 

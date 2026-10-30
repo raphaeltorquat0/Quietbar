@@ -42,8 +42,9 @@ await Scenario.buttonMode.run(on: transport)
 1. **Guarde a captura em `captures/`**, que nunca vai para o Git:
    ```sh
    mkdir -p captures/wf-c710n
-   mdr-cli dump --log-hex 2> captures/wf-c710n/dump.log
+   mdr-cli dump --log-hex --trace 2> captures/wf-c710n/dump.log
    ```
+   `dump` é somente leitura: só GET sai para o fone, e a inscrição em alertas do handshake é pulada.
 2. **Sanitize.** O script troca MAC, nomes e faixas por valores falsos determinísticos e falha se sobrar algo que pareça identificador:
    ```sh
    scripts/sanitize-capture.sh captures/wf-c710n/dump.log wf-c710n-1.0.0 \
@@ -61,25 +62,27 @@ await Scenario.buttonMode.run(on: transport)
 
 **Verificação comum a todos os perfis:** handshake e fluxo da UI pelo `MDRSession`, em que cada recurso anunciado é lido e alterado. Isso prova que o app e o simulador concordam, não que o fone real se comporta assim.
 
-**Perfis de referência:** a lista de funções é derivada dos recursos, e os bytes saem do codificador do MDRKit. Nenhum desses bytes foi visto vindo do modelo. Os recursos de cada referência estão citados em `Profiles.swift`.
+**Perfis de referência testam só a interface.** Os frames são gerados pelo próprio MDRKit, então decodificá-los de volta não prova nada sobre o protocolo do modelo. A lista de funções é derivada dos recursos citados em `Profiles.swift`, e nenhum desses bytes foi visto vindo do fone.
 
-| Modelo | Origem | Verificado além do comum | Lacunas |
-|---|---|---|---|
-| WH-1000XM5 | Captura real, 12 frames do `mdr-cli dump` | Respostas byte a byte para esses frames | Sem sessão completa: codec, volume, reprodução, DSEE e Falar para conversar vêm dos recursos. Série e cor não capturadas |
-| WF-1000XM5 | Captura real, `SonyHeadphonesClient` `tests/WF-1000XM5-6.1.0` (MIT) | Replay de 72 frames e respostas byte a byte | Só frames recebidos: a reação real a cada SET não foi observada. Lista de presets não capturada |
-| LinkBuds Clip | Captura real, `SonyHeadphonesClient` `tests/WF-LC900-2.0.3` e `-equalizer` (MIT) | Replay de 171 frames e respostas byte a byte | Só frames recebidos. Modos de escuta não modelados |
-| WH-1000XM6 | Referência: `docs/device-support/WH-1000XM6.md` da libmdr (MIT) | Só o comum | Protocolo, firmware e presets desconhecidos. Tipo de NC pode não ser `0x17`. Posição dos ajustes gerais presumida |
-| WH-CH720N | Referência: libmdr e Gadgetbridge | Só o comum | Protocolo, firmware e presets desconhecidos. Multiponto fora do perfil |
-| ULT WEAR | Referência: Gadgetbridge | Só o comum | Protocolo, firmware, presets e nome por MDR desconhecidos. Posição dos ajustes gerais presumida |
-| WF-1000XM4 | Referência: Gadgetbridge | Só o comum | Protocolo, firmware, presets e tipos de bateria desconhecidos. MDR v2 não confirmado neste modelo |
-| WF-1000XM6 | Referência: libmdr | Só o comum | Protocolo, firmware, presets e tipos de bateria desconhecidos. EQ incompleto na referência |
-| WF-C500 | Referência: Gadgetbridge | Só o comum | Protocolo, firmware, presets e tipos de bateria desconhecidos. MDR v2 não confirmado |
-| WF-C510 | Referência: libmdr e Gadgetbridge | Só o comum | Protocolo, firmware, presets e tipos de bateria desconhecidos. Posição do multiponto presumida |
-| WF-C700N | Referência: libmdr, com protocolo `0x03000015`, firmware 2.0.7 e NC `0x17` | Só o comum | Lista de funções, presets e tipos de bateria desconhecidos. Não reproduz o defeito de NC do firmware 2.0.5 |
-| WF-C710N | Referência: Gadgetbridge | Só o comum | Protocolo, firmware, presets e tipos de bateria desconhecidos |
-| LinkBuds | Referência: Gadgetbridge | Só o comum | Protocolo, firmware, presets e tipos de bateria desconhecidos. Suporte incompleto na referência. MDR v2 não confirmado |
-| LinkBuds S | Referência: libmdr e Gadgetbridge | Só o comum | Protocolo, firmware, presets e nome por MDR desconhecidos. A libmdr marca quase tudo como não testado |
-| LinkBuds Open | Referência: libmdr | Só o comum | Protocolo, firmware, presets e nome por MDR desconhecidos. Multiponto incompleto na referência |
+Tem um desses modelos? [Envie um relatório](https://github.com/raphaeltorquat0/Quietbar/issues/new?template=relatorio-de-fone.yml).
+
+| Modelo | Status | Origem | Verificado além do comum | Lacunas |
+|---|---|---|---|---|
+| WH-1000XM5 | Testado em hardware | Captura real: sessão do `mdr-cli dump` somente leitura, com 116 frames, mais 12 frames anteriores | Replay e respostas byte a byte | Só leitura: a reação real a cada SET não foi observada |
+| WF-1000XM5 | Validado com tráfego real | Captura real, `SonyHeadphonesClient` `tests/WF-1000XM5-6.1.0` (MIT) | Replay de 72 frames e respostas byte a byte | Só frames recebidos: a reação real a cada SET não foi observada. Lista de presets não capturada |
+| LinkBuds Clip | Validado com tráfego real | Captura real, `SonyHeadphonesClient` `tests/WF-LC900-2.0.3` e `-equalizer` (MIT) | Replay de 171 frames e respostas byte a byte | Só frames recebidos. Modos de escuta não modelados |
+| WH-1000XM6 | Experimental | Referência: `docs/device-support/WH-1000XM6.md` da libmdr (MIT) | Só o comum | Protocolo, firmware e presets desconhecidos. Tipo de NC pode não ser `0x17`. Posição dos ajustes gerais presumida |
+| WH-CH720N | Experimental | Referência: libmdr e Gadgetbridge | Só o comum | Protocolo, firmware e presets desconhecidos. Multiponto fora do perfil |
+| ULT WEAR | Experimental | Referência: Gadgetbridge | Só o comum | Protocolo, firmware, presets e nome por MDR desconhecidos. Posição dos ajustes gerais presumida |
+| WF-1000XM4 | Não verificado (pode ser MDR v1) | Referência: Gadgetbridge | Só o comum | Protocolo, firmware, presets e tipos de bateria desconhecidos. MDR v2 não confirmado |
+| WF-1000XM6 | Experimental | Referência: libmdr | Só o comum | Protocolo, firmware, presets e tipos de bateria desconhecidos. EQ incompleto na referência |
+| WF-C500 | Não verificado (pode ser MDR v1) | Referência: Gadgetbridge | Só o comum | Protocolo, firmware, presets e tipos de bateria desconhecidos. MDR v2 não confirmado |
+| WF-C510 | Experimental | Referência: libmdr e Gadgetbridge | Só o comum | Protocolo, firmware, presets e tipos de bateria desconhecidos. Posição do multiponto presumida |
+| WF-C700N | Experimental | Referência: libmdr, com protocolo `0x03000015`, firmware 2.0.7 e NC `0x17` | Só o comum | Lista de funções, presets e tipos de bateria desconhecidos. Não reproduz o defeito de NC do firmware 2.0.5 |
+| WF-C710N | Experimental | Referência: Gadgetbridge | Só o comum | Protocolo, firmware, presets e tipos de bateria desconhecidos |
+| LinkBuds | Não verificado (pode ser MDR v1) | Referência: Gadgetbridge | Só o comum | Protocolo, firmware, presets e tipos de bateria desconhecidos. Suporte incompleto na referência. MDR v2 não confirmado |
+| LinkBuds S | Experimental | Referência: libmdr e Gadgetbridge | Só o comum | Protocolo, firmware, presets e nome por MDR desconhecidos. A libmdr marca quase tudo como não testado |
+| LinkBuds Open | Experimental | Referência: libmdr | Só o comum | Protocolo, firmware, presets e nome por MDR desconhecidos. Multiponto incompleto na referência |
 
 O Gadgetbridge é AGPL: dele só foi lida a lista de recursos de cada modelo, como fato. Nenhum código foi copiado.
 

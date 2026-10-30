@@ -16,7 +16,8 @@ If you use your headphones with a Mac, changing noise canceling or EQ usually me
 |---|---|
 | WH-1000XM5 | Tested on my own pair |
 | WF-1000XM5, LinkBuds Clip | Validated with recorded traffic |
-| WH-1000XM6, CH720N, ULT WEAR, WF-1000XM4/XM6, WF-C series, LinkBuds, LinkBuds S/Open | Experimental, should work but untested |
+| WH-1000XM6, CH720N, ULT WEAR, WF-1000XM6, WF-C510/C700N/C710N, LinkBuds S/Open | Experimental: known protocol, untested |
+| WF-1000XM4, WF-C500, LinkBuds | Unverified: may use the older protocol |
 | WH-1000XM4/XM3, WF-1000XM3 | Not yet, they use an older protocol. It's on the roadmap |
 
 **This is where I need help.** If you own an experimental model, please try it and tell me what works. The issue template walks you through it, including how to remove your Bluetooth address from the report.

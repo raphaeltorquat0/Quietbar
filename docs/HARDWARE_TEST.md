@@ -14,6 +14,7 @@ Os SETs abaixo podem ser feitos pelo app (painel/Configurações) ou, para quem 
 | Item | Resultado | Data |
 |---|---|---|
 | `dump` (handshake, capacidades, estado) | OK — WH-1000XM5 fw 2.5.1 | 2026-10-29 |
+| `dump --log-hex --trace` somente leitura: 58 frames recebidos, só GET enviado | OK, 8 de 8 rodadas | 2026-10-30 |
 | App `--selftest` sem App Sandbox | `phase=ready` | 2026-10-29 |
 | App `--selftest` com App Sandbox | `phase=ready` | 2026-10-29 |
 | Ícone da barra (macOS 27, sem fone): clique abre/fecha o painel, clique fora e Esc fecham; clique direito e Option-clique mostram o menu curto (com Option, "Ferramentas de desenvolvedor…"); "Configurações do fone…" abre as Configurações mesmo antes de o painel abrir | OK (era o item 21) | 2026-10-29 |

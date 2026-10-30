@@ -22,7 +22,7 @@ The limits:
 
 - I've only tested on a WH-1000XM5 (firmware 2.5.1). The WF-1000XM5 and LinkBuds Clip are validated against recorded traffic, not physical units.
 - Reading state is confirmed on hardware. Write commands were validated against a simulated headphone, and I'm still working through the hardware checklist.
-- Other MDR v2 models are experimental. The XM4 and XM3 use the older MDR v1 protocol and don't work yet.
+- Other MDR v2 models are experimental, and the WF-1000XM4, WF-C500 and original LinkBuds may not be MDR v2 at all. The XM4 and XM3 use the older MDR v1 protocol and don't work yet.
 - The app isn't notarized, so macOS asks you to approve it in System Settings on first launch.
 - The Liquid Glass panel has only been checked by eye on macOS 27. macOS 14 and 15 build but haven't been checked visually.
 
