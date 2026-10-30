@@ -373,7 +373,7 @@
 /* Begin PBXTargetDependency section */
 		B25F9612E580A03540C91675 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = "TEMP_86972840-F8FD-44CA-A85E-B18D0F737513" /* MDRSimulator */;
+			productRef = "TEMP_4EFB6C6C-71D6-4651-9FCA-7EF392B15B72" /* MDRSimulator */;
 		};
 		DF552CBE810537470F8789A7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -678,7 +678,7 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = MDRSession;
 		};
-		"TEMP_86972840-F8FD-44CA-A85E-B18D0F737513" /* MDRSimulator */ = {
+		"TEMP_4EFB6C6C-71D6-4651-9FCA-7EF392B15B72" /* MDRSimulator */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MDRSimulator;
 		};
