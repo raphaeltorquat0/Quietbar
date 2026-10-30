@@ -4,7 +4,7 @@
 
 <p align="center">
 Controle seus fones <b>Sony</b> (WH-1000XM5, WF-1000XM5, LinkBuds…) pela barra de menus do macOS, sem o app da Sony no celular.<br>
-<i>Control your Sony headphones from the macOS menu bar — native, private, no phone app needed.</i>
+<i>Control your Sony headphones from the macOS menu bar — native, private, no phone app needed.</i> <a href="README.en.md">Read in English</a>
 </p>
 
 <p align="center">
@@ -47,11 +47,10 @@ O app só mostra o que o fone anuncia na conexão. macOS 14 ou mais novo, Apple 
 | WH-1000XM5 | **Testado em hardware** (firmware 2.5.1) |
 | WF-1000XM5 | Validado com tráfego real gravado (fw 6.1.0): bateria esquerda/direita + estojo, cancelamento de ruído, EQ |
 | LinkBuds Clip (WF-LC900) | Validado com tráfego real gravado (fw 2.0.3): sem cancelamento de ruído, EQ de 10 bandas |
-| WH-1000XM6, WH-CH720N, ULT WEAR, WF-1000XM4/XM6, WF-C500/C510/C700N/C710N, LinkBuds, LinkBuds S/Open | Experimental: mesmo protocolo (MDR v2), ainda sem teste |
-| WH-1000XM4/XM3/XM2, WF-1000XM3, WF-SP800N | Ainda não: usam a versão antiga do protocolo (MDR v1) |
+| WH-1000XM6, WH-CH720N, ULT WEAR, WF-1000XM4/XM6, WF-C500/C510/C700N/C710N, LinkBuds, LinkBuds S/Open | **Experimental:** mesmo protocolo (MDR v2), ainda sem teste |
+| WH-1000XM4/XM3/XM2, WF-1000XM3, WF-SP800N | **No roadmap:** usam a versão antiga do protocolo (MDR v1) |
 
-Tem um desses fones? [Abra uma issue](https://github.com/raphaeltorquat0/Quietbar/issues/new?template=novo-modelo.md)
-com o diagnóstico da aba Desenvolvedor; é o que transforma "experimental" em "testado".
+**Tem um fone experimental?** Teste e [envie um relatório](https://github.com/raphaeltorquat0/Quietbar/issues/new?template=relatorio-de-fone.yml); é o que transforma "experimental" em "testado".
 
 ## Instalar
 
@@ -153,6 +152,8 @@ Nada do dia a dia precisa dele. `swift build -c release` gera `.build/release/md
 - [`DECISIONS.md`](DECISIONS.md) — escolhas feitas onde a especificação era ambígua
 - [`docs/HARDWARE_TEST.md`](docs/HARDWARE_TEST.md) — o que já foi e o que falta verificar no fone
 - [`docs/RELEASING.md`](docs/RELEASING.md) — como assinar, notarizar e publicar
+- [`Packages/MDRKit`](Packages/MDRKit/README.md) — o protocolo como pacote Swift independente
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) e [`SECURITY.md`](SECURITY.md) — como contribuir e reportar vulnerabilidades
 
 ## Créditos
 

@@ -1,0 +1,61 @@
+name: Headphone report / Relatório de fone
+description: Tell us how Quietbar works with your model. / Conte como o Quietbar funciona com o seu fone.
+title: "[Headphone] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Remove your Bluetooth address before posting.** It looks like `AA:BB:CC:DD:EE:FF`. Delete the `mac` line from the diagnostics and the `capabilityInfo` line from the log, which carries the same address in hex.
+
+        **Remova o endereço Bluetooth antes de enviar.** Ele tem o formato `AA:BB:CC:DD:EE:FF`. Apague a linha `mac` do diagnóstico e a linha `capabilityInfo` do log, que traz o mesmo endereço em hexadecimal.
+  - type: input
+    id: model
+    attributes:
+      label: Model / Modelo
+      placeholder: WF-1000XM4
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware
+      placeholder: "1.6.0"
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS
+      placeholder: "26.1"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Quietbar version / Versão do Quietbar
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: What works and what doesn't / O que funciona e o que não funciona
+    validations:
+      required: true
+  - type: textarea
+    id: dump
+    attributes:
+      label: "`mdr-cli dump` output or diagnostics / Saída do `mdr-cli dump` ou diagnóstico"
+      description: |
+        In the app: Settings › General › "Show the Developer tab", then Developer › Copy diagnostics.
+        No app: Configurações › Geral › "Mostrar a aba Desenvolvedor", depois Desenvolvedor › Copiar diagnóstico.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Developer tab log / Log da aba Desenvolvedor
+      description: |
+        Use the headphone buttons while the MDR protocol log is open, then export and attach or paste it.
+        Use os botões do fone com o log do protocolo aberto, depois exporte e anexe ou cole.
+      render: text

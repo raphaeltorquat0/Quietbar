@@ -1,0 +1,29 @@
+name: Bug report / Relatar um bug
+description: Something doesn't work as expected. / Algo não funciona como deveria.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened? / O que aconteceu?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / Como reproduzir
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Quietbar, macOS and headphone versions / Versões do Quietbar, do macOS e do fone
+      placeholder: Quietbar 1.3.0, macOS 26.1, WH-1000XM5 2.5.1
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics / Diagnóstico
+      description: Remove the `mac` line first. / Remova a linha `mac` antes.
+      render: text
