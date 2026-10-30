@@ -32,6 +32,7 @@ Seus ajustes ficam no Mac: a única conexão com a internet é a procura de atua
 - Modo de som (cancelamento de ruído / ambiente / desligado), nível do ambiente, foco na voz
 - Equalizador (presets e curva de 5 bandas + Clear Bass), DSEE, Falar para conversar, pausa e desligamento automáticos
 - Multiponto, painel de toque, prioridade de conexão, volume e controle de mídia
+- **Som no Mac:** melhora o som do seu fone no Mac, com EQ paramétrico de até 10 filtros, A/B e curvas importadas do AutoEQ. Vale só para o áudio do Mac: não altera o cancelamento de ruído nem o som no celular ([como funciona](docs/AUDIO.md))
 - Bateria na barra de menus, com alerta de bateria baixa
 - Atalhos globais e perfis automáticos por app em primeiro plano ou rede Wi-Fi
 - Popup animado ao conectar, com um modelo 3D do fone gerado em código
@@ -101,6 +102,7 @@ Central de Controle (com o app aberto).
 
 | Permissão | Por quê |
 |---|---|
+| Gravação de Áudio do Sistema | Só se você ligar o **Som no Mac**. O áudio é processado na memória e sai direto para o fone; nada é gravado nem enviado |
 | Bluetooth | falar com o fone. Na CLI, quem pede é o Terminal — reinicie o Terminal depois de autorizar. |
 | Localização (opcional) | o macOS só revela o nome da rede Wi-Fi a apps com localização; usado apenas nos perfis por Wi-Fi |
 | Notificações (opcional) | alerta de bateria baixa |

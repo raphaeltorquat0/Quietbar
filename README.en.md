@@ -25,6 +25,7 @@ Quietbar is a native Swift/SwiftUI app that speaks the Sony MDR v2 protocol dire
 - Sound mode (noise canceling, ambient, off), ambient level and voice focus
 - Equalizer, DSEE, Speak-to-Chat, auto pause and auto power off
 - Multipoint, touch panel, connection priority, volume and media controls
+- **Mac Sound:** improves your headphones' sound on your Mac, with a parametric EQ of up to 10 filters, A/B comparison and curves imported from AutoEQ. It only affects audio from your Mac and doesn't change noise canceling or the sound on your phone. It asks for the System Audio Recording permission; audio is processed in memory and nothing is recorded or sent ([details, in Portuguese](docs/AUDIO.md))
 - Battery in the menu bar, with a low battery alert
 - Global shortcuts and automatic profiles by foreground app or Wi-Fi network
 - Connection popup with a procedurally generated 3D model

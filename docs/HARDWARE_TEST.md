@@ -87,3 +87,39 @@ Fones diferentes do WH-1000XM5 estão marcados como experimentais no README. Par
 Configurações › Geral › "Mostrar a aba Desenvolvedor" › **Copiar diagnóstico** + **Log do protocolo MDR › Exportar…**,
 anexados numa issue com o template "Relatório de fone". Conferir em especial: bateria esquerda/direita/estojo
 (earbuds), modos de som disponíveis e o equalizador (6 ou 10 bandas).
+
+## Som no Mac
+
+Nenhum passo aqui usa SET no fone, exceto "Deixar em plano", que só acontece se você clicar. Use um build instalado com `make install` e o fone como saída do Mac, sem chamada aberta.
+
+Fique de olho no pedido de permissão: **enquanto ele estiver aberto, nenhum app consegue começar a tocar som**. Responda na hora. Em build ad-hoc, a permissão precisa ser dada de novo a cada build.
+
+| # | Ação | Esperado |
+|---|---|---|
+| 1 | Configurações › Som no Mac › "Ligar o Som no Mac" e responda **Permitir** | Estado vai para "Aguardando áudio"; nada muda no som |
+| 2 | Toque música | Em menos de 1 s o Estado vira "Ativo"; sem estalo nem eco |
+| 3 | Preset "Mais grave", depois "Plano" | Grave muda sem clique nem chiado durante a troca |
+| 4 | Clique no botão A/B várias vezes | Troca imediata, sem clique |
+| 5 | Pontos da curva: arraste com música tocando | Mudança contínua; o medidor não encosta no laranja por muito tempo |
+| 6 | Aba Desenvolvedor | Anote latência, carga do render e CPU do app; a meta é < 20 ms e < 2% |
+| 7 | Mude a saída para os alto-falantes e volte | A música segue nos alto-falantes; ao voltar, "Ativo" de novo |
+| 8 | Desligue o fone com música tocando | Áudio vai para a saída seguinte do Mac; o app não fica em erro |
+| 9 | Abra uma chamada (microfone do fone) | "Pausado durante chamadas"; a voz segue normal; ao fechar, volta a processar |
+| 10 | Com música tocando: `pkill -9 -x Quietbar` | **Em menos de 1 s a música volta sozinha, sem processamento** |
+| 11 | Reabra o app | Volta a processar se estava ligado |
+| 12 | Tire a permissão em Ajustes do Sistema, com música tocando | No pior caso, 5 s de silêncio e o áudio volta sem processamento |
+| 13 | Clique em "Deixar em plano" | Só nesse clique o EQ do fone muda |
+| 14 | Teste de eco | No passo 2, não pode haver som dobrado: com a tap sem permissão, o loopback mostrou o original só atenuado, e isso ainda precisa ser conferido com ela ativa |
+
+**Medição no maintainer** (dispositivo com loopback, sem som audível nem fone). Depois de autorizar o build que vai medir:
+
+```sh
+swift build --product mdr-cli
+S=SteamStreamingSpeakers_UID
+.build/debug/mdr-cli audio-probe --play $S --seconds 16 &
+.build/debug/mdr-cli audio-probe --listen $S --seconds 15 > /tmp/nivel.txt &
+sleep 1; open -n dist/Quietbar.app --stdout /tmp/selftest.txt --args --audio-selftest $S
+```
+
+`/tmp/selftest.txt` traz latência e CPU com a cadeia de 10 filtros; `/tmp/nivel.txt` mostra o que chegou ao dispositivo.
+

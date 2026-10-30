@@ -14,8 +14,8 @@ packages:
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    MARKETING_VERSION: "1.3.0"
-    CURRENT_PROJECT_VERSION: "4"
+    MARKETING_VERSION: "1.4.0"
+    CURRENT_PROJECT_VERSION: "5"
 targets:
   Quietbar:
     type: application
@@ -32,6 +32,8 @@ targets:
         product: MDRKit
       - package: QuietbarKit
         product: HeadphoneModel
+      - package: QuietbarKit
+        product: QuietAudio
       # Compilado, mas não ligado: só o Debug liga o objeto, em OTHER_LDFLAGS (DECISIONS.md #83).
       - package: QuietbarKit
         product: MDRSimulator
