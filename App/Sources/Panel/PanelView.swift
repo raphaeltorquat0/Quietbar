@@ -1,6 +1,9 @@
 import AppKit
 import HeadphoneModel
 import MDRKit
+#if DEBUG
+import MDRSimulator
+#endif
 import SwiftUI
 
 /// Tudo que o painel mostra, já traduzido para a UI (sem termos do protocolo).
@@ -54,6 +57,9 @@ struct PanelState {
     var modelSnapshot: NSImage?
     /// Nome que o fone informa; escolhe o modelo 3D.
     var modelName: String?
+    #if DEBUG
+    var simulated: DeviceProfile?
+    #endif
 
     enum Link { case ready, bluetoothOnly, off }
 }
@@ -86,6 +92,9 @@ struct PanelView: View {
 
     var body: some View {
         VStack(spacing: 8) {
+            #if DEBUG
+            if let p = state.simulated { SimulatedBadge(profile: p) }
+            #endif
             header
             switch state.phase {
             case .ready:

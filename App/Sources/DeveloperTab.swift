@@ -9,6 +9,9 @@ import UniformTypeIdentifiers
 struct DeveloperTab: View {
     var body: some View {
         Form {
+            #if DEBUG
+            SimulatorSection()
+            #endif
             DiagnosticsSection()
             PopupTestSection()
             ModelViewerSection()

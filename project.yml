@@ -32,6 +32,10 @@ targets:
         product: MDRKit
       - package: QuietbarKit
         product: HeadphoneModel
+      # Compilado, mas não ligado: só o Debug liga o objeto, em OTHER_LDFLAGS (DECISIONS.md #83).
+      - package: QuietbarKit
+        product: MDRSimulator
+        link: false
       - package: Sparkle
       - target: QuietbarControls
       - sdk: IOBluetooth.framework
@@ -54,6 +58,8 @@ targets:
         ENABLE_USER_SCRIPT_SANDBOXING: YES
         DEAD_CODE_STRIPPING: YES
       configs:
+        Debug:
+          OTHER_LDFLAGS: "$(inherited) $(BUILT_PRODUCTS_DIR)/MDRSimulator.o"
         Release:
           ONLY_ACTIVE_ARCH: NO
           ARCHS: "arm64 x86_64"

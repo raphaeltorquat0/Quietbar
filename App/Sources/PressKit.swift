@@ -1,9 +1,11 @@
+#if DEBUG
 import AppKit
 import HeadphoneModel
 import MDRKit
+import MDRSimulator
 import SwiftUI
 
-/// `Quietbar --press-kit <pasta>`: imagens de divulgação sem capturar a área de trabalho.
+/// `Quietbar --press-kit <pasta>`, só em Debug: imagens de divulgação sem capturar a área de trabalho.
 /// Cada imagem é uma janela opaca do próprio app, com o gradiente dentro dela: o vidro amostra o
 /// gradiente, e `screencapture -l` pega só essa janela. O `demo.mov` grava o retângulo exato de uma
 /// janela acima de tudo; `scripts/press-kit.sh` o converte em GIF.
@@ -15,8 +17,6 @@ import SwiftUI
         ("carregando", PanelFixtures.loading),
         ("wf", PanelFixtures.wf1000xm5),
         ("clip", PanelFixtures.linkBudsClip),
-        ("xm6", PanelFixtures.wh1000xm6),
-        ("linkbuds-s", PanelFixtures.linkBudsS),
     ]
 
     static func run(to dir: URL) async {
@@ -26,6 +26,16 @@ import SwiftUI
             for (name, state) in panels {
                 await shot(PanelView(state: state), dark: dark, to: dir.appending(path: "painel-\(name)-\(suffix).png"))
             }
+            // Um painel por modelo, pelo mesmo caminho do app, com o fone simulado.
+            for profile in Profiles.all {
+                await Simulation.shared.start(profile)
+                await DeviceController.shared.ensureConnected()
+                try? await Task.sleep(for: .seconds(0.5)) // as respostas do sync chegam depois do handshake
+                var state = PanelState.from(DeviceController.shared)
+                state.simulated = nil
+                await shot(PanelView(state: state), dark: dark, to: dir.appending(path: "modelo-\(profile.id)-\(suffix).png"))
+            }
+            await Simulation.shared.stop()
             await shot(popup(PopupModel()), dark: dark, to: dir.appending(path: "popup-\(suffix).png"))
             await shot(model, dark: dark, to: dir.appending(path: "modelo-3d-\(suffix).png"))
         }
@@ -144,3 +154,4 @@ private struct DemoScene<Popup: View>: View {
         }
     }
 }
+#endif

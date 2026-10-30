@@ -4,10 +4,13 @@ DEST     := /Applications/$(APP_NAME).app
 DEV_DD   := .build/xcode-debug
 
 .DEFAULT_GOAL := help
-.PHONY: help install dev test release notarize press-kit
+.PHONY: help install dev test test-sim release notarize press-kit
 
 help: ## Lista os alvos
 	@grep -E '^[a-z]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
+
+test-sim: ## Roda só os testes do simulador
+	swift test --filter MDRSimulatorTests
 
 install: ## Compila em Release, assina, instala em /Applications, ativa abrir no login e abre o app
 	scripts/build-app.sh

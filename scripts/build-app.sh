@@ -45,6 +45,8 @@ for arch in arm64 x86_64; do
   lipo "$BUILT/Contents/MacOS/Quietbar" -verify_arch "$arch" || fail "falta a arquitetura $arch"
 done
 
+scripts/check-release-clean.sh "$BUILT/Contents/MacOS/Quietbar"
+
 cp -R "$BUILT" dist/
 APP=dist/Quietbar.app
 

@@ -3,6 +3,9 @@ import CoreAudio
 import IOBluetooth
 import MDRKit
 import MDRSession
+#if DEBUG
+import MDRSimulator
+#endif
 import MDRTransport
 import Observation
 import UserNotifications
@@ -21,9 +24,9 @@ final class DeviceController {
 
     var state: MDRDeviceState { snapshot.state }
     var isReady: Bool { snapshot.phase == .ready }
-    var isBluetoothConnected: Bool { selectedDevice?.isConnected ?? false }
+    var isBluetoothConnected: Bool { simulating || selectedDevice?.isConnected ?? false }
     var isBatteryLow: Bool { lastBattery.map { Int($0.level) <= settings.lowBatteryThreshold && !$0.isCharging } ?? false }
-    var selectedDevice: PairedDevice? { devices.first { $0.address == selectedAddress } }
+    var selectedDevice: PairedDevice? { simulating ? nil : devices.first { $0.address == selectedAddress } }
 
     var selectedAddress: String? {
         didSet {
@@ -91,16 +94,25 @@ final class DeviceController {
         connecting = nil
     }
 
+    /// `true` só em Debug, com um fone simulado ativo: não há Bluetooth envolvido.
+    private var simulating: Bool {
+        #if DEBUG
+        Simulation.shared.transport != nil
+        #else
+        false
+        #endif
+    }
+
     private func connect() async {
-        guard let address = selectedAddress else {
+        guard simulating || selectedAddress != nil else {
             lastError = "Nenhum fone Sony pareado. Pareie o fone nos Ajustes do Sistema."
             return
         }
-        guard BluetoothDevices.isConnected(address) else {
+        guard simulating || BluetoothDevices.isConnected(selectedAddress ?? "") else {
             lastError = "O fone não está conectado ao Mac."
             return
         }
-        let s = session ?? makeSession(address)
+        let s = session ?? makeSession(selectedAddress ?? "")
         do {
             try await s.connect()
             lastError = nil
@@ -112,7 +124,7 @@ final class DeviceController {
     /// "Conectar" do painel e do menu: pede a conexão Bluetooth se o fone não estiver ligado ao Mac,
     /// depois abre o canal MDR.
     func connectDevice() async {
-        guard let address = selectedAddress else { return await ensureConnected() }
+        guard !simulating, let address = selectedAddress else { return await ensureConnected() }
         if !BluetoothDevices.isConnected(address) {
             lastError = nil
             snapshot = MDRSession.Snapshot(phase: .connecting, state: snapshot.state)
@@ -131,13 +143,18 @@ final class DeviceController {
     /// "Desconectar" do menu: solta o canal e a conexão Bluetooth do fone com o Mac.
     func disconnectDevice() async {
         await session?.disconnect()
-        if let a = selectedAddress { BluetoothDevices.disconnect(a) }
+        if !simulating, let a = selectedAddress { BluetoothDevices.disconnect(a) }
         refreshDevices()
     }
 
     private func makeSession(_ address: String) -> MDRSession {
         let toFile = settings.logTraffic
-        let s = MDRSession(channel: RFCOMMChannel(address: address), traffic: { dir, bytes in
+        #if DEBUG
+        let channel: any MDRChannel = Simulation.shared.transport ?? RFCOMMChannel(address: address)
+        #else
+        let channel: any MDRChannel = RFCOMMChannel(address: address)
+        #endif
+        let s = MDRSession(channel: channel, traffic: { dir, bytes in
             if toFile { TrafficLog.append(dir, bytes) }
             Task { @MainActor in ProtocolLog.shared.add(dir, bytes) }
         })
@@ -148,6 +165,20 @@ final class DeviceController {
         }
         return s
     }
+
+    #if DEBUG
+    /// Troca entre Bluetooth e fone simulado.
+    func restartSession() async { await reset() }
+
+    /// O Mac reage ao cenário pelo mesmo caminho dos eventos reais.
+    func simulated(_ event: HostEvent) async {
+        switch event {
+        case .connectionLost: break
+        case .connectionRestored, .didWake: if visible > 0 { await ensureConnected() }
+        case .willSleep: await session?.disconnect()
+        }
+    }
+    #endif
 
     private func reset() async {
         idleTask?.cancel()
