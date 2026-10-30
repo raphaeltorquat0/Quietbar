@@ -89,7 +89,7 @@ extension PanelState {
         }
         let sound = MacSound.shared
         if sound.outputIsHeadphone {
-            p.macSound = .init(enabled: sound.enabled, presetID: sound.preset.rawValue, status: sound.statusText,
+            p.macSound = .init(enabled: sound.isOn, presetID: sound.preset.rawValue, status: sound.statusText,
                                presets: MacPreset.allCases.map {
                                    .init(id: $0.rawValue, name: $0.label, available: $0 != .correction || sound.correction != nil)
                                })

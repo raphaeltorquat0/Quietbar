@@ -9,6 +9,7 @@ struct MacSoundTab: View {
     @State private var selected = 0
     @State private var importing = false
     @State private var message: String?
+    @State private var askingConsent = false
     private var sound: MacSound { .shared }
 
     var body: some View {
@@ -17,7 +18,7 @@ struct MacSoundTab: View {
             if !sound.available {
                 Text("O processamento de áudio exige macOS 14.2 ou mais novo.").foregroundStyle(.secondary)
             } else {
-                if !sound.onboarded { onboarding }
+                if sound.permission != .granted { onboarding }
                 control
                 editor
                 headphoneEQ
@@ -26,6 +27,7 @@ struct MacSoundTab: View {
         }
         .formStyle(.grouped)
         .fileImporter(isPresented: $importing, allowedContentTypes: [.plainText, .json]) { importCurve($0) }
+        .onAppear { sound.refreshPermission() }
     }
 
     private var onboarding: some View {
@@ -33,20 +35,23 @@ struct MacSoundTab: View {
             Text("O Som no Mac melhora o som do seu fone no Mac: ele corrige a resposta de frequência e aplica um EQ com mais bandas que o do fone.")
             Text("Para isso, o Quietbar pede a permissão **Gravação de Áudio do Sistema**. O macOS usa esse nome porque o app precisa receber o áudio antes de ele chegar ao fone. Nada é gravado, salvo nem enviado: o som é processado na memória e sai direto para o fone.")
             Text("Vale só para o áudio do Mac. Não altera o cancelamento de ruído nem o som no celular.")
-            Text("Responda ao pedido do macOS assim que ele aparecer: enquanto ele estiver aberto, outros apps podem não conseguir começar a tocar som.")
+            Text("**Pause o áudio antes de continuar e responda ao pedido do macOS na hora.** Enquanto ele estiver aberto, outros apps podem não conseguir começar a tocar som.")
                 .foregroundStyle(.orange)
-            Button("Ligar o Som no Mac") {
-                sound.onboarded = true
-                sound.enabled = true
+            if sound.permission == .unavailable {
+                Text("Este macOS não permite consultar a permissão, então o Som no Mac fica desligado.").foregroundStyle(.secondary)
+            } else {
+                Button(sound.asking ? "Aguardando sua resposta ao macOS…" : "Pedir permissão e ligar") { sound.requestPermission() }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(sound.asking)
             }
-            .buttonStyle(.borderedProminent)
+            if let m = sound.askMessage { Text(m).font(.caption).foregroundStyle(.orange) }
         }
     }
 
     @ViewBuilder private var control: some View {
         @Bindable var sound = sound
         Section {
-            Toggle("Som no Mac", isOn: $sound.enabled).disabled(!sound.onboarded)
+            Toggle("Som no Mac", isOn: $sound.enabled).disabled(sound.permission != .granted)
             LabeledContent("Estado", value: sound.statusText)
             if case .failed(let reason) = sound.engine?.phase {
                 Text(reason).font(.caption).foregroundStyle(.orange)
@@ -149,10 +154,38 @@ struct MacSoundTab: View {
         }
     }
 
-    private var source: some View {
+    @ViewBuilder private var source: some View {
+        @Bindable var sound = sound
         Section("Curva de correção") {
-            Text("O Quietbar não traz uma curva pronta: a licença das medições não permite redistribuí-la (veja docs/AUDIO.md). Para usar o preset Correção:")
-            Text("1. Abra autoeq.app e escolha o seu fone.\n2. Em Equalizer, escolha Parametric e baixe o `ParametricEQ.txt`.\n3. Clique em Importar… e selecione o arquivo.")
+            Text("O Quietbar não traz uma curva pronta: a licença das medições não permite redistribuí-la. Baixe a do seu fone e o app oferece importar.")
+            Button("Obter curva de correção") {
+                if sound.watchConsent { getCurve() } else { askingConsent = true }
+            }
+            .confirmationDialog("Procurar a curva nos Downloads?", isPresented: $askingConsent) {
+                Button("Abrir a página e procurar") {
+                    sound.watchConsent = true
+                    getCurve()
+                }
+                Button("Só abrir a página") { NSWorkspace.shared.open(curveURL) }
+            } message: {
+                Text("Por 15 minutos, o Quietbar confere em ~/Downloads só se apareceu um ParametricEQ.txt. Ele não lista a pasta nem abre outros arquivos.")
+            }
+            if sound.watching {
+                Label("Procurando o ParametricEQ.txt em Downloads…", systemImage: "magnifyingglass").font(.caption).foregroundStyle(.secondary)
+            }
+            if let found = sound.foundCurve {
+                HStack {
+                    Text("Curva encontrada: \(found.name) · \(found.filters.count) filtros")
+                    Spacer()
+                    Button("Ignorar") { sound.dismissFoundCurve() }
+                    Button("Importar e ativar") {
+                        sound.acceptFoundCurve()
+                        selected = 0
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+            }
+            if sound.watchConsent { Toggle("Procurar o arquivo em Downloads", isOn: $sound.watchConsent) }
             if let c = sound.correction {
                 LabeledContent("Importada", value: "\(c.name) · \(c.filters.count) filtros")
             }
@@ -160,20 +193,25 @@ struct MacSoundTab: View {
         .font(.callout)
     }
 
+    /// A página de resultados do AutoEQ para o WH-1000XM5; os outros fones escolhem em autoeq.app.
+    private var curveURL: URL {
+        let model = device.state.modelName
+        return URL(string: model == nil || model == "WH-1000XM5"
+            ? "https://github.com/jaakkopasanen/AutoEq/tree/master/results/oratory1990/over-ear/Sony%20WH-1000XM5"
+            : "https://autoeq.app")!
+    }
+
+    private func getCurve() {
+        NSWorkspace.shared.open(curveURL)
+        sound.startWatching()
+    }
+
     private func importCurve(_ result: Result<URL, Error>) {
         do {
             let url = try result.get()
             let scoped = url.startAccessingSecurityScopedResource()
             defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-            guard (try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0) < 256_000 else {
-                throw CurveError.invalidFile("arquivo grande demais")
-            }
-            let data = try Data(contentsOf: url)
-            let name = url.deletingPathExtension().lastPathComponent
-            let curve = url.pathExtension.lowercased() == "json"
-                ? try EQCurve.parseJSON(data)
-                : try EQCurve.parseAutoEQ(String(decoding: data, as: UTF8.self), name: name)
-            sound.correction = curve
+            sound.correction = try EQCurve.load(from: url)
             sound.preset = .correction
             selected = 0
             message = String(localized: "Importada.")
@@ -291,6 +329,7 @@ struct MacSoundDeveloperSection: View {
                 LabeledContent("CPU do app", value: String(format: "%.1f %%", cpu))
                 Toggle("Tom de teste (1 kHz, −20 dBFS)", isOn: Binding(get: { engine.toneOn }, set: { engine.setTone($0) }))
                     .disabled(engine.device == nil || engine.phase == .callMode)
+                EchoTestRow()
             } else {
                 Text("Exige macOS 14.2 ou mais novo.").foregroundStyle(.secondary)
             }
@@ -304,6 +343,68 @@ struct MacSoundDeveloperSection: View {
                 last = now
                 t = d
             }
+        }
+    }
+}
+
+/// Teste guiado: confere em um dispositivo com loopback se o mudo zera o som original.
+private struct EchoTestRow: View {
+    @State private var devices: [OutputDevice] = []
+    @State private var uid = ""
+    @State private var running = false
+    @State private var lines: [String] = []
+    @State private var verdict: (text: String, ok: Bool)?
+
+    var body: some View {
+        Group {
+            Text("Teste de eco: toca um tom no dispositivo de loopback, sem som audível, e falha se o original não zerar com a tap ativa.")
+                .font(.caption).foregroundStyle(.secondary)
+            if devices.isEmpty {
+                Text("Nenhum dispositivo virtual com entrada e saída.").font(.caption).foregroundStyle(.secondary)
+            } else {
+                Picker("Loopback", selection: $uid) {
+                    ForEach(devices, id: \.uid) { Text($0.name).tag($0.uid) }
+                }
+                Button(running ? "Testando…" : "Iniciar teste de eco") { start() }
+                    .disabled(running || MacSound.shared.permission != .granted)
+            }
+            ForEach(lines, id: \.self) { Text($0).font(.caption.monospaced()) }
+            if let verdict {
+                Label(verdict.text, systemImage: verdict.ok ? "checkmark.circle.fill" : "xmark.octagon.fill")
+                    .foregroundStyle(verdict.ok ? .green : .red)
+            }
+        }
+        .task {
+            devices = await Task.detached { AudioDevices.virtualDuplex() }.value
+            uid = devices.first?.uid ?? ""
+        }
+    }
+
+    /// Ler a entrada do loopback exige a permissão de microfone, pedida só neste clique.
+    private func start() {
+        guard #available(macOS 14.2, *), let device = devices.first(where: { $0.uid == uid }) else { return }
+        running = true
+        lines = []
+        verdict = nil
+        Task {
+            var mic = await Task.detached { SystemPermission.status(.microphone) }.value
+            if mic == .notAsked {
+                let granted = await withCheckedContinuation { c in SystemPermission.request(.microphone) { c.resume(returning: $0) } }
+                mic = granted ? .granted : .denied
+            }
+            guard mic == .granted else {
+                verdict = (String(localized: "Sem acesso à entrada do loopback: libere o Microfone para o Quietbar."), false)
+                running = false
+                return
+            }
+            let result = await EchoTest.run(on: device) { lines.append($0) }
+            verdict = switch result.verdict {
+            case .passed: (String(localized: "Passou: o som original zerou."), true)
+            case .echo: (String(localized: "Falhou: o som original continua chegando. Haveria eco."), false)
+            case .noLoopback: (String(localized: "Inconclusivo: o tom não voltou pela entrada deste dispositivo."), false)
+            case .notRestored: (String(localized: "Falhou: o som não voltou ao desmontar a tap."), false)
+            }
+            running = false
         }
     }
 }

@@ -541,6 +541,16 @@
         }
       }
     },
+    "Precisa da permissão": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Needs permission"
+          }
+        }
+      }
+    },
     "Predefinição %lld": {
       "localizations": {
         "en": {

@@ -10,6 +10,12 @@ struct QuietbarApp: App {
 
     init() {
         if CommandLine.arguments.contains("--selftest") { Self.selfTest() }
+        if CommandLine.arguments.contains("--audio-permission-status") {
+            // Só consulta: nada de tap nem de diálogo. Serve para conferir a consulta no app assinado.
+            let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first?.path ?? ""
+            print("áudio: \(SystemPermission.status(.audioCapture)); microfone: \(SystemPermission.status(.microphone)); Downloads legível: \(access(downloads, R_OK) == 0)")
+            exit(0)
+        }
         if let i = CommandLine.arguments.firstIndex(of: "--audio-selftest") {
             Self.audioSelfTest(uid: CommandLine.arguments.dropFirst(i + 1).first)
             RunLoop.main.run() // nunca chega ao SwiftUI: nada de Bluetooth nem `DeviceController` neste modo
@@ -65,6 +71,12 @@ struct QuietbarApp: App {
     /// O CLI não serve aqui: vindo de um shell, ele não tem a permissão e o IOProc nem roda.
     private static func audioSelfTest(uid: String?) {
         Task { @MainActor in
+            // Sem a permissão, montar a tap faria o `coreaudiod` abrir o diálogo.
+            let permission = SystemPermission.status(.audioCapture)
+            guard permission == .granted else {
+                print("sem permissão de áudio do sistema (\(permission)): autorize pelo botão da aba Som no Mac")
+                exit(3)
+            }
             guard #available(macOS 14.2, *), let uid, let device = AudioDevices.find(uid: uid) else { exit(2) }
             let log = FileManager.default.temporaryDirectory.appending(path: "quietbar-audio-selftest.txt")
             var lines: [String] = []
