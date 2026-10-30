@@ -14,7 +14,7 @@ private enum Gate {
     }
 }
 
-@Suite(.enabled(if: Gate.hasLoopback, "Precisa de Core Audio real e de um dispositivo com loopback: pulado no CI"))
+@Suite(.serialized, .enabled(if: Gate.hasLoopback, "Precisa de Core Audio real e de um dispositivo com loopback: pulado no CI"))
 struct CoreAudioTests {
     private func start(_ args: [String], output: Any = FileHandle.nullDevice) throws -> Process {
         let p = Process()
@@ -54,11 +54,22 @@ struct CoreAudioTests {
 
         let tap = try start(["--device", Gate.loopback, "--mute", "--hold", "--seconds", "20"])
         defer { tap.terminate() }
-        #expect(try await wait(out) { $0 < 0.08 }, "o mudo deveria derrubar o sinal")
+        // Com a tap, o que chega é o tom processado (0,063 nesta curva), sem o original somado.
+        #expect(try await wait(out) { $0 < 0.08 }, "o mudo deveria tirar o original")
 
         kill(tap.processIdentifier, SIGKILL)
         tap.waitUntilExit()
         #expect(try await wait(out) { $0 > 0.09 }, "o som deveria voltar sozinho depois do kill -9")
+    }
+
+    /// O teste de eco de verdade: com a tap mutando, o original tem de zerar no dispositivo.
+    @available(macOS 14.2, *)
+    @Test @MainActor func echoTestMeasuresTheLoopback() async throws {
+        let device = try #require(AudioDevices.find(uid: Gate.loopback))
+        let r = await EchoTest.run(on: device) { _ in }
+        #expect(r.baseline > 0.09)
+        #expect(r.tapRan)
+        #expect(r.verdict == .passed)
     }
 
     @Test func defaultOutputDescribesItself() throws {

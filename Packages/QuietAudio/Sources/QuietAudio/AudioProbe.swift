@@ -4,7 +4,7 @@ import Foundation
 /// o CLI vindo de um shell não tem a permissão de gravar o áudio do sistema; o app assinado tem.
 public enum AudioProbe {
     @available(macOS 14.2, *) @MainActor
-    public static func measure(_ device: OutputDevice, seconds: Double, mute: Bool, tone: Bool, hold: Bool,
+    public static func measure(_ device: OutputDevice, seconds: Double, mute: Bool, tone: Bool, hold: Bool, trace: Bool = false,
                                log: (String) -> Void) async -> Bool {
         log("dispositivo: \(device.name) \(device.sampleRate) Hz \(device.channels) canais")
         let chain = DSPChain()
@@ -31,6 +31,7 @@ public enum AudioProbe {
         while Date().timeIntervalSince(wall) < seconds {
             try? await Task.sleep(for: .milliseconds(100))
             last = chain.readStats()
+            if trace { log(String(format: "t=%.1f quadros=%llu sinal=%llu pico=%.3f", Date().timeIntervalSince(wall), last.frames, last.lastSignalFrame, last.outputPeak)) }
             load.append(last.load)
             latency.append(last.latency)
             peak = max(peak, last.outputPeak)

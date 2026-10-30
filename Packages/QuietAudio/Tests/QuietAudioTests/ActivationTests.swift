@@ -122,6 +122,17 @@ private final class FakeBackend: AudioBackend {
     func currentOutput() -> OutputDevice? { output }
 }
 
+@Suite struct DefaultStateTests {
+    /// Instalação nova e update da 1.3.0 partem daqui: sem ligar, nada monta, mesmo com o fone na saída.
+    @Test func staysOffUntilEnabled() {
+        var m = ActivationMachine()
+        #expect(m.handle(.targetChanged(address: address)).isEmpty)
+        #expect(m.handle(.outputChanged(a2dp)).isEmpty)
+        #expect(m.phase == .off)
+        #expect(m.mounted == nil)
+    }
+}
+
 @MainActor @Suite struct AudioEngineTests {
     private func running() -> (AudioEngine, FakeBackend) {
         let b = FakeBackend()
@@ -180,17 +191,17 @@ private final class FakeBackend: AudioBackend {
         let (e, b) = running()
         feed(e, 0.1)
         e.tick()
-        for _ in 0..<AudioEngine.stallTicksActive { e.tick() }
+        for _ in 0..<AudioEngine.stallTicks { e.tick() }
         #expect(b.commands.last == .unmount)
         guard case .failed = e.phase else { Issue.record("deveria ter falhado"); return }
     }
 
-    /// Sem permissão o IOProc nem roda (visto no macOS 27): o app nunca chega a mutar nada.
-    @Test func noPermissionMeansIOProcNeverRunsAndNothingIsMuted() {
+    /// Nada tocando: o aggregate nem começa a rodar. Isso não é falha, e nada é mutado.
+    @Test func waitsForAudioForeverWithoutFailing() {
         let (e, b) = running()
-        for _ in 0..<AudioEngine.stallTicksArming { e.tick() }
-        guard case .failed = e.phase else { Issue.record("deveria ter falhado"); return }
-        #expect(b.commands == [.mount(a2dp), .unmount])
+        for _ in 0..<2_000 { e.tick() }
+        #expect(e.phase == .arming)
+        #expect(b.commands == [.mount(a2dp)])
     }
 
     @Test func backendFailureUnmounts() async {

@@ -67,14 +67,37 @@ public enum AudioDevices {
         return id == 0 ? nil : describe(id)
     }
 
-    public static func find(uid: String) -> OutputDevice? {
-        var a = address(kAudioHardwarePropertyDevices)
+    private static func objects(_ selector: AudioObjectPropertySelector) -> [AudioObjectID] {
+        var a = address(selector)
         var size: UInt32 = 0
         let system = AudioObjectID(kAudioObjectSystemObject)
-        guard AudioObjectGetPropertyDataSize(system, &a, 0, nil, &size) == noErr else { return nil }
+        guard AudioObjectGetPropertyDataSize(system, &a, 0, nil, &size) == noErr else { return [] }
         var ids = [AudioObjectID](repeating: 0, count: Int(size) / MemoryLayout<AudioObjectID>.size)
-        guard AudioObjectGetPropertyData(system, &a, 0, nil, &size, &ids) == noErr else { return nil }
-        return ids.lazy.map(describe).first { $0.uid == uid }
+        guard AudioObjectGetPropertyData(system, &a, 0, nil, &size, &ids) == noErr else { return [] }
+        return ids
+    }
+
+    public static func find(uid: String) -> OutputDevice? {
+        objects(kAudioHardwarePropertyDevices).lazy.map(describe).first { $0.uid == uid }
+    }
+
+    /// Dispositivos virtuais com entrada e saída: candidatos a loopback para o teste de eco.
+    public static func virtualDuplex() -> [OutputDevice] {
+        objects(kAudioHardwarePropertyDevices).filter {
+            read($0, kAudioDevicePropertyTransportType, default: UInt32(0)) == kAudioDeviceTransportTypeVirtual
+                && channelCount($0, kAudioObjectPropertyScopeInput) > 0 && channelCount($0, kAudioObjectPropertyScopeOutput) > 0
+        }.map(describe)
+    }
+
+    /// Bundle IDs dos outros apps com a saída de áudio aberta. `nil` se o sistema não respondeu:
+    /// quem decide pedir a permissão trata isso como "pode haver áudio".
+    public static func playingApps() -> [String]? {
+        let processes = objects(kAudioHardwarePropertyProcessObjectList)
+        guard !processes.isEmpty else { return nil }
+        let me = ProcessInfo.processInfo.processIdentifier
+        return processes.filter {
+            read($0, kAudioProcessPropertyIsRunningOutput, default: UInt32(0)) != 0 && read($0, kAudioProcessPropertyPID, default: pid_t(0)) != me
+        }.map { readString($0, kAudioProcessPropertyBundleID) }
     }
 }
 
@@ -90,6 +113,9 @@ public final class CoreAudioBackend: AudioBackend, @unchecked Sendable {
     public private(set) var grantedBufferFrames: UInt32 = 0
     /// Canais do aggregate e da tap, para a aba Desenvolvedor.
     public private(set) var routing = ""
+
+    /// Só o teste de eco: a tap inclui o próprio processo, que é quem toca o tom.
+    public var tapsOwnProcess = false
 
     private let chain: DSPChain
     private let queue = DispatchQueue(label: "quietaudio.backend")
@@ -137,6 +163,11 @@ public final class CoreAudioBackend: AudioBackend, @unchecked Sendable {
                 Task { @MainActor in report?(message) }
             }
         }
+    }
+
+    /// Muta o original sem abrir a saída processada.
+    public func muteOriginal() {
+        queue.async { [self] in try? setMuted(true) }
     }
 
     // MARK: Observar a saída
@@ -190,7 +221,7 @@ public final class CoreAudioBackend: AudioBackend, @unchecked Sendable {
 
         // Escopada no dispositivo: se a saída mudar, o áudio que vai para outro lugar nem passa pela tap.
         // O próprio processo fica de fora, ou o Mac ouviria (e mutaria) o som que este app toca.
-        let d = CATapDescription(__excludingProcesses: [NSNumber(value: process)], andDeviceUID: device.uid, withStream: 0)
+        let d = CATapDescription(__excludingProcesses: tapsOwnProcess ? [] : [NSNumber(value: process)], andDeviceUID: device.uid, withStream: 0)
         d.name = "Quietbar"
         // Privada de propósito: tap pública sobrevive à morte do processo (testado), e aí o mudo ficaria.
         d.isPrivate = true

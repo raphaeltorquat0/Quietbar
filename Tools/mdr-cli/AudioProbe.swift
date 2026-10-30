@@ -6,6 +6,8 @@ import QuietAudio
 /// Nunca toca no fone por MDR; o som que ela gera vai só para o dispositivo escolhido.
 ///   audio-probe --device <uid> [--seconds 10] [--mute] [--tone] [--hold]
 ///   audio-probe --play <uid> [--seconds 10]    toca um tom em outro processo, para a tap capturar
+///   audio-probe --echo-test <uid>              teste de eco num dispositivo com loopback
+///   audio-probe --permission                   só consulta as permissões; nunca abre diálogo
 ///   audio-probe --listen <uid> [--seconds 10]  imprime o pico da entrada do dispositivo a cada 100 ms
 func runAudioProbe(_ args: [String]) async throws {
     setvbuf(stdout, nil, _IOLBF, 0)
@@ -20,17 +22,26 @@ func runAudioProbe(_ args: [String]) async throws {
         guard let d = AudioDevices.find(uid: uid) else { throw CLIError("dispositivo não encontrado") }
         return try listen(to: d, seconds: seconds)
     }
+    if args.contains("--permission") {
+        return print("áudio do sistema: \(SystemPermission.status(.audioCapture)); microfone: \(SystemPermission.status(.microphone))")
+    }
     if args.contains("--bench") {
         return print(String(format: "cadeia com 10 filtros: %.3f%% de um núcleo", AudioProbe.offlineLoad() * 100))
     }
     guard #available(macOS 14.2, *) else { throw CLIError("exige macOS 14.2") }
+    if let uid = value("--echo-test") {
+        guard let d = AudioDevices.find(uid: uid) else { throw CLIError("dispositivo não encontrado") }
+        let result = await EchoTest.run(on: d) { print($0) }
+        print("veredito: \(result.verdict)")
+        return
+    }
     guard let uid = value("--device"), let device = AudioDevices.find(uid: uid) else {
         throw CLIError("use --device <uid>; a sonda não escolhe sozinha para não mutar a saída em uso")
     }
     print("dispositivo: \(device.name) \(device.sampleRate) Hz \(device.channels) canais")
 
     let report = await AudioProbe.measure(device, seconds: seconds, mute: args.contains("--mute"),
-                                          tone: args.contains("--tone"), hold: args.contains("--hold")) { print($0) }
+                                          tone: args.contains("--tone"), hold: args.contains("--hold"), trace: args.contains("--timeline")) { print($0) }
     if !report { throw CLIError("a tap não processou áudio") }
 }
 

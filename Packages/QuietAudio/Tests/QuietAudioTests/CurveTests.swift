@@ -40,3 +40,54 @@ import Testing
         #expect(throws: CurveError.tooManyFilters(11)) { try EQCurve.parseAutoEQ(many, name: "x") }
     }
 }
+
+@Suite struct CurveDownloadWatcherTests {
+    private let sample = "Filter 1: ON PK Fc 1000 Hz Gain 2.0 dB Q 1.00\n"
+
+    private func folder() throws -> URL {
+        let d = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: d, withIntermediateDirectories: true)
+        return d
+    }
+
+    @Test func offersOnlyWhatIsNew() throws {
+        let d = try folder()
+        defer { try? FileManager.default.removeItem(at: d) }
+        try sample.write(to: d.appending(path: "ParametricEQ.txt"), atomically: true, encoding: .utf8)
+        var w = CurveDownloadWatcher(directory: d)
+        #expect(w.poll() == nil, "o que já estava na pasta não é novo")
+
+        let new = d.appending(path: "Sony WH-1000XM5 ParametricEQ (1).txt")
+        try sample.write(to: new, atomically: true, encoding: .utf8)
+        let polled = w.poll()
+        let found = try #require(polled)
+        #expect(found.url.lastPathComponent == new.lastPathComponent)
+        #expect(found.curve.filters.count == 1)
+        #expect(w.poll() == nil, "oferece uma vez só")
+    }
+
+    @Test func ignoresOtherFilesAndInvalidCurves() throws {
+        let d = try folder()
+        defer { try? FileManager.default.removeItem(at: d) }
+        var w = CurveDownloadWatcher(directory: d)
+        try sample.write(to: d.appending(path: "outra coisa.txt"), atomically: true, encoding: .utf8)
+        try "isto não é uma curva".write(to: d.appending(path: "ParametricEQ.txt"), atomically: true, encoding: .utf8)
+        #expect(w.poll() == nil)
+    }
+}
+
+@Suite struct EchoVerdictTests {
+    @available(macOS 14.2, *)
+    private func verdict(_ baseline: Float, _ muted: Float, _ restored: Float) -> EchoTest.Result.Verdict {
+        EchoTest.Result(baseline: baseline, muted: muted, restored: restored, tapRan: true).verdict
+    }
+
+    @available(macOS 14.2, *)
+    @Test func failsUnlessTheOriginalReachesZero() {
+        #expect(verdict(0.1, 0, 0.1) == .passed)
+        #expect(verdict(0.1, 0.063, 0.1) == .echo)
+        #expect(verdict(0.1, 0.001, 0.1) == .echo)
+        #expect(verdict(0.1, 0, 0) == .notRestored)
+        #expect(verdict(0, 0, 0) == .noLoopback)
+    }
+}

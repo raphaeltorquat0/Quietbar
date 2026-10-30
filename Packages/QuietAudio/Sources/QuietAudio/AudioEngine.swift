@@ -28,10 +28,9 @@ public final class AudioEngine {
     /// Silêncio digital com o original mudo: volta ao estado sem mudo, porque pode ser a tap que parou
     /// de entregar. Limita a 5 s o pior caso de ficar sem som, e na próxima música rearma sozinho.
     static let silenceSeconds = 5.0
-    static let stallTicksActive = 30   // 1,5 s
-    /// Sem mudo não há risco em esperar: é o tempo de o usuário responder ao pedido de permissão,
-    /// e desmontar com o diálogo aberto só enfileiraria chamadas num `coreaudiod` parado.
-    static let stallTicksArming = 600  // 30 s
+    /// Só vale com o original mudo. Antes disso, zero quadros é o normal: o aggregate com tap só
+    /// começa a rodar quando algum app toca no dispositivo.
+    static let stallTicks = 30 // 1,5 s
     static let maxRetries = 3
     static let retrySeconds = 5.0
 
@@ -124,7 +123,7 @@ public final class AudioEngine {
 
         stuckTicks = s.frames == lastFrames ? stuckTicks + 1 : 0
         lastFrames = s.frames
-        if stuckTicks >= (phase == .active ? Self.stallTicksActive : Self.stallTicksArming) { return send(.stalled) }
+        if phase == .active, stuckTicks >= Self.stallTicks { return send(.stalled) }
 
         switch phase {
         case .arming where s.lastSignalFrame > signalMark:

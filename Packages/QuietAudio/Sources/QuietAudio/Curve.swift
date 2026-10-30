@@ -126,6 +126,16 @@ public extension EQCurve {
         return try EQCurve(name: f.name, filters: f.filters).validated()
     }
 
+    /// Lê uma curva do disco: `.json` no formato próprio, o resto como `ParametricEQ.txt`.
+    static func load(from url: URL) throws -> EQCurve {
+        guard (try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0) < 256_000 else {
+            throw CurveError.invalidFile("arquivo grande demais")
+        }
+        let data = try Data(contentsOf: url)
+        if url.pathExtension.lowercased() == "json" { return try parseJSON(data) }
+        return try parseAutoEQ(String(decoding: data, as: UTF8.self), name: url.deletingPathExtension().lastPathComponent)
+    }
+
     func jsonData() throws -> Data {
         let e = JSONEncoder()
         e.outputFormatting = [.prettyPrinted, .sortedKeys]
