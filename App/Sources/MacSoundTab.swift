@@ -7,9 +7,8 @@ import UniformTypeIdentifiers
 struct MacSoundTab: View {
     @Environment(DeviceController.self) private var device
     @State private var selected = 0
-    @State private var importing = false
     @State private var message: String?
-    @State private var askingConsent = false
+    @State private var dropTargeted = false
     private var sound: MacSound { .shared }
 
     var body: some View {
@@ -18,7 +17,7 @@ struct MacSoundTab: View {
             if !sound.available {
                 Text("O processamento de áudio exige macOS 14.2 ou mais novo.").foregroundStyle(.secondary)
             } else {
-                if sound.permission != .granted { onboarding }
+                if !sound.canProcess { onboarding }
                 control
                 editor
                 headphoneEQ
@@ -26,7 +25,6 @@ struct MacSoundTab: View {
             }
         }
         .formStyle(.grouped)
-        .fileImporter(isPresented: $importing, allowedContentTypes: [.plainText, .json]) { importCurve($0) }
         .onAppear { sound.refreshPermission() }
     }
 
@@ -38,11 +36,21 @@ struct MacSoundTab: View {
             Text("**Pause o áudio antes de continuar e responda ao pedido do macOS na hora.** Enquanto ele estiver aberto, outros apps podem não conseguir começar a tocar som.")
                 .foregroundStyle(.orange)
             if sound.permission == .unavailable {
-                Text("Este macOS não permite consultar a permissão, então o Som no Mac fica desligado.").foregroundStyle(.secondary)
+                Text("Este macOS não oferece a consulta que o Quietbar usa para a permissão. Ao ligar, é o próprio macOS que pergunta, quando o áudio começar a tocar.")
+                    .foregroundStyle(.secondary)
+                Button("Ligar e deixar o macOS pedir") { sound.requestPermission() }
+                    .buttonStyle(.borderedProminent)
             } else {
                 Button(sound.asking ? "Aguardando sua resposta ao macOS…" : "Pedir permissão e ligar") { sound.requestPermission() }
                     .buttonStyle(.borderedProminent)
                     .disabled(sound.asking)
+            }
+            if let apps = sound.openOutputs {
+                Text(apps.isEmpty ? String(localized: "O macOS não informou quais apps estão usando a saída de áudio.")
+                                  : String(localized: "Com a saída de áudio aberta: \(apps.formatted(.list(type: .and)))."))
+                Text("Antes da permissão, o Quietbar não consegue medir se há som. Se algo estiver tocando, pause. Se estiver em silêncio, pode continuar.")
+                    .font(.caption).foregroundStyle(.secondary)
+                Button("Continuar mesmo assim") { sound.requestPermission(confirmed: true) }
             }
             if let m = sound.askMessage { Text(m).font(.caption).foregroundStyle(.orange) }
         }
@@ -51,7 +59,7 @@ struct MacSoundTab: View {
     @ViewBuilder private var control: some View {
         @Bindable var sound = sound
         Section {
-            Toggle("Som no Mac", isOn: $sound.enabled).disabled(sound.permission != .granted)
+            Toggle("Som no Mac", isOn: $sound.enabled).disabled(!sound.canProcess)
             LabeledContent("Estado", value: sound.statusText)
             if case .failed(let reason) = sound.engine?.phase {
                 Text(reason).font(.caption).foregroundStyle(.orange)
@@ -103,9 +111,9 @@ struct MacSoundTab: View {
                     .font(.caption).foregroundStyle(.secondary).monospacedDigit()
             }
             HStack {
-                Button("Importar…") { importing = true }
+                Button("Importar…") { chooseCurve(activate: false) }
                 Button("Exportar…") { exportCurve() }
-                if let message { Text(message).font(.caption).foregroundStyle(.secondary) }
+                if let message, !sound.curvePageOpened { Text(message).font(.caption).foregroundStyle(.secondary) }
             }
         }
     }
@@ -154,38 +162,32 @@ struct MacSoundTab: View {
         }
     }
 
-    @ViewBuilder private var source: some View {
-        @Bindable var sound = sound
+    private var source: some View {
         Section("Curva de correção") {
-            Text("O Quietbar não traz uma curva pronta: a licença das medições não permite redistribuí-la. Baixe a do seu fone e o app oferece importar.")
+            Text("O Quietbar não traz uma curva pronta: a licença das medições não permite redistribuí-la. Baixe a do seu fone e importe o arquivo aqui.")
             Button("Obter curva de correção") {
-                if sound.watchConsent { getCurve() } else { askingConsent = true }
+                NSWorkspace.shared.open(curveURL)
+                sound.curvePageOpened = true
             }
-            .confirmationDialog("Procurar a curva nos Downloads?", isPresented: $askingConsent) {
-                Button("Abrir a página e procurar") {
-                    sound.watchConsent = true
-                    getCurve()
-                }
-                Button("Só abrir a página") { NSWorkspace.shared.open(curveURL) }
-            } message: {
-                Text("Por 15 minutos, o Quietbar confere em ~/Downloads só se apareceu um ParametricEQ.txt. Ele não lista a pasta nem abre outros arquivos.")
-            }
-            if sound.watching {
-                Label("Procurando o ParametricEQ.txt em Downloads…", systemImage: "magnifyingglass").font(.caption).foregroundStyle(.secondary)
-            }
-            if let found = sound.foundCurve {
-                HStack {
-                    Text("Curva encontrada: \(found.name) · \(found.filters.count) filtros")
-                    Spacer()
-                    Button("Ignorar") { sound.dismissFoundCurve() }
-                    Button("Importar e ativar") {
-                        sound.acceptFoundCurve()
-                        selected = 0
-                    }
+            if sound.curvePageOpened {
+                Button("Importar curva…") { chooseCurve(activate: true) }
                     .buttonStyle(.borderedProminent)
-                }
+                Text("Ou arraste o arquivo .txt ou .json para cá")
+                    .font(.caption).foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, minHeight: 56)
+                    .background(dropTargeted ? Color.accentColor.opacity(0.15) : .clear)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8)
+                            .strokeBorder(dropTargeted ? Color.accentColor : .secondary.opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: [4]))
+                    }
+                    .contentShape(Rectangle())
+                    .dropDestination(for: URL.self) { urls, _ in
+                        guard let url = urls.first else { return false }
+                        importCurve(url, activate: true)
+                        return true
+                    } isTargeted: { dropTargeted = $0 }
+                if let message { Text(message).font(.caption).foregroundStyle(.secondary) }
             }
-            if sound.watchConsent { Toggle("Procurar o arquivo em Downloads", isOn: $sound.watchConsent) }
             if let c = sound.correction {
                 LabeledContent("Importada", value: "\(c.name) · \(c.filters.count) filtros")
             }
@@ -201,18 +203,24 @@ struct MacSoundTab: View {
             : "https://autoeq.app")!
     }
 
-    private func getCurve() {
-        NSWorkspace.shared.open(curveURL)
-        sound.startWatching()
+    /// Abre em Downloads. O caminho vem do `getpwuid` porque, no sandbox, `.downloadsDirectory` aponta para o contêiner.
+    private func chooseCurve(activate: Bool) {
+        let p = NSOpenPanel()
+        if let home = getpwuid(getuid())?.pointee.pw_dir {
+            p.directoryURL = URL(filePath: String(cString: home)).appending(path: "Downloads")
+        }
+        p.allowedContentTypes = [.plainText, .json]
+        guard p.runModal() == .OK, let url = p.url else { return }
+        importCurve(url, activate: activate)
     }
 
-    private func importCurve(_ result: Result<URL, Error>) {
+    private func importCurve(_ url: URL, activate: Bool) {
+        let scoped = url.startAccessingSecurityScopedResource()
+        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
         do {
-            let url = try result.get()
-            let scoped = url.startAccessingSecurityScopedResource()
-            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
             sound.correction = try EQCurve.load(from: url)
             sound.preset = .correction
+            if activate, sound.canProcess { sound.enabled = true }
             selected = 0
             message = String(localized: "Importada.")
         } catch { message = error.localizedDescription }
@@ -387,9 +395,10 @@ private struct EchoTestRow: View {
         lines = []
         verdict = nil
         Task {
-            var mic = await Task.detached { SystemPermission.status(.microphone) }.value
+            let permissions = MacSound.shared.permissions
+            var mic = await Task.detached { permissions.status(.microphone) }.value
             if mic == .notAsked {
-                let granted = await withCheckedContinuation { c in SystemPermission.request(.microphone) { c.resume(returning: $0) } }
+                let granted = await withCheckedContinuation { c in permissions.request(.microphone) { c.resume(returning: $0) } }
                 mic = granted ? .granted : .denied
             }
             guard mic == .granted else {

@@ -23,7 +23,7 @@ func runAudioProbe(_ args: [String]) async throws {
         return try listen(to: d, seconds: seconds)
     }
     if args.contains("--permission") {
-        return print("áudio do sistema: \(SystemPermission.status(.audioCapture)); microfone: \(SystemPermission.status(.microphone))")
+        return print("áudio do sistema: \(SystemPermission.live.status(.audioCapture)); microfone: \(SystemPermission.live.status(.microphone))")
     }
     if args.contains("--bench") {
         return print(String(format: "cadeia com 10 filtros: %.3f%% de um núcleo", AudioProbe.offlineLoad() * 100))

@@ -12,8 +12,8 @@ struct QuietbarApp: App {
         if CommandLine.arguments.contains("--selftest") { Self.selfTest() }
         if CommandLine.arguments.contains("--audio-permission-status") {
             // Só consulta: nada de tap nem de diálogo. Serve para conferir a consulta no app assinado.
-            let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first?.path ?? ""
-            print("áudio: \(SystemPermission.status(.audioCapture)); microfone: \(SystemPermission.status(.microphone)); Downloads legível: \(access(downloads, R_OK) == 0)")
+            let tcc = SystemPermission.live
+            print("áudio: \(tcc.status(.audioCapture)); microfone: \(tcc.status(.microphone)); problema: \(tcc.problem ?? "nenhum")")
             exit(0)
         }
         if let i = CommandLine.arguments.firstIndex(of: "--audio-selftest") {
@@ -72,7 +72,7 @@ struct QuietbarApp: App {
     private static func audioSelfTest(uid: String?) {
         Task { @MainActor in
             // Sem a permissão, montar a tap faria o `coreaudiod` abrir o diálogo.
-            let permission = SystemPermission.status(.audioCapture)
+            let permission = SystemPermission.live.status(.audioCapture)
             guard permission == .granted else {
                 print("sem permissão de áudio do sistema (\(permission)): autorize pelo botão da aba Som no Mac")
                 exit(3)

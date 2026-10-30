@@ -41,38 +41,27 @@ import Testing
     }
 }
 
-@Suite struct CurveDownloadWatcherTests {
-    private let sample = "Filter 1: ON PK Fc 1000 Hz Gain 2.0 dB Q 1.00\n"
-
-    private func folder() throws -> URL {
+@Suite struct CurveFileTests {
+    private func file(_ name: String, _ text: String) throws -> URL {
         let d = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         try FileManager.default.createDirectory(at: d, withIntermediateDirectories: true)
-        return d
+        let url = d.appending(path: name)
+        try text.write(to: url, atomically: true, encoding: .utf8)
+        return url
     }
 
-    @Test func offersOnlyWhatIsNew() throws {
-        let d = try folder()
-        defer { try? FileManager.default.removeItem(at: d) }
-        try sample.write(to: d.appending(path: "ParametricEQ.txt"), atomically: true, encoding: .utf8)
-        var w = CurveDownloadWatcher(directory: d)
-        #expect(w.poll() == nil, "o que já estava na pasta não é novo")
-
-        let new = d.appending(path: "Sony WH-1000XM5 ParametricEQ (1).txt")
-        try sample.write(to: new, atomically: true, encoding: .utf8)
-        let polled = w.poll()
-        let found = try #require(polled)
-        #expect(found.url.lastPathComponent == new.lastPathComponent)
-        #expect(found.curve.filters.count == 1)
-        #expect(w.poll() == nil, "oferece uma vez só")
+    @Test func loadsTheFormatsTheImportOffers() throws {
+        let line = "Filter 1: ON PK Fc 1000 Hz Gain 2.0 dB Q 1.00\n"
+        #expect(try EQCurve.load(from: file("ParametricEQ.txt", line)).filters.count == 1)
+        #expect(try EQCurve.load(from: file("Curva.TXT", line)).name == "Curva")
+        let json = try EQCurve(name: "x", filters: [EQFilter(.peak, frequency: 1000, gain: 1, q: 1)]).jsonData()
+        #expect(try EQCurve.load(from: file("c.json", String(decoding: json, as: UTF8.self))).filters.count == 1)
     }
 
-    @Test func ignoresOtherFilesAndInvalidCurves() throws {
-        let d = try folder()
-        defer { try? FileManager.default.removeItem(at: d) }
-        var w = CurveDownloadWatcher(directory: d)
-        try sample.write(to: d.appending(path: "outra coisa.txt"), atomically: true, encoding: .utf8)
-        try "isto não é uma curva".write(to: d.appending(path: "ParametricEQ.txt"), atomically: true, encoding: .utf8)
-        #expect(w.poll() == nil)
+    /// Arrastar aceita qualquer arquivo, e o painel deixa passar todo texto simples.
+    @Test func refusesOtherFileTypes() throws {
+        let url = try file("notas.md", "Filter 1: ON PK Fc 1000 Hz Gain 2.0 dB Q 1.00\n")
+        #expect(throws: CurveError.invalidFile("use um arquivo .txt ou .json")) { try EQCurve.load(from: url) }
     }
 }
 

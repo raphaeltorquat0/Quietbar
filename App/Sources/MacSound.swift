@@ -37,12 +37,25 @@ final class MacSound {
     let engine: AudioEngine?
     @ObservationIgnored private let d = UserDefaults.standard
 
+    @ObservationIgnored let permissions: SystemPermission = {
+        #if DEBUG
+        if CommandLine.arguments.contains("--no-tcc-symbols") { return SystemPermission(lookup: { _ in nil }) }
+        #endif
+        return .live
+    }()
+    @ObservationIgnored private var loggedProblem: String?
+
     /// Permissão de gravar o áudio do sistema. Só o botão do onboarding a pede.
     private(set) var permission = SystemPermission.Status.notAsked
     /// O diálogo do macOS está aberto, até onde o app sabe.
     private(set) var asking = false
     /// Resultado do último clique no botão de pedir a permissão.
     private(set) var askMessage: String?
+    /// Nomes dos apps com a saída aberta, à espera de "Continuar mesmo assim". Vazio: não se sabe quais.
+    private(set) var openOutputs: [String]?
+    /// Sem os símbolos do TCC, o usuário clicou para ligar e deixar o macOS pedir. Vale só nesta execução:
+    /// gravado, um update ad-hoc abriria o diálogo ao iniciar, sem clique (DECISIONS.md #112).
+    private(set) var systemFlowAccepted = false
     /// O que o usuário escolheu. A tap só sobe se a permissão também existir: sem ela, montar faria o
     /// próprio `coreaudiod` abrir o diálogo, sem clique nenhum.
     var enabled: Bool {
@@ -51,20 +64,11 @@ final class MacSound {
             syncEngine()
         }
     }
-    var isOn: Bool { enabled && permission == .granted }
+    var canProcess: Bool { permission == .granted || (permission == .unavailable && systemFlowAccepted) }
+    var isOn: Bool { enabled && canProcess }
 
-    /// Consentimento para procurar o `ParametricEQ.txt` em ~/Downloads.
-    var watchConsent: Bool {
-        didSet {
-            d.set(watchConsent, forKey: "macSoundWatchConsent")
-            if !watchConsent { stopWatching() }
-        }
-    }
-    private(set) var watching = false
-    private(set) var foundCurve: EQCurve?
-    @ObservationIgnored private var watcher: CurveDownloadWatcher?
-    @ObservationIgnored private var watchTimer: Timer?
-    private static let watchSeconds = 15 * 60.0
+    /// A página da curva foi aberta: a aba passa a oferecer o import.
+    var curvePageOpened = false
     private static let askTimeout = Duration.seconds(120)
     var preset: MacPreset {
         didSet {
@@ -99,9 +103,8 @@ final class MacSound {
 
     private init() {
         // Desligado em instalações novas e em updates: a 1.3.0 não tinha esta chave (DECISIONS.md #109).
-        d.register(defaults: ["macSoundEnabled": false, "macSoundWatchConsent": false])
+        d.register(defaults: ["macSoundEnabled": false])
         enabled = d.bool(forKey: "macSoundEnabled")
-        watchConsent = d.bool(forKey: "macSoundWatchConsent")
         preset = d.string(forKey: "macSoundPreset").flatMap(MacPreset.init) ?? .flat
         correction = AppSettings.load("macSoundCorrection")
         custom = AppSettings.load("macSoundCustom") ?? EQCurve(name: MacPreset.custom.label, filters: [])
@@ -111,6 +114,12 @@ final class MacSound {
         } else {
             engine = nil // sem process taps
         }
+        #if DEBUG
+        if CommandLine.arguments.contains("--demo-curve-import") { // para ver o aviso e o import sem clicar no botão de permissão
+            openOutputs = ["WhatsApp"]
+            curvePageOpened = true
+        }
+        #endif
     }
 
     func start() {
@@ -130,39 +139,63 @@ final class MacSound {
     /// tap fica desligada até o usuário clicar no botão de novo.
     func refreshPermission() {
         guard available else { return }
+        let permissions = permissions
         Task {
-            let status = await Task.detached { SystemPermission.status(.audioCapture) }.value
+            let status = await Task.detached { permissions.status(.audioCapture) }.value
             permission = status
+            logPermissionProblem()
             syncEngine()
         }
     }
 
-    /// Ligar sem a permissão passa pelo onboarding, em Configurações.
-    func toggle() {
-        if permission == .granted { enabled.toggle() } else { StatusBar.openSettingsWindow(tab: "macsound") }
+    private func logPermissionProblem() {
+        guard let problem = permissions.problem, problem != loggedProblem else { return }
+        loggedProblem = problem
+        ProtocolLog.shared.note("Som no Mac: \(problem). O Quietbar passa a usar o fluxo padrão do macOS.")
     }
 
-    /// Único caminho que abre o diálogo: chamado pelo botão do onboarding. Sem resposta, não tenta de novo.
-    func requestPermission() {
+    /// Ligar sem a permissão passa pelo onboarding, em Configurações.
+    func toggle() {
+        if canProcess { enabled.toggle() } else { StatusBar.openSettingsWindow(tab: "macsound") }
+    }
+
+    /// Único caminho que abre o diálogo: chamado pelos botões do onboarding. Sem resposta, não tenta de novo.
+    /// `confirmed`: o usuário viu o aviso de saída aberta e escolheu continuar.
+    func requestPermission(confirmed: Bool = false) {
         guard !asking else { return }
         askMessage = nil
+        openOutputs = nil
         Task {
-            let playing = await Task.detached { AudioDevices.playingApps() }.value
-            guard let playing, playing.isEmpty else {
-                let apps = (playing ?? []).map { $0.split(separator: ".").last.map(String.init) ?? $0 }.joined(separator: ", ")
-                askMessage = String(localized: "Pause o áudio antes de continuar.") + (apps.isEmpty ? "" : " " + String(localized: "Ainda tocando: \(apps)."))
-                return
-            }
-            asking = true
-            SystemPermission.request(.audioCapture) { granted in
-                Task { @MainActor in MacSound.shared.answered(granted) }
-            }
-            try? await Task.sleep(for: Self.askTimeout)
-            if asking {
-                asking = false
-                askMessage = String(localized: "Sem resposta ao pedido. O Quietbar não vai pedir de novo sozinho.")
+            let outputs = confirmed ? nil : await Task.detached { AudioDevices.playingApps() }.value
+            switch SystemPermission.route(permission, openOutputs: outputs, confirmed: confirmed) {
+            case .warn(let apps):
+                openOutputs = Self.appNames(apps)
+            case .systemFlow:
+                systemFlowAccepted = true
+                ProtocolLog.shared.note("Som no Mac: ligado pelo fluxo padrão do macOS, a pedido do usuário.")
+                enabled = true
+                syncEngine()
+            case .request:
+                asking = true
+                permissions.request(.audioCapture) { granted in
+                    Task { @MainActor in MacSound.shared.answered(granted) }
+                }
+                try? await Task.sleep(for: Self.askTimeout)
+                if asking {
+                    asking = false
+                    askMessage = String(localized: "Sem resposta ao pedido. O Quietbar não vai pedir de novo sozinho.")
+                }
             }
         }
+    }
+
+    /// Nome que o usuário reconhece, sem repetir os processos auxiliares de um mesmo app.
+    private static func appNames(_ bundleIDs: [String]) -> [String] {
+        var seen = Set<String>()
+        return bundleIDs.map { id in
+            NSRunningApplication.runningApplications(withBundleIdentifier: id).first?.localizedName
+                ?? id.split(separator: ".").last.map(String.init) ?? String(localized: "Processo do sistema")
+        }.filter { seen.insert($0).inserted }
     }
 
     private func answered(_ granted: Bool) {
@@ -171,48 +204,6 @@ final class MacSound {
         permission = granted ? .granted : .denied
         if granted { enabled = true } else { syncEngine() }
     }
-
-    // MARK: Curva de correção
-
-    /// Espera o arquivo por 15 minutos depois do clique. Consulta só esses nomes (`CurveDownloadWatcher`).
-    func startWatching() {
-        guard watchConsent, let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first else { return }
-        stopWatching()
-        watcher = CurveDownloadWatcher(directory: downloads)
-        watching = true
-        let deadline = Date().addingTimeInterval(Self.watchSeconds)
-        let t = Timer(timeInterval: 2, repeats: true) { _ in
-            MainActor.assumeIsolated { MacSound.shared.pollDownloads(deadline) }
-        }
-        RunLoop.main.add(t, forMode: .common)
-        watchTimer = t
-    }
-
-    func stopWatching() {
-        watchTimer?.invalidate()
-        watchTimer = nil
-        watcher = nil
-        watching = false
-    }
-
-    private func pollDownloads(_ deadline: Date) {
-        if Date() > deadline { return stopWatching() }
-        guard let found = watcher?.poll() else { return }
-        stopWatching()
-        foundCurve = found.curve
-        Notifier.post(title: String(localized: "Curva de correção encontrada"),
-                      body: String(localized: "Abra Som no Mac nas Configurações para importar."))
-    }
-
-    func acceptFoundCurve() {
-        guard let foundCurve else { return }
-        correction = foundCurve
-        preset = .correction
-        self.foundCurve = nil
-        if permission == .granted { enabled = true }
-    }
-
-    func dismissFoundCurve() { foundCurve = nil }
 
     /// Editar um preset pronto salva como "Personalizada".
     func edit(_ change: (inout EQCurve) -> Void) {
@@ -224,14 +215,14 @@ final class MacSound {
     }
 
     func apply(enabled on: Bool?, preset p: String?) {
-        guard permission == .granted else { return } // perfil nunca chega perto do pedido de permissão
+        guard canProcess else { return } // perfil nunca chega perto do pedido de permissão
         if let p = p.flatMap(MacPreset.init), p != .correction || correction != nil { preset = p }
         if let on { enabled = on }
     }
 
     var statusText: String {
         guard let engine else { return String(localized: "Exige macOS 14.2 ou mais novo.") }
-        if enabled, permission != .granted { return String(localized: "Precisa da permissão") }
+        if enabled, !canProcess { return String(localized: "Precisa da permissão") }
         switch engine.phase {
         case .off: return String(localized: "Desligado")
         case .waitingForOutput: return String(localized: "Só atua quando o fone é a saída do Mac")
