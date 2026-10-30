@@ -13,3 +13,4 @@ images/
 
 # Capturas brutas podem ter MAC, nomes e faixas; só as fixtures sanitizadas são versionadas
 captures/
+__pycache__/
