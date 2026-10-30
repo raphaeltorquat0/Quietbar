@@ -19,6 +19,7 @@ apps ──► tap (escopada no fone, sem o próprio Quietbar)
 | `CQuietAudio` | `Packages/QuietAudio/Sources/CQuietAudio` | Cadeia e IOProc, em C, sem alocação nem lock |
 | `Curve.swift` | `QuietAudio` | Filtros (Audio EQ Cookbook), resposta, pré-amplificação, formatos |
 | `Activation.swift` | `QuietAudio` | Regras de ativação, sem Core Audio |
+| `SystemPermission.swift` | `QuietAudio` | Consulta e pedido da permissão pelo TCC, com o fluxo padrão como saída |
 | `AudioEngine.swift` | `QuietAudio` | Liga as regras ao backend e vigia a cadeia a 20 Hz |
 | `CoreAudioBackend.swift` | `QuietAudio` | Tap, aggregate e listeners, numa fila própria |
 | `MacSound.swift`, `MacSoundTab.swift` | `App/Sources` | Presets, preferências e interface |
@@ -37,6 +38,34 @@ O aggregate com tap só começa a rodar quando algum app toca no dispositivo; an
 
 **Se o processo morrer**, o áudio volta sozinho. `CoreAudioTests.killedProcessGivesTheAudioBack` prova isso de ponta a ponta num dispositivo com loopback: tom em um processo, tap com mudo em outro, `kill -9`, e o nível volta ao original em menos de 100 ms. Isso vale para a tap privada que o app usa. Uma tap **pública** sobrevive ao dono.
 
+## Por que o app usa funções privadas
+
+O macOS não tem API pública para consultar ou pedir a permissão de áudio do sistema. Sem consulta, o app não sabe se pode montar a tap. E, quando a tap inicia sem permissão, quem abre o diálogo é o `coreaudiod`, que para de atender clientes novos até a resposta: outros apps deixam de conseguir começar a tocar som.
+
+Por isso o Quietbar usa duas funções privadas do `TCC.framework`, carregadas com `dlopen` e `dlsym` em tempo de execução:
+
+| Função | Para quê |
+|---|---|
+| `TCCAccessPreflight` | Consulta sem abrir diálogo. A tap só sobe com a resposta "autorizado" |
+| `TCCAccessRequest` | Abre o pedido pelo `tccd`, a partir do botão do onboarding |
+
+Elas não fazem parte do contrato da Apple e podem mudar ou sumir em qualquer versão do macOS. Por usá-las, o app não pode ir para a Mac App Store.
+
+### Se elas sumirem ou mudarem
+
+O app passa para o **fluxo padrão do sistema**: o onboarding troca o botão por **Ligar e deixar o macOS pedir**, e a linha com o motivo aparece no log da aba Desenvolvedor.
+
+| Situação | Como é percebida | Resultado |
+|---|---|---|
+| O framework ou um dos símbolos não existe | `dlopen` ou `dlsym` devolvem nulo | Nenhuma das funções é chamada |
+| A consulta devolve um valor fora de 0, 1 e 2 | Teste do retorno | Fluxo padrão nessa consulta |
+| A consulta não responde em 3 s | Limite de tempo, em outra thread | Fluxo padrão nessa consulta; a próxima consulta tenta de novo |
+| A chamada derruba o app | Marca gravada antes de cada chamada, apagada depois | Na execução seguinte, as funções não são mais chamadas |
+
+**O limite:** `dlsym` só informa se o símbolo existe, não a assinatura. Uma assinatura diferente, com o mesmo símbolo, só aparece na chamada e pode derrubar o processo. Isso custa **no máximo uma queda**: a marca impede a repetição, e sem ela o app ficaria caindo a cada abertura. A marca vale até o macOS ou o app mudarem de versão, quando as funções voltam a ser testadas.
+
+No fluxo padrão, o diálogo vem do `coreaudiod`, quando o áudio começa a tocar com a tap montada, e o travamento de clientes novos volta enquanto ele estiver aberto. Por isso nada acontece sem o clique, que vale só para aquela execução: gravado, um update ad-hoc abriria o diálogo ao iniciar. Se a permissão for negada, a tap recebe só zeros e o estado fica em "Aguardando áudio". Nada é mutado, e o som segue normal.
+
 ## Latência e CPU
 
 | Medida | Resultado | Meta | Como |
@@ -52,7 +81,8 @@ Medido em 2026-10-30 num Apple M2 Pro, no dispositivo virtual `Steam Streaming S
 ## Limitações
 
 - Exige macOS 14.2; antes disso o recurso não aparece.
-- O pedido de permissão só sai do botão do onboarding, com o áudio pausado. Quando o diálogo veio do `coreaudiod`, ele parou de atender clientes novos enquanto estava aberto. Agora o pedido vem do app (`DECISIONS.md` #106), mas isso só se confirma no primeiro clique real, por isso o aviso continua.
+- O pedido de permissão só sai do botão do onboarding. Quando o diálogo veio do `coreaudiod`, ele parou de atender clientes novos enquanto estava aberto. Agora o pedido vem do app (`DECISIONS.md` #106), mas isso só se confirma no primeiro clique real, por isso o aviso continua.
+- **O app não mede o som antes da permissão.** Só a tap lê o nível, e a tap sem permissão é o que abre o diálogo. Com um app de saída aberta, o botão mostra o nome dele e **Continuar mesmo assim**, sem saber se está tocando ou em silêncio (`DECISIONS.md` #111).
 - Em build ad-hoc, cada atualização é uma identidade nova para o macOS: a permissão some e o Som no Mac espera o botão de novo.
 - Modo chamada (HFP, mono) não é processado. O bloco mostra "Pausado durante chamadas".
 - No começo de cada áudio, e depois de 5 s de silêncio, a primeira fração de segundo sai sem processamento.
@@ -66,7 +96,7 @@ O app **não traz curva medida**. "Mais grave", "Voz" e "Plano" são filtros sim
 
 O motivo está em `DECISIONS.md` #95: o MIT do [AutoEQ](https://github.com/jaakkopasanen/AutoEq) cobre o código, e os dados medidos não têm licença própria de redistribuição. O autor das medições oratory1990 já se opôs ao uso delas num app pago. O pedido de autorização está em `docs/launch/pedido-curva-oratory1990.md`.
 
-Para usar: clique em **Obter curva de correção** e baixe o `ParametricEQ.txt`. Com o seu consentimento, o app espera esse arquivo em Downloads por 15 minutos, sem listar a pasta, e oferece importar e ativar. Também dá para usar **Importar…** com qualquer arquivo no mesmo formato.
+Para usar: clique em **Obter curva de correção**, baixe o `ParametricEQ.txt` e, de volta à aba, use **Importar curva…**, que abre em Downloads, ou arraste o arquivo para a área indicada. O app não lê a pasta Downloads por conta própria: só abre o arquivo que você escolher. **Importar…**, na seção Curva, aceita os mesmos arquivos.
 
 ### Formatos
 
@@ -90,8 +120,10 @@ JSON próprio:
 }
 ```
 
-`kind` é `peak`, `lowShelf` ou `highShelf`. Limites: até 10 filtros, 20 Hz a 20 kHz, ±24 dB, Q de 0,1 a 20. Um arquivo fora disso é recusado, não ajustado.
+`kind` é `peak`, `lowShelf` ou `highShelf`. Limites: até 10 filtros, 20 Hz a 20 kHz, ±24 dB, Q de 0,1 a 20. Um arquivo fora disso é recusado, não ajustado. Só `.txt` e `.json` são aceitos.
 
 ## Testes
 
-`swift test --filter QuietAudioTests`. Resposta de cada filtro contra a fórmula analógica, pré-amplificação, limitador, bypass, zipper, render offline de arquivo e máquina de estados com dispositivos falsos rodam sem hardware. `CoreAudioTests` precisa de Core Audio real e de um dispositivo com loopback, e é pulado no CI com o motivo.
+`swift test --filter QuietAudioTests --skip CoreAudioTests`. Resposta de cada filtro contra a fórmula analógica, pré-amplificação, limitador, bypass, zipper, render offline de arquivo e máquina de estados com dispositivos falsos rodam sem hardware. `SystemPermissionTests` injeta símbolos ausentes e funções falsas, sem tocar no TCC. `CoreAudioTests` precisa de Core Audio real e de um dispositivo com loopback, e é pulado no CI com o motivo. Ele monta tap: rode só com a permissão já concedida ao terminal, porque sem ela o sistema abre o diálogo.
+
+No app, em Debug, `Quietbar --simulate WH-1000XM5 --no-tcc-symbols --mac-sound-window` simula um macOS sem os símbolos, e `--demo-curve-import` mostra o aviso e o import sem clicar no botão de permissão.

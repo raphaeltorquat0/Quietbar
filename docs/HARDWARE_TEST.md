@@ -96,7 +96,7 @@ O pedido de permissão só sai do botão do onboarding. **Pause tudo antes e res
 
 | # | Ação | Esperado |
 |---|---|---|
-| 0 | Com música tocando, clique em "Pedir permissão e ligar" | O botão recusa e diz o que está tocando; nenhum diálogo abre |
+| 0 | Com um app de saída aberta, tocando ou não, clique em "Pedir permissão e ligar" | Aparece o nome do app e "Continuar mesmo assim"; nenhum diálogo abre até esse clique |
 | 1 | Pause tudo, clique no botão e responda **Permitir** | Estado vai para "Aguardando áudio"; nada muda no som. Enquanto o diálogo estiver aberto, confira se outro app ainda consegue começar a tocar |
 | 2 | Toque música | Em menos de 1 s o Estado vira "Ativo"; sem estalo nem eco |
 | 3 | Preset "Mais grave", depois "Plano" | Grave muda sem clique nem chiado durante a troca |
@@ -114,7 +114,7 @@ O pedido de permissão só sai do botão do onboarding. **Pause tudo antes e res
 | 15 | No passo 2, com o fone | Sem som dobrado: o teste 14 prova o mudo no dispositivo virtual, e o ouvido confere no Bluetooth |
 | 16 | Deixe o pedido de permissão sem resposta por 2 minutos, em build novo | O app avisa que não vai pedir de novo sozinho, e não pede |
 | 17 | Saia e reabra o app sem ter dado a permissão | Nenhum diálogo abre; o Som no Mac segue desligado |
-| 18 | "Obter curva de correção" e permita procurar em Downloads; baixe o `Sony WH-1000XM5 ParametricEQ.txt` | Abre a página do WH-1000XM5; em até 2 s aparece "Curva encontrada"; "Importar e ativar" liga a Correção |
+| 18 | "Obter curva de correção"; baixe o `Sony WH-1000XM5 ParametricEQ.txt`; use "Importar curva…" e, depois, arraste o arquivo para a área indicada | Abre a página do WH-1000XM5; o painel abre em Downloads, filtrando `.txt` e `.json`; nos dois caminhos, a Correção é selecionada |
 | 19 | Instalação nova e update da 1.3.0 | Som no Mac vem desligado, e nada pede permissão |
 
 **Medição no maintainer** (dispositivo com loopback, sem som audível nem fone). A tap só roda com outro processo tocando no dispositivo:
