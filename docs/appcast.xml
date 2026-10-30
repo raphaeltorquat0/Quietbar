@@ -6,6 +6,15 @@
     <description>Atualizações do Quietbar</description>
     <language>pt-BR</language>
     <!-- novas versões entram aqui -->
+    <item><!-- 1.3.1 -->
+      <title>1.3.1</title>
+      <link>https://github.com/raphaeltorquat0/Quietbar/releases/tag/v1.3.1</link>
+      <pubDate>Fri, 30 Oct 2026 17:23:28 +0000</pubDate>
+      <sparkle:version>5</sparkle:version>
+      <sparkle:shortVersionString>1.3.1</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/raphaeltorquat0/Quietbar/releases/download/v1.3.1/Quietbar-1.3.1.dmg" type="application/octet-stream" sparkle:edSignature="SFnIznO+rZUyGhEgWVNRn/cZrJ168t5sCUrjmckHl/gVrIMEMvbMe8jcy2S0I/cHEdsllvnCSwgB5aJpMOUXAg==" length="4123957"/>
+    </item>
     <item><!-- 1.3.0 -->
       <title>1.3.0</title>
       <link>https://github.com/raphaeltorquat0/Quietbar/releases/tag/v1.3.0</link>

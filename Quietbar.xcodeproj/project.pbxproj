@@ -70,7 +70,6 @@
 /* Begin PBXFileReference section */
 		0528E04F6642BDBBB82B90AE /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		0D4526A10BD3500F2860F0A2 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
-		20FAB22704C32D5DF6553C38 /* sonyctl_macos */ = {isa = PBXFileReference; lastKnownFileType = folder; name = sonyctl_macos; path = .; sourceTree = SOURCE_ROOT; };
 		22A44C60BD66C3FC3B1A8B34 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		285EF06533C520AFDA960E52 /* Updates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Updates.swift; sourceTree = "<group>"; };
 		2A8999D82FE5D45F03AE5247 /* PanelControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelControls.swift; sourceTree = "<group>"; };
@@ -85,6 +84,7 @@
 		6A5F3C7054A1D2754390EC94 /* QuietbarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuietbarApp.swift; sourceTree = "<group>"; };
 		7293F759BEDD528E9841E932 /* PanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelView.swift; sourceTree = "<group>"; };
 		7A837D05662D77D3D91B3C5F /* PanelPreviews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelPreviews.swift; sourceTree = "<group>"; };
+		8E855E57218E8638078E0E34 /* quietbar-hotfix */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "quietbar-hotfix"; path = .; sourceTree = SOURCE_ROOT; };
 		9843EA39B727B5E4032860A1 /* Simulation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simulation.swift; sourceTree = "<group>"; };
 		A0A1D70B5F7ACD718F8431E5 /* EqualizerTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EqualizerTab.swift; sourceTree = "<group>"; };
 		A7BA4B97DEE65BACB7F355C9 /* QuietbarControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuietbarControls.swift; sourceTree = "<group>"; };
@@ -131,7 +131,7 @@
 		044843ED4D3956710BD3FB42 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				20FAB22704C32D5DF6553C38 /* sonyctl_macos */,
+				8E855E57218E8638078E0E34 /* quietbar-hotfix */,
 			);
 			path = Packages;
 			sourceTree = "<group>";
@@ -373,7 +373,7 @@
 /* Begin PBXTargetDependency section */
 		B25F9612E580A03540C91675 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = "TEMP_4EFB6C6C-71D6-4651-9FCA-7EF392B15B72" /* MDRSimulator */;
+			productRef = "TEMP_B9C12FBE-11B2-4977-8F26-24A027535334" /* MDRSimulator */;
 		};
 		DF552CBE810537470F8789A7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -417,7 +417,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -430,7 +430,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.3.0;
+				MARKETING_VERSION = 1.3.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -575,7 +575,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -594,7 +594,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.3.0;
+				MARKETING_VERSION = 1.3.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -678,7 +678,7 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = MDRSession;
 		};
-		"TEMP_4EFB6C6C-71D6-4651-9FCA-7EF392B15B72" /* MDRSimulator */ = {
+		"TEMP_B9C12FBE-11B2-4977-8F26-24A027535334" /* MDRSimulator */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MDRSimulator;
 		};

@@ -24,6 +24,7 @@ let package = Package(
         ),
 
         .target(name: "MDRSession", dependencies: ["MDRKit"], path: "Packages/MDRSession/Sources/MDRSession"),
+        .testTarget(name: "MDRTransportTests", dependencies: ["MDRTransport"], path: "Packages/MDRTransport/Tests/MDRTransportTests"),
         .testTarget(name: "MDRSessionTests", dependencies: ["MDRSession"], path: "Packages/MDRSession/Tests/MDRSessionTests"),
 
         // Ferramenta de desenvolvimento e teste: nunca entra no binário de release (DECISIONS.md #83).
