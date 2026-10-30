@@ -1,6 +1,6 @@
 cask "quietbar" do
-  version "1.3.0"
-  sha256 "f87296264c7678a1cfa1da324bd633dbb126079db213dbc4dbdf71fc1e274f39"
+  version "1.3.1"
+  sha256 "3273a731e884d7fae8858b6cae579ede7b3946fbbd5e6ff5af5788130c150eb1"
 
   url "https://github.com/raphaeltorquat0/Quietbar/releases/download/v#{version}/Quietbar-#{version}.dmg"
   name "Quietbar"
