@@ -4,10 +4,10 @@ import MDRSession
 import MDRTransport
 
 let usage = """
-uso: mdr-cli <comando> [--address AA:BB:CC:DD:EE:FF] [--log-hex]
+uso: mdr-cli <comando> [--address AA:BB:CC:DD:EE:FF] [--log-hex] [--trace]
 
   list                      fones pareados e se anunciam o serviço Sony MDR v2
-  dump                      conecta, faz o handshake e imprime capacidades e estado
+  dump                      somente leitura: faz o handshake e imprime capacidades e estado
   get <campo>               imprime um campo do dump (ex.: get battery)
   set <campo> <valor>       altera um ajuste e imprime o valor relido do fone
   send <hex> [--t2]         envia um payload cru (ex.: send "66 17") e mostra as respostas
@@ -146,7 +146,8 @@ func run(_ argv: [String]) async throws {
     var args = argv
     let logHex = args.contains("--log-hex")
     let t2 = args.contains("--t2")
-    args.removeAll { $0 == "--log-hex" || $0 == "--t2" }
+    let tracing = args.contains("--trace")
+    args.removeAll { $0 == "--log-hex" || $0 == "--t2" || $0 == "--trace" }
     var address: String?
     if let i = args.firstIndex(of: "--address"), i + 1 < args.count {
         address = args[i + 1].uppercased().replacingOccurrences(of: "-", with: ":")
@@ -180,7 +181,12 @@ func run(_ argv: [String]) async throws {
     }
     eprint("conectando em \(target)…")
     let sniffing = command == "sniff"
-    let session = MDRSession(channel: RFCOMMChannel(address: target),
+    let channel = RFCOMMChannel(address: target)
+    if tracing { channel.trace = { eprint(String(format: "%8.3f", Date().timeIntervalSince(startTime)) + " -- " + $0) } }
+    // `dump` e `get` nunca alteram o fone: só GET sai pelo canal.
+    var options = MDRSession.Options()
+    options.readOnly = ["dump", "get", "sniff"].contains(command)
+    let session = MDRSession(channel: channel, options: options,
                              traffic: logHex || sniffing || command == "send" ? hexLogger : nil)
     try await session.connect()
     try await Task.sleep(for: .milliseconds(800)) // as RETs do sync chegam logo depois dos ACKs
