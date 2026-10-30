@@ -106,6 +106,8 @@ Central de Controle (com o app aberto).
 | Bluetooth | falar com o fone. Na CLI, quem pede é o Terminal — reinicie o Terminal depois de autorizar. |
 | Localização (opcional) | o macOS só revela o nome da rede Wi-Fi a apps com localização; usado apenas nos perfis por Wi-Fi |
 | Notificações (opcional) | alerta de bateria baixa |
+| Microfone (opcional) | só o teste de eco da aba Desenvolvedor, para ler um dispositivo virtual. O app não usa o microfone |
+| Downloads (opcional) | só com o seu consentimento: "Obter curva de correção" espera o `ParametricEQ.txt` por 15 minutos, sem listar a pasta |
 
 ## Atualizações
 

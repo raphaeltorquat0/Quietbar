@@ -92,11 +92,12 @@ anexados numa issue com o template "Relatório de fone". Conferir em especial: b
 
 Nenhum passo aqui usa SET no fone, exceto "Deixar em plano", que só acontece se você clicar. Use um build instalado com `make install` e o fone como saída do Mac, sem chamada aberta.
 
-Fique de olho no pedido de permissão: **enquanto ele estiver aberto, nenhum app consegue começar a tocar som**. Responda na hora. Em build ad-hoc, a permissão precisa ser dada de novo a cada build.
+O pedido de permissão só sai do botão do onboarding. **Pause tudo antes e responda na hora**: quando o diálogo veio do `coreaudiod`, nenhum app conseguiu começar a tocar som enquanto ele esteve aberto. Em build ad-hoc, a permissão precisa ser dada de novo a cada build.
 
 | # | Ação | Esperado |
 |---|---|---|
-| 1 | Configurações › Som no Mac › "Ligar o Som no Mac" e responda **Permitir** | Estado vai para "Aguardando áudio"; nada muda no som |
+| 0 | Com música tocando, clique em "Pedir permissão e ligar" | O botão recusa e diz o que está tocando; nenhum diálogo abre |
+| 1 | Pause tudo, clique no botão e responda **Permitir** | Estado vai para "Aguardando áudio"; nada muda no som. Enquanto o diálogo estiver aberto, confira se outro app ainda consegue começar a tocar |
 | 2 | Toque música | Em menos de 1 s o Estado vira "Ativo"; sem estalo nem eco |
 | 3 | Preset "Mais grave", depois "Plano" | Grave muda sem clique nem chiado durante a troca |
 | 4 | Clique no botão A/B várias vezes | Troca imediata, sem clique |
@@ -109,17 +110,22 @@ Fique de olho no pedido de permissão: **enquanto ele estiver aberto, nenhum app
 | 11 | Reabra o app | Volta a processar se estava ligado |
 | 12 | Tire a permissão em Ajustes do Sistema, com música tocando | No pior caso, 5 s de silêncio e o áudio volta sem processamento |
 | 13 | Clique em "Deixar em plano" | Só nesse clique o EQ do fone muda |
-| 14 | Teste de eco | No passo 2, não pode haver som dobrado: com a tap sem permissão, o loopback mostrou o original só atenuado, e isso ainda precisa ser conferido com ela ativa |
+| 14 | Aba Desenvolvedor › "Iniciar teste de eco", com um dispositivo de loopback | "Passou: o som original zerou." O clique pode pedir o Microfone, usado só para ler o loopback. Inconclusivo significa que o tom não voltou pela entrada |
+| 15 | No passo 2, com o fone | Sem som dobrado: o teste 14 prova o mudo no dispositivo virtual, e o ouvido confere no Bluetooth |
+| 16 | Deixe o pedido de permissão sem resposta por 2 minutos, em build novo | O app avisa que não vai pedir de novo sozinho, e não pede |
+| 17 | Saia e reabra o app sem ter dado a permissão | Nenhum diálogo abre; o Som no Mac segue desligado |
+| 18 | "Obter curva de correção" e permita procurar em Downloads; baixe o `Sony WH-1000XM5 ParametricEQ.txt` | Abre a página do WH-1000XM5; em até 2 s aparece "Curva encontrada"; "Importar e ativar" liga a Correção |
+| 19 | Instalação nova e update da 1.3.0 | Som no Mac vem desligado, e nada pede permissão |
 
-**Medição no maintainer** (dispositivo com loopback, sem som audível nem fone). Depois de autorizar o build que vai medir:
+**Medição no maintainer** (dispositivo com loopback, sem som audível nem fone). A tap só roda com outro processo tocando no dispositivo:
 
 ```sh
-swift build --product mdr-cli
+swift build -c release --product mdr-cli
 S=SteamStreamingSpeakers_UID
-.build/debug/mdr-cli audio-probe --play $S --seconds 16 &
-.build/debug/mdr-cli audio-probe --listen $S --seconds 15 > /tmp/nivel.txt &
-sleep 1; open -n dist/Quietbar.app --stdout /tmp/selftest.txt --args --audio-selftest $S
+.build/release/mdr-cli audio-probe --echo-test $S
+.build/release/mdr-cli audio-probe --play $S --seconds 12 &
+.build/release/mdr-cli audio-probe --device $S --seconds 10 --mute --timeline
 ```
 
-`/tmp/selftest.txt` traz latência e CPU com a cadeia de 10 filtros; `/tmp/nivel.txt` mostra o que chegou ao dispositivo.
+Para repetir dentro do app assinado, depois de autorizar pelo botão: `Quietbar --audio-selftest $S`, com o `--play` rodando. Sem a permissão ele recusa, sem abrir diálogo.
 

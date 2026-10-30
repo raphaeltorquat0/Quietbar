@@ -33,7 +33,7 @@ O original só é silenciado com prova de que o caminho processado funciona.
 4. Com 5 s de silêncio digital e mudo ligado, ela tira o mudo e volta ao passo 2: limita o pior caso de uma tap que passou a entregar zeros.
 5. Ao desmontar, o mudo sai antes do fade, para nunca haver um instante sem som.
 
-Sem permissão, o macOS 27 nem chama o IOProc. O passo 2 não acontece e nada é mutado.
+O aggregate com tap só começa a rodar quando algum app toca no dispositivo; antes disso, zero quadros é o normal. Depois de começar, ele segue durante as pausas, e o som volta com o mudo ativo.
 
 **Se o processo morrer**, o áudio volta sozinho. `CoreAudioTests.killedProcessGivesTheAudioBack` prova isso de ponta a ponta num dispositivo com loopback: tom em um processo, tap com mudo em outro, `kill -9`, e o nível volta ao original em menos de 100 ms. Isso vale para a tap privada que o app usa. Uma tap **pública** sobrevive ao dono.
 
@@ -41,31 +41,32 @@ Sem permissão, o macOS 27 nem chama o IOProc. O passo 2 não acontece e nada é
 
 | Medida | Resultado | Meta | Como |
 |---|---|---|---|
-| Cadeia com 10 filtros | **0,6% de um núcleo** | < 2% | `mdr-cli audio-probe --bench`, build release, Apple M2 Pro, offline |
-| Latência adicional real | **não medida** | < 20 ms | Depende da permissão (abaixo) |
-| CPU do app com a tap real | **não medida** | < 2% | Depende da permissão (abaixo) |
+| Latência adicional | **11,6 ms** | < 20 ms | Carimbos de tempo do HAL com tap real, buffer de 256 quadros a 44,1 kHz |
+| CPU do processo | **1,2 a 1,35%** | < 2% | `mdr-cli` release com 10 filtros e tom tocando, 10 s |
+| Carga do render | **0,75%**, máx. 1,1% | | Tempo de render sobre a duração do bloco |
+| Cadeia sozinha, offline | **0,6% de um núcleo** | < 2% | `mdr-cli audio-probe --bench` |
+| Original com a tap mutando | **0,0000** | zero | Teste de eco, com o tom a 0,1 |
 
-O M2 Pro não é o Apple Silicon base pedido como referência. A conta da latência, que **não substitui a medição**: o buffer pedido ao aggregate é de 256 quadros (5,3 ms a 48 kHz) e o HAL aceitou esse valor no dispositivo virtual. Com um ciclo de captura e um de saída, a estimativa é de 11 ms mais os offsets do dispositivo. O Bluetooth pode impor um buffer maior.
-
-**Por que não foi medido:** a permissão só é concedida por uma pessoa, no diálogo do macOS. A aba Desenvolvedor e `--audio-selftest` medem depois disso (`docs/HARDWARE_TEST.md`).
+Medido em 2026-10-30 num Apple M2 Pro, no dispositivo virtual `Steam Streaming Speakers`, pelo `mdr-cli`. **Falta medir no fone por Bluetooth**, onde o HAL pode impor um buffer maior, e num Apple Silicon base. A aba Desenvolvedor mostra os mesmos números ao vivo.
 
 ## Limitações
 
 - Exige macOS 14.2; antes disso o recurso não aparece.
-- **Enquanto o pedido de permissão está aberto, o `coreaudiod` não atende clientes novos**, e outros apps podem não conseguir começar a tocar som. O onboarding avisa. Em build ad-hoc, cada atualização é uma identidade nova para o macOS e pede a permissão outra vez.
+- O pedido de permissão só sai do botão do onboarding, com o áudio pausado. Quando o diálogo veio do `coreaudiod`, ele parou de atender clientes novos enquanto estava aberto. Agora o pedido vem do app (`DECISIONS.md` #106), mas isso só se confirma no primeiro clique real, por isso o aviso continua.
+- Em build ad-hoc, cada atualização é uma identidade nova para o macOS: a permissão some e o Som no Mac espera o botão de novo.
 - Modo chamada (HFP, mono) não é processado. O bloco mostra "Pausado durante chamadas".
 - No começo de cada áudio, e depois de 5 s de silêncio, a primeira fração de segundo sai sem processamento.
 - Com o Mac em outra saída, nada é processado.
-- **Não confirmado com a tap autorizada:** o IO no sandbox e o mudo completo. Sem permissão, o loopback mostrou o original atenuado (0,100 → 0,063), não zerado. Se isso se repetir com o app autorizado, o usuário ouviria eco; a linha 14 do roteiro confere.
+- **Ainda não exercitado:** a tap dentro do App Sandbox e o diálogo pelo `TCCAccessRequest`. Fora do sandbox, tudo foi medido.
 - O limitador tem teto em −1 dBFS, sem lookahead, para não somar latência. A rampa de A/B é de 10 ms.
 
 ## De onde vêm as curvas
 
 O app **não traz curva medida**. "Mais grave", "Voz" e "Plano" são filtros simples, escritos à mão, sem pretensão de correção. "Correção" fica desativado até você importar uma.
 
-O motivo está em `DECISIONS.md` #95: o MIT do [AutoEQ](https://github.com/jaakkopasanen/AutoEq) cobre o código, e os dados medidos não têm licença própria de redistribuição. O autor das medições oratory1990 já se opôs ao uso delas num app pago.
+O motivo está em `DECISIONS.md` #95: o MIT do [AutoEQ](https://github.com/jaakkopasanen/AutoEq) cobre o código, e os dados medidos não têm licença própria de redistribuição. O autor das medições oratory1990 já se opôs ao uso delas num app pago. O pedido de autorização está em `docs/launch/pedido-curva-oratory1990.md`.
 
-Para usar: em [autoeq.app](https://autoeq.app), escolha o fone, peça o formato paramétrico e importe o `ParametricEQ.txt` na aba Som no Mac.
+Para usar: clique em **Obter curva de correção** e baixe o `ParametricEQ.txt`. Com o seu consentimento, o app espera esse arquivo em Downloads por 15 minutos, sem listar a pasta, e oferece importar e ativar. Também dá para usar **Importar…** com qualquer arquivo no mesmo formato.
 
 ### Formatos
 
