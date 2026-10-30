@@ -120,3 +120,54 @@ struct SimulatorSection: View {
     }
 }
 #endif
+
+#if DEBUG
+/// `Quietbar --hw-test`, com um fone real: mostra o painel numa janela, imprime o estado do app a cada mudança e alterna
+/// o A/B a cada SIGUSR1. Serve ao roteiro de `docs/HARDWARE_TEST.md`, feito sem clicar no app.
+@MainActor enum HardwareTest {
+    private static let enabled = CommandLine.arguments.contains("--hw-test")
+    private static var last = ""
+    private static var signals: DispatchSourceSignal?
+    private static var window: NSWindow?
+
+    static func startIfRequested() {
+        guard enabled else { return }
+        setvbuf(stdout, nil, _IOLBF, 0)
+        signal(SIGUSR1, SIG_IGN)
+        let source = DispatchSource.makeSignalSource(signal: SIGUSR1, queue: .main)
+        source.setEventHandler {
+            MainActor.assumeIsolated {
+                guard let engine = MacSound.shared.engine else { return }
+                engine.setBypass(!engine.bypass)
+                log()
+            }
+        }
+        source.resume()
+        signals = source
+        Task {
+            try? await Task.sleep(for: .seconds(1))
+            // O painel da barra não abre sem o clique no item de status: o mesmo conteúdo, numa janela capturável por ID.
+            let w = NSWindow(contentRect: NSRect(x: 200, y: 100, width: 400, height: 800), styleMask: [.titled], backing: .buffered, defer: false)
+            w.contentView = NSHostingView(rootView: MenuBarView().environment(DeviceController.shared))
+            w.level = .floating
+            w.makeKeyAndOrderFront(nil)
+            window = w
+            while true {
+                log()
+                try? await Task.sleep(for: .milliseconds(250))
+            }
+        }
+    }
+
+    static func log() {
+        guard enabled else { return }
+        let d = DeviceController.shared, s = d.state, e = MacSound.shared.engine
+        let keys = ["mode", "ambient", "voice", "eq", "eq-bands", "dsee", "stc", "stc-config", "autopause", "autooff", "volume", "playback", "priority"]
+        let fields = keys.compactMap { k in s.diagnosticFields.first { $0.0 == k }.map { "\(k)=\($0.1)" } }.joined(separator: " ")
+        let line = "fase=\(d.snapshot.phase) \(fields) | som=\(e.map { "\($0.phase)" } ?? "-") status=\(MacSound.shared.statusText) bypass=\(e?.bypass ?? false) saida=\(e?.outputIsTarget ?? false)"
+        guard line != last else { return }
+        last = line
+        print(Date().formatted(.dateTime.hour().minute().second()), line)
+    }
+}
+#endif

@@ -21,7 +21,7 @@ uso: mdr-cli <comando> [--address AA:BB:CC:DD:EE:FF] [--log-hex] [--trace]
                             [--view three-quarter|front|side|top] [--renderer scenekit|realitykit]
 
 campos de set:
-  mode nc|ambient|off       ambient 0-20            voice on|off
+  mode nc|ambient|off       ambient 1-20            voice on|off
   eq <preset hex|nome>      eq-bands <6 ou 10 valores em dB>
   dsee on|off               stc on|off              stc-sens auto|high|low
   stc-time short|mid|long|none                      autopause on|off

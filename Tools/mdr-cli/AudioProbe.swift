@@ -5,7 +5,7 @@ import QuietAudio
 /// `mdr-cli audio-probe`: mede a tap num dispositivo real, sem app nem fone.
 /// Nunca toca no fone por MDR; o som que ela gera vai só para o dispositivo escolhido.
 ///   audio-probe --device <uid> [--seconds 10] [--mute] [--tone] [--hold]
-///   audio-probe --play <uid> [--seconds 10]    toca um tom em outro processo, para a tap capturar
+///   audio-probe --play <uid> [--seconds 10] [--level 0.1]   toca um tom em outro processo, para a tap capturar
 ///   audio-probe --echo-test <uid>              teste de eco num dispositivo com loopback
 ///   audio-probe --permission                   só consulta as permissões; nunca abre diálogo
 ///   audio-probe --listen <uid> [--seconds 10]  imprime o pico da entrada do dispositivo a cada 100 ms
@@ -16,7 +16,7 @@ func runAudioProbe(_ args: [String]) async throws {
 
     if let uid = value("--play") {
         guard let d = AudioDevices.find(uid: uid) else { throw CLIError("dispositivo não encontrado") }
-        return try playTone(on: d, seconds: seconds)
+        return try playTone(on: d, seconds: seconds, level: Float(value("--level") ?? "") ?? 0.1)
     }
     if let uid = value("--listen") {
         guard let d = AudioDevices.find(uid: uid) else { throw CLIError("dispositivo não encontrado") }
@@ -45,8 +45,8 @@ func runAudioProbe(_ args: [String]) async throws {
     if !report { throw CLIError("a tap não processou áudio") }
 }
 
-/// Tom de 1 kHz a -20 dBFS direto no dispositivo.
-private func playTone(on device: OutputDevice, seconds: Double) throws {
+/// Tom de 1 kHz direto no dispositivo. `level` 0.1 = -20 dBFS.
+private func playTone(on device: OutputDevice, seconds: Double, level: Float) throws {
     final class Phase: @unchecked Sendable { var value = 0.0 }
     let phase = Phase()
     let step = 2 * Double.pi * 1000 / device.sampleRate
@@ -56,7 +56,7 @@ private func playTone(on device: OutputDevice, seconds: Double) throws {
             let ch = Int(b.mNumberChannels), n = Int(b.mDataByteSize) / 4 / max(ch, 1)
             let p = b.mData!.assumingMemoryBound(to: Float.self)
             for i in 0..<n {
-                let v = Float(0.1 * sin(phase.value))
+                let v = level * Float(sin(phase.value))
                 phase.value += step
                 for c in 0..<ch { p[i * ch + c] = v }
             }

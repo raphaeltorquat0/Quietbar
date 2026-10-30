@@ -204,6 +204,9 @@ final class DeviceController {
 
     private func received(_ snap: MDRSession.Snapshot) {
         snapshot = snap
+        #if DEBUG
+        HardwareTest.log()
+        #endif
         if let b = snap.state.primaryBattery { lastBattery = b }
         checkBattery(snap.state.primaryBattery)
     }

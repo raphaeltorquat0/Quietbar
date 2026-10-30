@@ -43,6 +43,7 @@ struct QuietbarApp: App {
         DemoPanel.openIfRequested()
         #if DEBUG
         Simulation.shared.startIfRequested()
+        HardwareTest.startIfRequested()
         #endif
         ControlCenterBridge.start()
     }
