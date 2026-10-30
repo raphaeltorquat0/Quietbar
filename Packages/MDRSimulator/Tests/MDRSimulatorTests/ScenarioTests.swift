@@ -49,7 +49,8 @@ import Testing
         let (t, s) = try await connected(Profiles.wh1000xm6)
         await Scenario.reconnect.run(on: t, step: step) { event in
             if event == .connectionLost {
-                #expect(await eventually(s) { _ in true })
+                // A sessão percebe o fechamento do canal por conta própria, sem depender do host.
+                while await s.phase != .disconnected { try? await Task.sleep(for: .milliseconds(2)) }
                 await #expect(throws: (any Error).self) { try await s.connect() }
             }
             if event == .connectionRestored { try? await s.connect() }
