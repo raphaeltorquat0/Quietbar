@@ -13,6 +13,11 @@ struct QuietbarApp: App {
             let dir = CommandLine.arguments.dropFirst(i + 1).first ?? "/tmp/quietbar-ui"
             Task { @MainActor in PanelPreviewRenderer.run(to: URL(fileURLWithPath: dir)) }
         }
+        if let i = CommandLine.arguments.firstIndex(of: "--press-kit") {
+            let dir = CommandLine.arguments.dropFirst(i + 1).first ?? "/tmp/quietbar-press-kit"
+            Task { @MainActor in await PressKit.run(to: URL(fileURLWithPath: dir)) }
+            return
+        }
         // `make install` abre o app com esta flag: só o próprio app pode se registrar como item de login.
         if CommandLine.arguments.contains("--register-login-item") { try? SMAppService.mainApp.register() }
         HotKeys.shared.register()

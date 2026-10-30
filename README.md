@@ -12,9 +12,13 @@ Controle seus fones <b>Sony</b> (WH-1000XM5, WF-1000XM5, LinkBuds…) pela barra
 </p>
 
 <p align="center">
-<img src="docs/screenshots/painel-claro.png" width="300" alt="Painel no modo claro">
+<img src="docs/media/demo.gif" width="640" alt="Popup de conexão e troca do modo de som no painel">
+</p>
+
+<p align="center">
+<img src="docs/screenshots/painel-nc-claro.png" width="300" alt="Painel no modo claro">
 &nbsp;&nbsp;
-<img src="docs/screenshots/painel-escuro.png" width="300" alt="Painel no modo escuro">
+<img src="docs/screenshots/painel-ambiente-escuro.png" width="300" alt="Painel no modo escuro, com os ajustes do modo Ambiente">
 </p>
 
 App nativo em Swift/SwiftUI que fala o protocolo Sony MDR v2 direto pelo Bluetooth (RFCOMM).

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0CA5A0CEE926A96ED6397367 /* MDRTransport in Frameworks */ = {isa = PBXBuildFile; productRef = 011E8A8A201E1764AD8D4448 /* MDRTransport */; };
 		0F716386549DB4C763F4B570 /* EqualizerTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0A1D70B5F7ACD718F8431E5 /* EqualizerTab.swift */; };
+		15D38B949FF9D9637981D723 /* PressKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43C257976F7F3F5B27D0A311 /* PressKit.swift */; };
 		17D44908CE935FEDADFD47C1 /* CoreWLAN.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0BA90D24E84A37B9DECB5FF /* CoreWLAN.framework */; };
 		1A800BF189A50C1A0FC3999E /* QuietbarControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7BA4B97DEE65BACB7F355C9 /* QuietbarControls.swift */; };
 		27A3BA1E4227E02F9E3E96E6 /* MDRKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5E6AD44C85C96598AE9489C9 /* MDRKit */; };
@@ -69,6 +70,7 @@
 		22A44C60BD66C3FC3B1A8B34 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		2A8999D82FE5D45F03AE5247 /* PanelControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelControls.swift; sourceTree = "<group>"; };
 		2B1A7D6751AA76BE8A2FFCF0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		43C257976F7F3F5B27D0A311 /* PressKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PressKit.swift; sourceTree = "<group>"; };
 		4C9EADF4AEA31E57C5D2E018 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		5026D463C4EF96FAE5805490 /* DeveloperTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperTab.swift; sourceTree = "<group>"; };
 		55AA52EA50BAEEF2BC5C922E /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
@@ -137,6 +139,7 @@
 				E689B6483FC7D446807B1524 /* DeviceController.swift */,
 				A0A1D70B5F7ACD718F8431E5 /* EqualizerTab.swift */,
 				55AA52EA50BAEEF2BC5C922E /* MenuBarView.swift */,
+				43C257976F7F3F5B27D0A311 /* PressKit.swift */,
 				BB21389603CDC1E949FC6D25 /* Profiles.swift */,
 				64FCB687A295807BCC467D05 /* ProtocolLog.swift */,
 				6A5F3C7054A1D2754390EC94 /* QuietbarApp.swift */,
@@ -330,6 +333,7 @@
 				6E825011F722CF70EC0F9805 /* PanelControls.swift in Sources */,
 				E1868A8502D808E34FB0D55C /* PanelPreviews.swift in Sources */,
 				669E0DDD1CD604F0C7BEF3E6 /* PanelView.swift in Sources */,
+				15D38B949FF9D9637981D723 /* PressKit.swift in Sources */,
 				FDCD271225078D0994CC81DA /* Profiles.swift in Sources */,
 				4EE2AD566D8518B672A610A9 /* ProtocolLog.swift in Sources */,
 				7D1AA783287C66799FDAA0C4 /* QuietbarApp.swift in Sources */,

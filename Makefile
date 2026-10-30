@@ -4,7 +4,7 @@ DEST     := /Applications/$(APP_NAME).app
 DEV_DD   := .build/xcode-debug
 
 .DEFAULT_GOAL := help
-.PHONY: help install dev test release notarize
+.PHONY: help install dev test release notarize press-kit
 
 help: ## Lista os alvos
 	@grep -E '^[a-z]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -34,3 +34,6 @@ release: ## Build Release universal e .dmg em dist/ (Developer ID com QUIETBAR_S
 
 notarize: ## Notariza e grampeia o .app e o .dmg (exige QUIETBAR_SIGN_IDENTITY e QUIETBAR_NOTARY_PROFILE)
 	scripts/notarize.sh
+
+press-kit: ## Gera as imagens de docs/screenshots e o GIF de docs/media em janelas próprias do app
+	scripts/press-kit.sh
