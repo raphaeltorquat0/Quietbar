@@ -58,9 +58,11 @@ import SwiftUI
             await start(profile)
             try? await Task.sleep(for: .seconds(1))
             NSApp.activate() // aberto pelo terminal: sem isso, o painel perde o foco e fecha
-            if args.contains("--mac-sound-window") { // a aba numa janela própria, para conferir com `screencapture -l`
-                let w = NSWindow(contentRect: NSRect(x: 200, y: 100, width: 560, height: 1250), styleMask: [.titled], backing: .buffered, defer: false)
-                w.contentView = NSHostingView(rootView: MacSoundTab().environment(DeviceController.shared))
+            if args.contains("--mac-sound-window") || args.contains("--automation-window") { // a aba numa janela própria, para conferir com `screencapture -l`
+                let automation = args.contains("--automation-window")
+                let w = NSWindow(contentRect: NSRect(x: 200, y: 100, width: 560, height: automation ? 760 : 1250), styleMask: [.titled], backing: .buffered, defer: false)
+                w.contentView = automation ? NSHostingView(rootView: AnyView(AutomationTab().environment(DeviceController.shared)))
+                                           : NSHostingView(rootView: AnyView(MacSoundTab().environment(DeviceController.shared)))
                 w.level = .floating
                 w.makeKeyAndOrderFront(nil)
                 window = w

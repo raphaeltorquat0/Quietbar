@@ -94,6 +94,7 @@ extension PanelState {
                                    .init(id: $0.rawValue, name: $0.label, available: $0 != .correction || sound.correction != nil)
                                })
         }
+        p.automation = Automation.shared.indicator
         p.showPlayback = s.capabilities.playback
         p.isPlaying = s.playback?.isPlaying ?? false
         p.volume = s.volume.map(Int.init)

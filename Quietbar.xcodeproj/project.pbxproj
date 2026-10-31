@@ -20,6 +20,7 @@
 		444D9008C2CE459DB413CAE8 /* Sparkle-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 5450C3163EF32382EA56FFB7 /* Sparkle-LICENSE.txt */; };
 		4EE2AD566D8518B672A610A9 /* ProtocolLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64FCB687A295807BCC467D05 /* ProtocolLog.swift */; };
 		55575B2ABBF47CF3559C7906 /* StatusBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6765529F3829519180CD6F /* StatusBar.swift */; };
+		5B4CA07914DF2A5D1AD54B5F /* AutomationTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1735D0B536BC9F24EE9BBD85 /* AutomationTab.swift */; };
 		669E0DDD1CD604F0C7BEF3E6 /* PanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7293F759BEDD528E9841E932 /* PanelView.swift */; };
 		6E825011F722CF70EC0F9805 /* PanelControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8999D82FE5D45F03AE5247 /* PanelControls.swift */; };
 		7D1AA783287C66799FDAA0C4 /* QuietbarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A5F3C7054A1D2754390EC94 /* QuietbarApp.swift */; };
@@ -35,6 +36,7 @@
 		B7EC7922B122F322AE718CCE /* MacSound.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31DDF0234A11C66470731BF /* MacSound.swift */; };
 		BE2B07E17B8C1C403C359573 /* Automation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8145CABC0B8B7EA29B4025B6 /* Automation.swift */; };
 		C2C73A7935414E007E2FDF47 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C9EADF4AEA31E57C5D2E018 /* SwiftUI.framework */; };
+		C98C317FAF52C195C763195E /* AppShortcuts.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 86C94C91B0BB93E0D730D844 /* AppShortcuts.xcstrings */; };
 		D24AC5EB3BE8594D0EC080AB /* Simulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9843EA39B727B5E4032860A1 /* Simulation.swift */; };
 		D50AC8A5F68C7E99ADE65F0F /* DeveloperTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5026D463C4EF96FAE5805490 /* DeveloperTab.swift */; };
 		DC358D01EF23714EB03ABB5B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2B1A7D6751AA76BE8A2FFCF0 /* Assets.xcassets */; };
@@ -77,6 +79,7 @@
 		0528E04F6642BDBBB82B90AE /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		0758B1DDE173670F42002BB1 /* QuietbarIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuietbarIntents.swift; sourceTree = "<group>"; };
 		0D4526A10BD3500F2860F0A2 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
+		1735D0B536BC9F24EE9BBD85 /* AutomationTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomationTab.swift; sourceTree = "<group>"; };
 		20FAB22704C32D5DF6553C38 /* sonyctl_macos */ = {isa = PBXFileReference; lastKnownFileType = folder; name = sonyctl_macos; path = .; sourceTree = SOURCE_ROOT; };
 		22A44C60BD66C3FC3B1A8B34 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		285EF06533C520AFDA960E52 /* Updates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Updates.swift; sourceTree = "<group>"; };
@@ -93,6 +96,7 @@
 		7293F759BEDD528E9841E932 /* PanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelView.swift; sourceTree = "<group>"; };
 		7A837D05662D77D3D91B3C5F /* PanelPreviews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelPreviews.swift; sourceTree = "<group>"; };
 		8145CABC0B8B7EA29B4025B6 /* Automation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Automation.swift; sourceTree = "<group>"; };
+		86C94C91B0BB93E0D730D844 /* AppShortcuts.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = AppShortcuts.xcstrings; sourceTree = "<group>"; };
 		9843EA39B727B5E4032860A1 /* Simulation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simulation.swift; sourceTree = "<group>"; };
 		A0A1D70B5F7ACD718F8431E5 /* EqualizerTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EqualizerTab.swift; sourceTree = "<group>"; };
 		A7BA4B97DEE65BACB7F355C9 /* QuietbarControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuietbarControls.swift; sourceTree = "<group>"; };
@@ -153,6 +157,7 @@
 			children = (
 				E95BB0AFD5218FDDCF1F6DAB /* AppSettings.swift */,
 				8145CABC0B8B7EA29B4025B6 /* Automation.swift */,
+				1735D0B536BC9F24EE9BBD85 /* AutomationTab.swift */,
 				0D4526A10BD3500F2860F0A2 /* Components.swift */,
 				C5B1E7BC89D8E3FC8678E979 /* ConnectionPopup.swift */,
 				C191D66CBB722B4503ADE4CE /* ControlCenterBridge.swift */,
@@ -238,6 +243,7 @@
 		F4D9CE16549A25E820018B59 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				86C94C91B0BB93E0D730D844 /* AppShortcuts.xcstrings */,
 				2B1A7D6751AA76BE8A2FFCF0 /* Assets.xcassets */,
 				0528E04F6642BDBBB82B90AE /* Localizable.xcstrings */,
 				5450C3163EF32382EA56FFB7 /* Sparkle-LICENSE.txt */,
@@ -342,6 +348,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C98C317FAF52C195C763195E /* AppShortcuts.xcstrings in Resources */,
 				DC358D01EF23714EB03ABB5B /* Assets.xcassets in Resources */,
 				30B5AFDF470B79D7D2E0B5C0 /* Localizable.xcstrings in Resources */,
 				444D9008C2CE459DB413CAE8 /* Sparkle-LICENSE.txt in Resources */,
@@ -357,6 +364,7 @@
 			files = (
 				E80843557ADC5D34F74C47B8 /* AppSettings.swift in Sources */,
 				BE2B07E17B8C1C403C359573 /* Automation.swift in Sources */,
+				5B4CA07914DF2A5D1AD54B5F /* AutomationTab.swift in Sources */,
 				A668E326F360720412943C8E /* Components.swift in Sources */,
 				E3E70312A2884E5EA8D92294 /* ConnectionPopup.swift in Sources */,
 				A7ADD00688CC326586E22F04 /* ControlCenterBridge.swift in Sources */,
@@ -395,7 +403,7 @@
 /* Begin PBXTargetDependency section */
 		B25F9612E580A03540C91675 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = "TEMP_6A38CB3F-AAF1-4CA3-B22D-1611E0EEBF8F" /* MDRSimulator */;
+			productRef = "TEMP_00D75CFA-435B-4F68-BC6E-A249A675845F" /* MDRSimulator */;
 		};
 		DF552CBE810537470F8789A7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -708,7 +716,7 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = MDRSession;
 		};
-		"TEMP_6A38CB3F-AAF1-4CA3-B22D-1611E0EEBF8F" /* MDRSimulator */ = {
+		"TEMP_00D75CFA-435B-4F68-BC6E-A249A675845F" /* MDRSimulator */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MDRSimulator;
 		};
