@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>E1</title><pre id="o"></pre>
+<script>
+// Sequência do E1. Sem gravação: o stream só fica aberto. `?device=<parte do nome>&mute=<s>` no endereço.
+const q = new URLSearchParams(location.search), wait = s => new Promise(r => setTimeout(r, s * 1000));
+const say = (phase, extra = '') => fetch(`/phase?name=${encodeURIComponent(phase)}&extra=${encodeURIComponent(extra)}`);
+(async () => {
+  let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const want = q.get('device');
+  const list = await navigator.mediaDevices.enumerateDevices();
+  const d = list.find(x => x.kind === 'audioinput' && want && x.label.includes(want));
+  if (d) { stream.getTracks().forEach(t => t.stop()); stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: { exact: d.deviceId } } }); }
+  const [track] = stream.getAudioTracks();
+  await say('aberto', track.label); await wait(10);
+  track.enabled = false; await say('mudo'); await wait(Number(q.get('mute') || 60));
+  track.enabled = true; await say('ativo'); await wait(10);
+  track.stop(); await say('parado'); await wait(5);
+  await say('fim');
+})().catch(e => say('erro', String(e)));
+</script>

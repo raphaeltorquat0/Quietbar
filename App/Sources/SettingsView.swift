@@ -17,6 +17,7 @@ struct SettingsView: View {
             ControlsTab().tabItem { Label("Controles", systemImage: "hand.tap") }.tag("controls")
             ShortcutsTab().tabItem { Label("Atalhos", systemImage: "keyboard") }.tag("shortcuts")
             ProfilesTab().tabItem { Label("Perfis", systemImage: "person.crop.rectangle.stack") }.tag("profiles")
+            AutomationTab().tabItem { Label("Automação", systemImage: "wand.and.stars") }.tag("automation")
             PopupTab().tabItem { Label("Popup", systemImage: "rectangle.portrait.on.rectangle.portrait") }.tag("popup")
             if device.settings.developerMode {
                 DeveloperTab().tabItem { Label("Desenvolvedor", systemImage: "hammer") }.tag("developer")

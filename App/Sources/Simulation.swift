@@ -1,8 +1,11 @@
 #if DEBUG
 import AppKit
 import MDRKit
+import MDRSession
 import MDRSimulator
 import Observation
+import QuietAudio
+import QuietAutomation
 import SwiftUI
 
 /// Fone simulado, só em builds Debug: `Quietbar --simulate <modelo> [--scenario <nome>]` ou a aba
@@ -58,9 +61,13 @@ import SwiftUI
             await start(profile)
             try? await Task.sleep(for: .seconds(1))
             NSApp.activate() // aberto pelo terminal: sem isso, o painel perde o foco e fecha
-            if args.contains("--mac-sound-window") { // a aba numa janela própria, para conferir com `screencapture -l`
-                let w = NSWindow(contentRect: NSRect(x: 200, y: 100, width: 560, height: 1250), styleMask: [.titled], backing: .buffered, defer: false)
-                w.contentView = NSHostingView(rootView: MacSoundTab().environment(DeviceController.shared))
+            if args.contains("--headless") {
+                // Sem painel: o canal é solto como no uso real.
+            } else if args.contains("--mac-sound-window") || args.contains("--automation-window") { // a aba numa janela própria, para conferir com `screencapture -l`
+                let automation = args.contains("--automation-window")
+                let w = NSWindow(contentRect: NSRect(x: 200, y: 100, width: 560, height: automation ? 760 : 1250), styleMask: [.titled], backing: .buffered, defer: false)
+                w.contentView = automation ? NSHostingView(rootView: AnyView(AutomationTab().environment(DeviceController.shared)))
+                                           : NSHostingView(rootView: AnyView(MacSoundTab().environment(DeviceController.shared)))
                 w.level = .floating
                 w.makeKeyAndOrderFront(nil)
                 window = w
@@ -133,6 +140,7 @@ struct SimulatorSection: View {
     static func startIfRequested() {
         guard enabled else { return }
         setvbuf(stdout, nil, _IOLBF, 0)
+        Validation.start()
         signal(SIGUSR1, SIG_IGN)
         let source = DispatchSource.makeSignalSource(signal: SIGUSR1, queue: .main)
         source.setEventHandler {
@@ -146,6 +154,8 @@ struct SimulatorSection: View {
         signals = source
         Task {
             try? await Task.sleep(for: .seconds(1))
+            // Sem janela o canal é solto como no uso real: uma janela aberta o manteria aberto.
+            guard !CommandLine.arguments.contains("--headless") else { return }
             // O painel da barra não abre sem o clique no item de status: o mesmo conteúdo, numa janela capturável por ID.
             let w = NSWindow(contentRect: NSRect(x: 200, y: 100, width: 400, height: 800), styleMask: [.titled], backing: .buffered, defer: false)
             w.contentView = NSHostingView(rootView: MenuBarView().environment(DeviceController.shared))
@@ -159,6 +169,11 @@ struct SimulatorSection: View {
         }
     }
 
+    static func trace(_ event: AutomationEvent) { Validation.write(event) }
+    static func trace(mic usage: MicUsage) { Validation.write(["kind": "mic", "running": "\(usage.deviceRunning)", "processes": (usage.processes ?? []).joined(separator: ",")]) }
+    static func trace(front id: String?) { Validation.write(["kind": "front", "app": id ?? "-"]) }
+    static func trace(call active: Bool) { Validation.write(["kind": "call", "active": "\(active)"]) }
+
     static func log() {
         guard enabled else { return }
         let d = DeviceController.shared, s = d.state, e = MacSound.shared.engine
@@ -168,6 +183,101 @@ struct SimulatorSection: View {
         guard line != last else { return }
         last = line
         print(Date().formatted(.dateTime.hour().minute().second()), line)
+    }
+}
+
+/// Instrumentação dos experimentos de `scripts/validation/`: grava cada evento em JSONL (`--automation-trace <arquivo>`)
+/// e recebe comandos por um FIFO (`--control <fifo>`). O comando vem por dentro porque o app e o `mdr-cli` não dividem o RFCOMM.
+@MainActor enum Validation {
+    private static var file: FileHandle?
+
+    static func start() {
+        let args = CommandLine.arguments
+        if let i = args.firstIndex(of: "--automation-trace"), let path = args.dropFirst(i + 1).first {
+            FileManager.default.createFile(atPath: path, contents: nil)
+            file = FileHandle(forWritingAtPath: path)
+        }
+        if let i = args.firstIndex(of: "--control"), let path = args.dropFirst(i + 1).first {
+            Thread.detachNewThread {
+                guard let stream = fopen(path, "r+") else { return } // r+: o FIFO não dá EOF quando o script fecha
+                var line: UnsafeMutablePointer<CChar>?
+                var size = 0
+                while getline(&line, &size, stream) > 0 {
+                    let text = String(cString: line!).trimmingCharacters(in: .whitespacesAndNewlines)
+                    DispatchQueue.main.async { MainActor.assumeIsolated { handle(text) } }
+                }
+            }
+        }
+    }
+
+    static func write(_ event: AutomationEvent) {
+        guard let data = try? JSONEncoder().encode(event) else { return }
+        append(data, fallback: "{}")
+    }
+
+    static func write(_ fields: [String: String]) {
+        guard let data = try? JSONEncoder().encode(fields) else { return }
+        append(data, fallback: "{}")
+    }
+
+    private static func append(_ json: Data, fallback: String) {
+        guard let file else { return }
+        let body = String(decoding: json, as: UTF8.self).dropFirst()
+        let t = Int(Date().timeIntervalSince1970 * 1000)
+        file.write(Data("{\"t\":\(t),\(body)\n".utf8))
+    }
+
+    private static func handle(_ line: String) {
+        let w = line.split(separator: " ").map(String.init)
+        let d = DeviceController.shared, engine = Automation.shared.engine
+        switch w.first {
+        case "mode": // comando direto à sessão, fora do motor, com a releitura do fone
+            guard w.count > 1, let mode = SoundMode(rawValue: w[1]) else { return }
+            Task {
+                let started = ContinuousClock.now
+                do {
+                    try await d.run { s in
+                        try await s.setSoundMode(mode)
+                        for _ in 0..<300 where await s.state.noiseControl?.soundMode != mode {
+                            try await Task.sleep(for: .milliseconds(10))
+                        }
+                    }
+                    let c = started.duration(to: .now).components
+                    write(["kind": "direct", "mode": mode.rawValue, "ok": "\(d.state.noiseControl?.soundMode == mode)",
+                           "ms": "\(c.seconds * 1000 + c.attoseconds / 1_000_000_000_000_000)"])
+                } catch {
+                    write(["kind": "direct", "mode": mode.rawValue, "ok": "false", "error": error.localizedDescription])
+                }
+            }
+        case "mode_read": d.perform { _ in } // só abre o canal, como a checagem de bateria
+        case "rule": // rule <call|focus|app|wifi> <modo|none>
+            guard w.count > 2, let kind = RuleKind.allCases.first(where: { "\($0)" == w[1] }) else { return }
+            engine.set(kind, SoundMode(rawValue: w[2]).map { Rule(id: "validation.\(w[1])", name: w[1], settings: [.soundMode: .mode($0)]) })
+        case "shortcut": // shortcut <noiseCanceling|ambient|off|toggleNcAmbient>: o caminho do atalho global e da Central de Controle
+            if w.count > 1, let action = ShortcutAction(rawValue: w[1]) { action.run(d) }
+        case "intent": // intent <noiseCanceling|ambient|off>: o perform do App Intent, no processo do app
+            guard w.count > 1, let option = NoiseModeOption(rawValue: w[1]) else { return }
+            Task {
+                let intent = SetNoiseModeIntent()
+                intent.mode = option
+                _ = try? await intent.perform()
+            }
+        case "button": // button <modo>: botão físico do fone simulado; com o canal solto, nada chega ao app
+            guard w.count > 1, let mode = SoundMode(rawValue: w[1]), var n = d.state.noiseControl, let t = Simulation.shared.transport else { return }
+            n.soundMode = mode
+            Task { await t.event(.noiseControl(n)) }
+        case "no_mode_reply": AutomationBridge.simulateNoModeReply = w.dropFirst().first == "on"
+        case "front": if w.count > 1 { ProfileEngine.shared.injectFront(w[1]) }
+        case "mark": write(["kind": "mark", "text": w.dropFirst().joined(separator: " ")])
+        case "unavailable": AutomationBridge.simulateUnavailable = w.dropFirst().first == "on"
+        case "sleep": NSWorkspace.shared.notificationCenter.post(name: NSWorkspace.willSleepNotification, object: NSWorkspace.shared)
+        case "wake": NSWorkspace.shared.notificationCenter.post(name: NSWorkspace.didWakeNotification, object: NSWorkspace.shared)
+        case "state":
+            let c = engine.counters
+            write(["kind": "state", "phase": "\(d.snapshot.phase)", "openUIs": "\(d.openUIs)", "watchdogCloses": "\(d.watchdogCloses)", "mode": d.state.noiseControl?.soundMode.rawValue ?? "-",
+                   "rule": Automation.shared.indicator ?? "-", "writes": "\(c.writes)", "confirmed": "\(c.confirmed)", "divergent": "\(c.divergent)", "failed": "\(c.failed)", "redundantBlocked": "\(c.redundantBlocked)", "overridesKept": "\(c.overridesKept)", "unverified": "\(c.unverified)"])
+        default: break
+        }
     }
 }
 #endif

@@ -54,6 +54,9 @@ struct PanelState {
         var presets: [Preset] = []
     }
 
+    /// Regra que decide o estado do fone agora; `nil` sem regra ativa.
+    var automation: String?
+
     var showPlayback = false
     var isPlaying = false
     var volume: Int?
@@ -153,6 +156,11 @@ struct PanelView: View {
                     }
                     if let e = state.earbuds, state.phase == .ready {
                         EarbudsBatteryRow(levels: e).padding(.top, 2)
+                    }
+                    if let rule = state.automation {
+                        Label(rule, systemImage: "wand.and.stars")
+                            .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                            .accessibilityLabel(Text("Regra ativa: \(rule)"))
                     }
                 }
                 Spacer(minLength: 2)

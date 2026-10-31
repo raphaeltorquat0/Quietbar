@@ -30,11 +30,14 @@ private struct DiagnosticsSection: View {
 
     var body: some View {
         Section("Diagnóstico") {
+            let c = Automation.shared.engine.counters
+            LabeledContent("Escritas da automação", value: "\(c.writes) (\(c.confirmed) confirmadas, \(c.divergent) divergentes, \(c.failed) falhas, \(c.redundantBlocked) redundantes barrados, \(c.overridesKept) overrides preservados, \(c.unverified) sem verificação)")
             LabeledContent("Quietbar", value: Diagnostics.appVersion)
             LabeledContent("macOS", value: ProcessInfo.processInfo.operatingSystemVersionString)
             LabeledContent("Fone", value: device.state.modelName ?? "—")
             LabeledContent("Firmware", value: device.state.firmwareVersion ?? "—")
             LabeledContent("Canal", value: "\(device.snapshot.phase)")
+            LabeledContent("Fechamentos pelo watchdog", value: "\(device.watchdogCloses)")
             DisclosureGroup("Capacidades e estado detectados") {
                 ForEach(Array(device.state.diagnosticFields.enumerated()), id: \.offset) { _, f in
                     LabeledContent(f.0) { Text(f.1).font(.caption.monospaced()).textSelection(.enabled) }
@@ -53,7 +56,7 @@ private struct DiagnosticsSection: View {
 
     static func report(_ d: DeviceController) -> String {
         var lines = ["Quietbar \(appVersion)", "macOS \(ProcessInfo.processInfo.operatingSystemVersionString)",
-                     "canal: \(d.snapshot.phase)", "bluetooth conectado: \(d.isBluetoothConnected)"]
+                     "canal: \(d.snapshot.phase)", "fechamentos pelo watchdog: \(d.watchdogCloses)", "bluetooth conectado: \(d.isBluetoothConnected)"]
         if let e = d.lastError { lines.append("último erro: \(e)") }
         lines += d.state.diagnosticFields.map { "\($0.0): \($0.1)" }
         return lines.joined(separator: "\n")

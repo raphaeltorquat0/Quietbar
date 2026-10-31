@@ -34,6 +34,8 @@ targets:
         product: HeadphoneModel
       - package: QuietbarKit
         product: QuietAudio
+      - package: QuietbarKit
+        product: QuietAutomation
       # Compilado, mas não ligado: só o Debug liga o objeto, em OTHER_LDFLAGS (DECISIONS.md #83).
       - package: QuietbarKit
         product: MDRSimulator

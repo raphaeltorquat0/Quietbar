@@ -31,6 +31,26 @@
         }
       }
     },
+    "Ajusta o nível do som ambiente, de 1 a 20.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sets the ambient sound level, from 1 to 20."
+          }
+        }
+      }
+    },
+    "Ajuste manual": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manual setting"
+          }
+        }
+      }
+    },
     "Ambiente": {
       "localizations": {
         "en": {
@@ -47,6 +67,86 @@
           "stringUnit": {
             "state": "translated",
             "value": "Excited"
+          }
+        }
+      }
+    },
+    "Aplica um perfil do Quietbar até a próxima mudança de contexto.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applies a Quietbar profile until the next context change."
+          }
+        }
+      }
+    },
+    "Aplica um perfil do Quietbar enquanto este Foco estiver ativo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applies a Quietbar profile while this Focus is on."
+          }
+        }
+      }
+    },
+    "Aplica um preset do equalizador do fone.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applies one of the headphones' EQ presets."
+          }
+        }
+      }
+    },
+    "Aplicar ${profile}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply ${profile}"
+          }
+        }
+      }
+    },
+    "Aplicar perfil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply profile"
+          }
+        }
+      }
+    },
+    "Aplicar preset ${preset}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply preset ${preset}"
+          }
+        }
+      }
+    },
+    "Aplicar preset de EQ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply EQ preset"
+          }
+        }
+      }
+    },
+    "App: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App: %@"
           }
         }
       }
@@ -71,12 +171,42 @@
         }
       }
     },
+    "Bateria do fone": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Headphone battery"
+          }
+        }
+      }
+    },
+    "Bateria em %lld%%.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Battery at %lld%%."
+          }
+        }
+      }
+    },
     "Brilhante": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Bright"
+          }
+        }
+      }
+    },
+    "Cancelamento de ruído": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noise canceling"
           }
         }
       }
@@ -151,6 +281,16 @@
         }
       }
     },
+    "Consultar bateria do fone": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get headphone battery"
+          }
+        }
+      }
+    },
     "Correção": {
       "localizations": {
         "en": {
@@ -187,6 +327,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "DSEE Extreme"
+          }
+        }
+      }
+    },
+    "Definir modo de ruído": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set noise mode"
+          }
+        }
+      }
+    },
+    "Definir modo de ruído como ${mode}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set noise mode to ${mode}"
+          }
+        }
+      }
+    },
+    "Definir nível do ambiente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set ambient level"
+          }
+        }
+      }
+    },
+    "Definir nível do ambiente como ${level}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set ambient level to ${level}"
           }
         }
       }
@@ -231,6 +411,16 @@
         }
       }
     },
+    "Devolve a bateria do fone, em porcentagem. Em earbuds, a do lado mais fraco.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Returns the headphone battery as a percentage. On earbuds, the lower side."
+          }
+        }
+      }
+    },
     "Direito": {
       "localizations": {
         "en": {
@@ -251,6 +441,16 @@
         }
       }
     },
+    "Em chamada": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In a call"
+          }
+        }
+      }
+    },
     "Equalizador": {
       "localizations": {
         "en": {
@@ -267,6 +467,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Left"
+          }
+        }
+      }
+    },
+    "Esse perfil não existe mais.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That profile no longer exists."
+          }
+        }
+      }
+    },
+    "Este fone não tem esse preset.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These headphones don't have that preset."
           }
         }
       }
@@ -327,6 +547,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Focus on voice"
+          }
+        }
+      }
+    },
+    "Foco: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus: %@"
           }
         }
       }
@@ -421,12 +651,72 @@
         }
       }
     },
+    "Modo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mode"
+          }
+        }
+      }
+    },
+    "Modo de ruído": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noise mode"
+          }
+        }
+      }
+    },
+    "Muda o fone para cancelamento de ruído, som ambiente ou desligado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switches the headphones to noise canceling, ambient sound or off."
+          }
+        }
+      }
+    },
     "Nenhum fone pareado. Pareie o fone nos Ajustes do Sistema.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "No headphones paired. Pair them in System Settings."
+          }
+        }
+      }
+    },
+    "Nenhum perfil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No profile"
+          }
+        }
+      }
+    },
+    "Nível": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Level"
+          }
+        }
+      }
+    },
+    "Nível do ambiente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ambient level"
           }
         }
       }
@@ -461,6 +751,36 @@
         }
       }
     },
+    "O fone não está conectado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The headphones aren't connected."
+          }
+        }
+      }
+    },
+    "O fone não informou a bateria.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The headphones didn't report the battery."
+          }
+        }
+      }
+    },
+    "O nível do ambiente vai de 1 a 20.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The ambient level goes from 1 to 20."
+          }
+        }
+      }
+    },
     "Pausa a música quando você fala": {
       "localizations": {
         "en": {
@@ -487,6 +807,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pause"
+          }
+        }
+      }
+    },
+    "Perfil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile"
+          }
+        }
+      }
+    },
+    "Perfil do Quietbar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quietbar profile"
           }
         }
       }
@@ -561,6 +901,26 @@
         }
       }
     },
+    "Preset": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preset"
+          }
+        }
+      }
+    },
+    "Preset de EQ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EQ preset"
+          }
+        }
+      }
+    },
     "Preset do Som no Mac": {
       "localizations": {
         "en": {
@@ -577,6 +937,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Next track"
+          }
+        }
+      }
+    },
+    "Regra ativa: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Active rule: %@"
           }
         }
       }
@@ -607,6 +977,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Not processing: audio plays normally"
+          }
+        }
+      }
+    },
+    "Som ambiente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ambient sound"
           }
         }
       }
@@ -677,6 +1057,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Voice"
+          }
+        }
+      }
+    },
+    "Wi-Fi: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wi-Fi: %@"
+          }
+        }
+      }
+    },
+    "Fechamentos pelo watchdog": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watchdog closes"
           }
         }
       }

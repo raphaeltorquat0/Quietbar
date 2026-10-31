@@ -153,6 +153,12 @@ import SwiftUI
         let d = DeviceController.shared
         let connected = d.isBluetoothConnected
         let menu = NSMenu()
+        if let rule = Automation.shared.indicator {
+            let item = NSMenuItem(title: rule, action: nil, keyEquivalent: "")
+            item.isEnabled = false
+            menu.addItem(item)
+            menu.addItem(.separator())
+        }
         menu.addItem(ClosureItem(connected ? "Desconectar" : "Conectar") {
             Task { connected ? await d.disconnectDevice() : await d.connectDevice() }
         })

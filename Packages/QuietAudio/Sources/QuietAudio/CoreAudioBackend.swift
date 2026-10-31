@@ -21,12 +21,12 @@ private func check(_ what: String, _ status: OSStatus) throws {
     if status != noErr { throw AudioFailure(what: what, status: status) }
 }
 
-private func address(_ selector: AudioObjectPropertySelector,
+func address(_ selector: AudioObjectPropertySelector,
                      _ scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal) -> AudioObjectPropertyAddress {
     AudioObjectPropertyAddress(mSelector: selector, mScope: scope, mElement: kAudioObjectPropertyElementMain)
 }
 
-private func read<T>(_ object: AudioObjectID, _ selector: AudioObjectPropertySelector, default value: T,
+func read<T>(_ object: AudioObjectID, _ selector: AudioObjectPropertySelector, default value: T,
                      scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal) -> T {
     var a = address(selector, scope)
     var size = UInt32(MemoryLayout<T>.size)
@@ -35,7 +35,7 @@ private func read<T>(_ object: AudioObjectID, _ selector: AudioObjectPropertySel
     return status == noErr ? out : value
 }
 
-private func readString(_ object: AudioObjectID, _ selector: AudioObjectPropertySelector) -> String {
+func readString(_ object: AudioObjectID, _ selector: AudioObjectPropertySelector) -> String {
     var a = address(selector)
     var size = UInt32(MemoryLayout<CFString?>.size)
     var out: Unmanaged<CFString>?
@@ -45,7 +45,7 @@ private func readString(_ object: AudioObjectID, _ selector: AudioObjectProperty
 }
 
 /// Canais somados de todos os streams no escopo pedido.
-private func channelCount(_ device: AudioObjectID, _ scope: AudioObjectPropertyScope) -> Int {
+func channelCount(_ device: AudioObjectID, _ scope: AudioObjectPropertyScope) -> Int {
     var a = address(kAudioDevicePropertyStreamConfiguration, scope)
     var size: UInt32 = 0
     guard AudioObjectGetPropertyDataSize(device, &a, 0, nil, &size) == noErr, size > 0 else { return 0 }
@@ -66,6 +66,11 @@ public enum AudioDevices {
         let id: AudioObjectID = read(AudioObjectID(kAudioObjectSystemObject), kAudioHardwarePropertyDefaultOutputDevice, default: 0)
         return id == 0 ? nil : describe(id)
     }
+
+    static func all() -> [AudioObjectID] { objects(kAudioHardwarePropertyDevices) }
+
+    @available(macOS 14.2, *)
+    static func processes() -> [AudioObjectID] { objects(kAudioHardwarePropertyProcessObjectList) }
 
     private static func objects(_ selector: AudioObjectPropertySelector) -> [AudioObjectID] {
         var a = address(selector)
