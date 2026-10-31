@@ -105,12 +105,12 @@ Em **Configurações › Automação**, cada gatilho liga e desliga à parte. O 
 
 - **Chamadas** (vem desligado): quando algum app usa o microfone, o fone vai para o modo escolhido, e o modo anterior volta no fim. Funciona com Zoom, Meet, Teams, FaceTime, Slack e qualquer outro, porque o Quietbar observa o microfone, não o nome do app. Ele só vê se a entrada está em uso: não ouve o áudio e não pede permissão. Picos curtos são ignorados (3 s por padrão), e ditado ou gravadores podem entrar na lista de apps ignorados, a partir do macOS 14.2.
 - **Foco:** em Ajustes do Sistema › Foco, escolha um Foco e adicione o Quietbar em Filtros de Foco para associar um perfil a ele. Perfis criados com "Sem gatilho" servem para isso. Se o sistema não avisar a troca, o app percebe em até 30 s.
-- **Perfis por app e por Wi-Fi:** como antes, mas agora o ajuste volta atrás quando o perfil deixa de valer.
+- **Perfis por app e por Wi-Fi:** como antes, mas agora o ajuste volta atrás quando o perfil deixa de valer. Perfis por app entram 400 ms depois e voltam 6 s depois, para Cmd-Tab e idas rápidas a outro app não trocarem o modo.
 - **App Atalhos e Siri:** definir modo de ruído, definir nível do ambiente, aplicar perfil, aplicar preset de EQ e consultar bateria, em português e inglês.
 
 Quando duas regras definem o mesmo ajuste, vale a primeira desta lista: ajuste manual › chamada › Foco › perfil por app › perfil por Wi-Fi › padrão. Cada regra só decide o que define: uma chamada que muda o modo mantém o nível de ambiente do perfil. "Padrão" é o valor de antes de uma regra mudar o ajuste.
 
-Um ajuste manual, inclusive pelo botão do fone, vale até a regra em vigor mudar. Trocar para um app sem perfil não conta. Com o painel fechado há mais de 15 s, o canal fica solto e o fone não avisa do botão físico: nesse intervalo, ele não conta como ajuste manual.
+Um ajuste manual, inclusive pelo botão do fone, vale até a regra em vigor mudar. Trocar para um app sem perfil não conta. Com o painel fechado há mais de 15 s, o canal fica solto e o fone não avisa do botão físico: o Quietbar só percebe ao reabrir o canal, e uma mudança de regra antes disso vence.
 
 ## Permissões
 
@@ -159,7 +159,7 @@ Nada do dia a dia precisa dele. `swift build -c release` gera `.build/release/md
 - O XM5 não tem botão personalizável (função `0xF3`) nem envia nomes de presets de EQ.
 - Os comandos de escrita foram validados contra um fone simulado; o roteiro de conferência
   em aparelho real está em [`docs/HARDWARE_TEST.md`](docs/HARDWARE_TEST.md).
-- A automação ainda não passou por um fone real, um Foco real nem pelo app Atalhos: o roteiro está em [`MANUAL_TEST.md`](MANUAL_TEST.md).
+- A automação foi [validada no WH-1000XM5](docs/validation/1.4.0-sim.md), mas ainda não com Meet, Zoom, um Foco real nem o app Atalhos: o roteiro está em [`MANUAL_TEST.md`](MANUAL_TEST.md).
 
 ## Fora de escopo
 

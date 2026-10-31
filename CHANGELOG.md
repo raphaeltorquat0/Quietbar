@@ -18,12 +18,15 @@ As notas completas de cada versão ficam em [`docs/releases/`](docs/releases/) e
 ### Alterado
 
 - Perfis por app e por Wi-Fi agora **voltam atrás** quando deixam de valer. Antes, o último ajuste ficava.
+- Perfis por app entram depois de 400 ms e voltam depois de 6 s, para Cmd-Tab e idas rápidas a outro app não trocarem o modo.
+- `traffic.log` com tempo monotônico em milissegundos no início de cada linha.
 - Abrir as Configurações do Quietbar não conta mais como sair do app em primeiro plano.
 - Toda ação no fone passa por uma fila única, sem escritas concorrentes.
 
 ### Corrigido
 
 - Quedas do app quando um dispositivo Bluetooth conecta e ao abrir com o fone já conectado.
+- Um comando no instante da liberação do canal falhava com "Fone não conectado".
 
 ## Versões anteriores
 

@@ -84,14 +84,14 @@ In **Settings › Automation**, each trigger turns on and off separately. The pa
 
 - **Calls** (off by default): when any app uses the microphone, the headphones switch to the mode you choose, and the previous mode comes back afterwards. It works with Zoom, Meet, Teams, FaceTime, Slack and anything else, because Quietbar watches the microphone, not app names. It only sees whether the input is in use: it doesn't listen to the audio or ask for a permission. Short peaks are ignored (3 s by default), and dictation or recorders can go on the ignored apps list, on macOS 14.2 and later.
 - **Focus:** in System Settings › Focus, choose a Focus and add Quietbar under Focus Filters to link a profile to it. Profiles created with "Sem gatilho" (no trigger) are meant for this. If the system doesn't report the change, the app notices within 30 s.
-- **Per-app and Wi-Fi profiles:** as before, except that settings now go back when the profile stops applying.
+- **Per-app and Wi-Fi profiles:** as before, except that settings now go back when the profile stops applying. Per-app profiles apply after 400 ms and go back after 6 s, so Cmd-Tab and quick trips to another app don't change the mode.
 - **Shortcuts app and Siri:** set noise mode, set ambient level, apply profile, apply EQ preset and check the battery, in English and Portuguese.
 
 When two rules set the same thing, the first one in this list wins: manual setting › call › Focus › per-app profile › Wi-Fi profile › default. Each rule only decides what it sets: a call that changes the mode keeps the profile's ambient level. "Default" is the value from before a rule changed it.
 
-A manual change, including the button on the headphones, lasts until the rule in effect changes. Switching to an app without a profile doesn't count. With the panel closed for more than 15 s the channel is released and the headphones don't report the physical button, so in that window it doesn't count as a manual change.
+A manual change, including the button on the headphones, lasts until the rule in effect changes. Switching to an app without a profile doesn't count. With the panel closed for more than 15 s the channel is released and the headphones don't report the physical button: Quietbar only notices when the channel reopens, and a rule change before that wins.
 
-Automation hasn't been run yet with real headphones, a real Focus or the Shortcuts app. The test script is in [`MANUAL_TEST.md`](MANUAL_TEST.md), in Portuguese.
+Automation has been [validated on a WH-1000XM5](docs/validation/1.4.0-sim.md), but not yet with Meet, Zoom, a real Focus or the Shortcuts app. The test script is in [`MANUAL_TEST.md`](MANUAL_TEST.md). Both documents are in Portuguese.
 
 ## Updates
 

@@ -1,6 +1,6 @@
 # Roteiro manual: automação contextual (1.4.0)
 
-O que só um fone real, um Foco real e o app Atalhos confirmam. Os testes automáticos cobrem o motor de prioridade, o debounce e a filtragem de apps ignorados. Já a detecção do microfone foi conferida com o microfone interno aberto por outro processo e um fone simulado.
+O que depende de Meet, Zoom, um Foco real, o app Atalhos ou um gesto no fone. O que já foi provado saiu deste roteiro e está em [`docs/validation/1.4.0-sim.md`](docs/validation/1.4.0-sim.md).
 
 **Fone:** WH-1000XM5, firmware 2.5.1 ou anotar qual. **Registre:** versão do macOS e cada item como OK ou falhou.
 
@@ -20,7 +20,7 @@ O que só um fone real, um Foco real e o app Atalhos confirmam. Os testes autom�
 | # | Ação | Esperado |
 |---|---|---|
 | 1.1 | Entre numa reunião de teste no Meet, com o XM5 como microfone | Em cerca de 3 s, o fone vai para Cancelamento e o painel mostra "Em chamada" |
-| 1.2 | Silencie e reative o microfone no Meet | Nada muda. Se o modo oscilar, anote: o Meet pode parar a entrada ao silenciar. Aumente a espera |
+| 1.2 | Silencie e reative o microfone no Meet por 30 s | Nada muda. No navegador puro, o mudo por `track.enabled` não oscila (E1). Se oscilar aqui, o Meet para a entrada ao silenciar: anote e aumente a espera |
 | 1.3 | Saia da reunião | Em cerca de 3 s, o fone volta para Ambiente e o indicador some |
 | 1.4 | Repita com o microfone interno do Mac selecionado no Meet | Mesmo resultado: entradas fora do padrão também contam |
 
@@ -31,7 +31,7 @@ O que só um fone real, um Foco real e o app Atalhos confirmam. Os testes autom�
 | 2.1 | Entre numa reunião de teste no Zoom | Como 1.1 |
 | 2.2 | Saia da reunião | Como 1.3 |
 | 2.3 | Abra a tela de teste de áudio do Zoom e feche antes de 3 s | O modo não muda |
-| 2.4 | Durante a chamada, confira o som e o microfone | Sem queda de áudio nem de canal por causa da escrita no fone (o Bluetooth passa para o perfil de chamada) |
+| 2.4 | Durante a chamada, ouça o som e fale | Sem corte de áudio quando o modo muda. O canal e os comandos já foram provados no E3 |
 
 ## 3. Falso positivo e apps ignorados
 
@@ -39,7 +39,6 @@ O que só um fone real, um Foco real e o app Atalhos confirmam. Os testes autom�
 |---|---|---|
 | 3.1 | Abra o Gravador e grave por 10 s | Conta como chamada. Em Automação, aparece "Usando o microfone: …" |
 | 3.2 | Clique em **Ignorar** e grave de novo | O modo não muda |
-| 3.3 | Com o Gravador gravando, entre numa reunião | Conta como chamada em até 5 s |
 | 3.4 | Use o ditado do macOS por alguns segundos | Anote o processo mostrado e se vale ignorá-lo |
 | 3.5 | Com a Siri ativa por voz e o Mac parado por 1 minuto | Nenhuma chamada detectada |
 | 3.6 | Com **Som no Mac** ligado e música tocando | Nenhuma chamada detectada |
@@ -71,7 +70,7 @@ Em Atalhos, procure **Quietbar** na lista de apps. Rode cada ação com o fone c
 | 5.6 | Repita 5.1 com o Quietbar fechado | O sistema abre o app em segundo plano e o fone muda |
 | 5.7 | Repita 5.1 com o fone desconectado | Erro claro: "O fone não está conectado ao Mac." |
 | 5.8 | Com o sistema em inglês, peça à Siri "Set Quietbar to Ambient sound"; em português, "Definir o Quietbar como Som ambiente" | A frase é reconhecida |
-| 5.9 | Atalho num Mac com build Developer ID e notarizado | Repita 5.1 e 4.1. **Este build nunca foi gerado** |
+| 5.9 | Atalho num Mac com build Developer ID e notarizado | Repita 5.1 e 4.1. **Este build nunca foi gerado.** O E8 só provou que os metadados sobrevivem à reassinatura |
 
 ## 6. Conflito entre perfil por app e chamada
 
@@ -79,11 +78,12 @@ Crie um perfil por app para o Spotify (ou outro player): modo **Ambiente**, nív
 
 | # | Ação | Esperado |
 |---|---|---|
-| 6.1 | Deixe o fone em Desligado e traga o Spotify para frente | Ambiente, nível 5, com o preset; painel com "App: Spotify" |
+| 6.1 | Deixe o fone em Desligado e traga o Spotify para frente | Em meio segundo, Ambiente, nível 5, com o preset; painel com "App: Spotify" |
 | 6.2 | Com o Spotify na frente, entre numa chamada | Cancelamento; nível e preset do perfil continuam; painel com "Em chamada" |
 | 6.3 | Durante a chamada, alterne entre o Spotify e outro app | Cancelamento continua, mas o preset e o nível acompanham o perfil |
 | 6.4 | Saia da chamada com o Spotify na frente | Volta ao Ambiente do perfil |
-| 6.5 | Traga outro app para frente | Volta a Desligado, com o preset de antes do perfil |
+| 6.5 | Traga outro app para frente e espere 6 s | Volta a Desligado, com o preset de antes do perfil |
+| 6.6 | Dê Cmd-Tab por vários apps, sem parar em nenhum | O modo não muda |
 
 ## 7. Override manual
 
@@ -92,8 +92,7 @@ Crie um perfil por app para o Spotify (ou outro player): modo **Ambiente**, nív
 | 7.1 | Em chamada, com o painel aberto, mude para Ambiente | O modo fica; o painel mostra "Ajuste manual" |
 | 7.2 | Alterne para um app sem perfil | O ajuste manual continua |
 | 7.3 | Saia da chamada | O override acaba e o modo de antes da chamada volta |
-| 7.4 | Em chamada, com o painel aberto, aperte o botão NC/AMB do fone | Conta como ajuste manual |
-| 7.5 | Em chamada, com o painel fechado há mais de 20 s, aperte o botão do fone | Limite conhecido: não vira override. Ao sair da chamada, o modo anterior volta |
+| 7.4 | Em chamada, com o painel aberto, aperte o botão NC/AMB do fone | Conta como ajuste manual. Simulado no E5; falta o botão físico |
 | 7.6 | Com o Speak-to-Chat ligado, fale fora de uma chamada, com um perfil ativo | Se o modo mudar sozinho e voltar, o indicador volta à regra |
 
 ## 8. Fone e sistema
@@ -101,5 +100,27 @@ Crie um perfil por app para o Spotify (ou outro player): modo **Ambiente**, nív
 | # | Ação | Esperado |
 |---|---|---|
 | 8.1 | Entre numa chamada com o fone desligado e ligue-o no meio | O modo da chamada é aplicado alguns segundos depois de conectar |
-| 8.2 | Feche a tampa em chamada e abra depois do fim | O app não fica preso em "Em chamada" |
+| 8.2 | Feche a tampa em chamada e abra depois do fim | O app não fica preso em "Em chamada". O sono foi injetado no E9; falta o real |
 | 8.3 | Depois de cada bloco, abra Desenvolvedor › Log | Sem escritas repetidas nem erros de ACK |
+
+## Atalhos do E7
+
+Para medir se o Foco chega por `perform()` ou pela consulta de 30 s, crie estes atalhos no app Atalhos, com **estes nomes exatos**. Antes, instale a 1.4.0 com `make install`, abra o app e faça os passos 4.1 com o perfil "Teste".
+
+| Nome | Ações |
+|---|---|
+| `QB Foco On` | **Definir Foco** › Ativar › o Foco do passo 4.1 › Até Desligar |
+| `QB Foco Off` | **Definir Foco** › Desativar |
+| `QB Intent Modo` | Quietbar › **Definir modo de ruído** › Som ambiente |
+| `QB Intent Ambiente` | Quietbar › **Definir nível do ambiente** › 10 |
+| `QB Intent Perfil` | Quietbar › **Aplicar perfil** › Teste |
+| `QB Intent EQ` | Quietbar › **Aplicar preset de EQ** › um preset da lista |
+| `QB Intent Bateria` | Quietbar › **Consultar bateria do fone** |
+
+Depois rode, com o fone conectado:
+
+```sh
+scripts/validation/e7.sh
+```
+
+São cerca de 13 minutos. O script para e lista o que faltar, e o resultado sai com a fonte de cada mudança de Foco e a latência.
