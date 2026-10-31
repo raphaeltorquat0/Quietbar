@@ -83,6 +83,9 @@ final class ProfileEngine: NSObject {
             MainActor.assumeIsolated {
                 // Abrir as Configurações não é sair do app em que o usuário estava.
                 guard id != Bundle.main.bundleIdentifier else { return }
+                #if DEBUG
+                HardwareTest.trace(front: id)
+                #endif
                 ProfileEngine.shared.frontmostBundleID = id
                 ProfileEngine.shared.evaluate()
             }

@@ -171,6 +171,7 @@ struct SimulatorSection: View {
 
     static func trace(_ event: AutomationEvent) { Validation.write(event) }
     static func trace(mic usage: MicUsage) { Validation.write(["kind": "mic", "running": "\(usage.deviceRunning)", "processes": (usage.processes ?? []).joined(separator: ",")]) }
+    static func trace(front id: String?) { Validation.write(["kind": "front", "app": id ?? "-"]) }
     static func trace(call active: Bool) { Validation.write(["kind": "call", "active": "\(active)"]) }
 
     static func log() {

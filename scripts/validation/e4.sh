@@ -25,7 +25,7 @@ begin() {
         "$OLD_APP" -logTraffic YES -macSoundEnabled NO -profiles "$PROFILES" > "$OUT/app.out" 2>&1 &
         APP_PID=$!; sleep 4
     else
-        EXTRA=(); [ "$VARIANT" = suave ] && EXTRA=(-appRuleSmoothing YES)
+        EXTRA=(-appRuleSmoothing NO); [ "$VARIANT" = suave ] && EXTRA=(-appRuleSmoothing YES)
         start_app "$T" -logTraffic YES -profiles "$PROFILES" "${EXTRA[@]}"
     fi
 }
@@ -38,7 +38,7 @@ finish() {
 }
 
 take_over
-for I in 1 5 10; do
+for I in ${INTERVALS:-1 5 10}; do
     begin "$I"
     END=$(( $(date +%s) + DURATION ))
     while [ "$(date +%s)" -lt "$END" ]; do
@@ -49,14 +49,17 @@ for I in 1 5 10; do
     done
     finish "$I"
 done
+[ -n "$INTERVALS" ] && { stop_clean=1; }
 # Rajada: passa por vários apps em menos de 400 ms cada e para num com perfil.
-begin rajada
-for r in 1 2 3 4 5 6 7 8 9 10; do
-    [ $((r % 2)) = 0 ] && LAST=Calculator || LAST=Dictionary
-    for A in Dictionary Stickies Calculator Stickies "$LAST"; do step "$A"; done
-    sleep 6
-done
-finish rajada
+if [ -z "$stop_clean" ]; then
+    begin rajada
+    for r in 1 2 3 4 5 6 7 8 9 10; do
+        [ $((r % 2)) = 0 ] && LAST=Calculator || LAST=Dictionary
+        for A in Dictionary Stickies Calculator Stickies "$LAST"; do step "$A"; done
+        sleep 6
+    done
+    finish rajada
+fi
 rm -f "$LOG"; rmdir "$HOME/Library/Logs/Quietbar" 2>/dev/null
 pkill -x Calculator; pkill -x Dictionary; pkill -x Stickies
 python3 "$ROOT/scripts/validation/e4_analyze.py" "$OUT" "$VARIANT"
