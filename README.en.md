@@ -12,7 +12,14 @@ Control your Sony headphones (WH-1000XM5, WF-1000XM5, LinkBuds…) from the macO
 </p>
 
 <p align="center">
-<img src="docs/media/demo.gif" width="640" alt="Connection popup and sound mode switching in the panel">
+<a href="docs/media/automation/automation-16x10-dark-en.mp4">
+<picture>
+  <source media="(prefers-reduced-motion: reduce) and (prefers-color-scheme: dark)" srcset="docs/media/automation/automation-16x10-dark-en.png">
+  <source media="(prefers-reduced-motion: reduce)" srcset="docs/media/automation/automation-16x10-light-en.png">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/media/automation/automation-16x10-dark-en.gif">
+  <img src="docs/media/automation/automation-16x10-light-en.gif" width="640" alt="The Quietbar panel goes from Ambient to Noise cancelling when a call starts, and back when it ends">
+</picture>
+</a>
 </p>
 
 Quietbar is a native Swift/SwiftUI app that speaks the Sony MDR v2 protocol directly over Bluetooth (RFCOMM). Your settings stay on your Mac, and there's no account. It uses the internet for the update check, which you can turn off, and for anonymous metrics, opt-in, off by default ([what is collected, in Portuguese](docs/PRIVACY.md), and the [schema](docs/telemetry-schema.md)).
@@ -34,6 +41,8 @@ Quietbar is a native Swift/SwiftUI app that speaks the Sony MDR v2 protocol dire
 - Light and dark mode, VoiceOver, English and Brazilian Portuguese
 
 The app only shows what your headphones report at connection. It runs on macOS 14 or later, on Apple Silicon and Intel.
+
+<p align="center"><img src="docs/media/demo.gif" width="640" alt="Connection popup and sound mode switching in the panel"></p>
 
 ## Compatibility
 
