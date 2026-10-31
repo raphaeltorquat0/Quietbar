@@ -1,16 +1,18 @@
 #!/bin/bash
-# Gera a cena da automação em docs/media/automation (ver App/Sources/AutomationDemo.swift).
+# Gera a cena da automação (ver App/Sources/AutomationDemo.swift). Vídeos e pôsteres vão para o repositório do site,
+# em $SITE_MEDIA; no repositório do app ficam só os GIFs do README.
 # Uso: [FORMAT=9x16] automation-demo.sh [--check]. Com --check, só confere o que já foi gerado.
 set -eu
 cd "$(dirname "$0")/.."
 DD=.build/xcode-debug
 MEDIA=docs/media/automation
+SITE_MEDIA="${SITE_MEDIA:-$HOME/Documents/MacKit/site/assets/quietbar/automation}"
 # 1,7 s: as ondas no meio do colapso.
 POSTER=0051
 
 check() {
     bad=0
-    for f in "$MEDIA"/*.mp4 "$MEDIA"/*.webm; do
+    for f in "$SITE_MEDIA"/*.mp4 "$SITE_MEDIA"/*.webm; do
         info=$(ffprobe -v error -count_frames -select_streams v -show_entries stream=width,height,r_frame_rate,nb_read_frames -of csv=p=0 "$f")
         audio=$(ffprobe -v error -select_streams a -show_entries stream=index -of csv=p=0 "$f")
         d=$(mktemp -d)
@@ -32,7 +34,7 @@ OUT=$(mktemp -d)
 trap 'rm -rf "$OUT"' EXIT
 xcodegen generate --quiet
 xcodebuild -project Quietbar.xcodeproj -scheme Quietbar -configuration Debug -derivedDataPath "$DD" build -quiet
-mkdir -p "$MEDIA"
+mkdir -p "$MEDIA" "$SITE_MEDIA"
 for lang in en pt; do
     locale=$lang; [ "$lang" = pt ] && locale=pt-BR
     "$DD/Build/Products/Debug/Quietbar.app/Contents/MacOS/Quietbar" --automation-demo "$OUT/$lang" ${FORMAT:+--demo-format "$FORMAT"} -AppleAccentColor 4 -AppleLanguages "($locale)" > /dev/null
@@ -40,10 +42,10 @@ for lang in en pt; do
         name="automation-$(basename "$dir")-$lang"
         color=(-vf "scale=out_color_matrix=bt709:out_range=tv,format=yuv420p" -colorspace bt709 -color_primaries bt709 -color_trc bt709)
         ffmpeg -y -loglevel error -framerate 30 -i "$dir/%04d.png" -an "${color[@]}" \
-            -c:v libx264 -preset veryslow -crf "${CRF:-21}" -movflags +faststart "$MEDIA/$name.mp4"
+            -c:v libx264 -preset veryslow -crf "${CRF:-21}" -movflags +faststart "$SITE_MEDIA/$name.mp4"
         ffmpeg -y -loglevel error -framerate 30 -i "$dir/%04d.png" -an "${color[@]}" \
-            -c:v libvpx-vp9 -crf "${VP9_CRF:-31}" -b:v 0 -row-mt 1 -deadline good -cpu-used 2 "$MEDIA/$name.webm"
-        cp "$dir/$POSTER.png" "$MEDIA/$name.png"
+            -c:v libvpx-vp9 -crf "${VP9_CRF:-31}" -b:v 0 -row-mt 1 -deadline good -cpu-used 2 "$SITE_MEDIA/$name.webm"
+        cwebp -quiet -q 72 -m 6 "$dir/$POSTER.png" -o "$SITE_MEDIA/$name.webp" 2> /dev/null
         # O GitHub não toca <video> de um arquivo do repositório: o README usa este GIF.
         case "$name" in *16x10*)
             ffmpeg -y -loglevel error -framerate 30 -i "$dir/%04d.png" \
@@ -55,4 +57,4 @@ for lang in en pt; do
     done
 done
 check
-du -sh "$MEDIA"
+du -sh "$MEDIA" "$SITE_MEDIA"

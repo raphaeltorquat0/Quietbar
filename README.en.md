@@ -12,10 +12,8 @@ Control your Sony headphones (WH-1000XM5, WF-1000XM5, LinkBuds…) from the macO
 </p>
 
 <p align="center">
-<a href="docs/media/automation/automation-16x10-dark-en.mp4">
+<a href="https://raphaeltorquat0.github.io/site/quietbar/">
 <picture>
-  <source media="(prefers-reduced-motion: reduce) and (prefers-color-scheme: dark)" srcset="docs/media/automation/automation-16x10-dark-en.png">
-  <source media="(prefers-reduced-motion: reduce)" srcset="docs/media/automation/automation-16x10-light-en.png">
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/automation/automation-16x10-dark-en.gif">
   <img src="docs/media/automation/automation-16x10-light-en.gif" width="640" alt="The Quietbar panel goes from Ambient to Noise cancelling when a call starts, and back when it ends">
 </picture>

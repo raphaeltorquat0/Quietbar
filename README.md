@@ -12,10 +12,8 @@ Controle seus fones <b>Sony</b> (WH-1000XM5, WF-1000XM5, LinkBuds…) pela barra
 </p>
 
 <p align="center">
-<a href="docs/media/automation/automation-16x10-dark-pt.mp4">
+<a href="https://raphaeltorquat0.github.io/site/quietbar/">
 <picture>
-  <source media="(prefers-reduced-motion: reduce) and (prefers-color-scheme: dark)" srcset="docs/media/automation/automation-16x10-dark-pt.png">
-  <source media="(prefers-reduced-motion: reduce)" srcset="docs/media/automation/automation-16x10-light-pt.png">
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/automation/automation-16x10-dark-pt.gif">
   <img src="docs/media/automation/automation-16x10-light-pt.gif" width="640" alt="O painel do Quietbar vai de Ambiente para Cancelar ruído quando uma chamada começa, e volta quando ela acaba">
 </picture>
