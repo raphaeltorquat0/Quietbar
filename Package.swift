@@ -11,6 +11,7 @@ let package = Package(
         .library(name: "HeadphoneModel", targets: ["HeadphoneModel"]),
         .library(name: "MDRSimulator", targets: ["MDRSimulator"]),
         .library(name: "QuietAudio", targets: ["QuietAudio"]),
+        .library(name: "QuietAutomation", targets: ["QuietAutomation"]),
         .executable(name: "mdr-cli", targets: ["mdr-cli"]),
     ],
     targets: [
@@ -44,6 +45,11 @@ let package = Package(
         ),
         .target(name: "QuietAudio", dependencies: ["CQuietAudio"], path: "Packages/QuietAudio/Sources/QuietAudio"),
         .testTarget(name: "QuietAudioTests", dependencies: ["QuietAudio"], path: "Packages/QuietAudio/Tests/QuietAudioTests"),
+
+        // Regras de contexto: ficam fora do protocolo (MDRKit) e testáveis sem o app (DECISIONS.md #117).
+        .target(name: "QuietAutomation", dependencies: ["MDRKit"], path: "Packages/QuietAutomation/Sources/QuietAutomation"),
+        .testTarget(name: "QuietAutomationTests", dependencies: ["QuietAutomation", "MDRKit"],
+                    path: "Packages/QuietAutomation/Tests/QuietAutomationTests"),
 
         .executableTarget(
             name: "mdr-cli",
