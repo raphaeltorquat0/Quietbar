@@ -164,16 +164,35 @@ final class AutomationBridge: AutomationDevice {
     #if DEBUG
     /// Validação: o fone some, como no instante depois de acordar o Mac.
     static var simulateUnavailable = false
+    /// Validação: o fone não informa o modo depois de reabrir o canal.
+    static var simulateNoModeReply = false
     #endif
 
-    func read(headphone: Bool) async -> Settings? {
+    /// Por endereço do fone. Num fone simulado o endereço é o do real selecionado: só em Debug.
+    var heldMode: SoundMode? {
+        get {
+            guard let address = DeviceController.shared.selectedAddress else { return nil }
+            return (UserDefaults.standard.dictionary(forKey: Self.heldModesKey)?[address] as? String).flatMap(SoundMode.init(rawValue:))
+        }
+        set {
+            guard let address = DeviceController.shared.selectedAddress else { return }
+            var all = UserDefaults.standard.dictionary(forKey: Self.heldModesKey) ?? [:]
+            all[address] = newValue?.rawValue
+            UserDefaults.standard.set(all, forKey: Self.heldModesKey)
+        }
+    }
+
+    private static let heldModesKey = "automationHeldModes"
+
+    func read(headphone: Bool) async -> DeviceReading? {
         var out = MacSound.shared.automationSettings
-        guard headphone else { return out }
+        guard headphone else { return DeviceReading(settings: out, check: .notNeeded) }
         let device = DeviceController.shared
         #if DEBUG
         if Self.simulateUnavailable { return nil }
         #endif
         guard device.isBluetoothConnected else { return nil }
+        let reopened = !device.isReady
         let state = try? await device.run { session in
             for _ in 0..<20 {
                 let state = await session.state
@@ -184,7 +203,12 @@ final class AutomationBridge: AutomationDevice {
         }
         guard let state else { return nil }
         out.merge(state.automationSettings) { $1 }
-        return out
+        #if DEBUG
+        if Self.simulateNoModeReply, reopened { out[.soundMode] = nil }
+        #endif
+        // A sessão zera o estado ao abrir o canal e refaz os GET: com o canal solto, o modo acima veio do fone agora.
+        let unread = state.capabilities.noiseControlType != nil && out[.soundMode] == nil
+        return DeviceReading(settings: out, check: unread ? .failed : reopened ? .fresh : .notNeeded)
     }
 
     func write(_ changes: Settings) async throws -> Settings {

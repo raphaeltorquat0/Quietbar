@@ -11,15 +11,19 @@ private final class FakeDevice: AutomationDevice {
     var reads: [Bool] = []
     var failNext = false
     var alreadyThere = false
+    var check = DeviceReading.ModeCheck.notNeeded
+    var modeUnread = false
+    var heldMode: SoundMode?
     var inFlight = 0
     var maxInFlight = 0
     /// Segura a escrita até o teste soltar.
     var hold: CheckedContinuation<Void, Never>?
     var holding = false
 
-    func read(headphone: Bool) async -> Settings? {
+    func read(headphone: Bool) async -> DeviceReading? {
         reads.append(headphone)
-        return available ? state : nil
+        guard available else { return nil }
+        return DeviceReading(settings: modeUnread ? state.filter { $0.key != .soundMode } : state, check: check)
     }
 
     func write(_ changes: Settings) async throws -> Settings {
@@ -387,5 +391,166 @@ private func settle() async { for _ in 0..<40 { await Task.yield() } }
         #expect(e.counters.writes == 0)
         #expect(e.counters.redundantBlocked == 1)
         #expect(e.counters.confirmed == 0)
+    }
+
+    // MARK: - Ler antes de escrever
+
+    /// Fone em cancelamento pela chamada e canal solto: as próximas leituras vêm com o canal reaberto.
+    private func heldByTheCall() async -> AutomationEngine {
+        let e = make()
+        e.set(.call, call)
+        await settle()
+        fone.check = .fresh
+        return e
+    }
+
+    @Test func modeChangedWithTheChannelLooseKeepsTheOverride() async {
+        let e = await heldByTheCall()
+        fone.state[.soundMode] = .mode(.off)
+        fone.writes = []
+        e.set(.call, nil)
+        e.set(.focus, focus)
+        await settle()
+        #expect(fone.writes.isEmpty) // nem o nível do ambiente, que a regra também mudaria
+        #expect(e.active == .manual)
+        #expect(e.counters.overridesKept == 1)
+        #expect(fone.heldMode == .off)
+    }
+
+    @Test func overrideKeptEndsAtTheNextContextChange() async {
+        let e = await heldByTheCall()
+        fone.state[.soundMode] = .mode(.off)
+        e.set(.focus, focus)
+        e.set(.call, nil)
+        await settle()
+        fone.writes = []
+        e.set(.focus, Rule(id: "outro", name: "Outro", settings: [.soundMode: .mode(.ambient)]))
+        await settle()
+        #expect(fone.writes.count == 1)
+        #expect(fone.state[.soundMode] == .mode(.ambient))
+        #expect(e.counters.overridesKept == 1)
+        #expect(e.active == .rule(.focus, name: "Outro"))
+    }
+
+    @Test func sameModeAppliesNormally() async {
+        let e = await heldByTheCall()
+        var seen: [AutomationEvent.Kind] = []
+        e.onEvent = { seen.append($0.kind) }
+        e.set(.call, nil)
+        e.set(.focus, focus)
+        await settle()
+        #expect(fone.state[.soundMode] == .mode(.ambient))
+        #expect(e.active == .rule(.focus, name: "Trabalho"))
+        #expect(e.counters.overridesKept == 0)
+        #expect(seen.contains(.verified))
+    }
+
+    @Test func modeThatCouldNotBeReadStillAppliesTheRuleAndLogsIt() async {
+        let e = await heldByTheCall()
+        fone.state[.soundMode] = .mode(.off)
+        fone.check = .failed
+        fone.modeUnread = true
+        var seen: [AutomationEvent.Kind] = []
+        e.onEvent = { seen.append($0.kind) }
+        e.set(.call, nil)
+        e.set(.focus, focus)
+        await settle()
+        #expect(fone.state[.soundMode] == .mode(.ambient))
+        #expect(e.counters.unverified == 1)
+        #expect(e.counters.overridesKept == 0)
+        #expect(seen.contains(.unverified))
+    }
+
+    @Test func restoreAfterTheRuleEndsIsAlsoHeldBack() async {
+        let e = await heldByTheCall()
+        fone.state[.soundMode] = .mode(.ambient)
+        fone.writes = []
+        e.set(.call, nil)
+        await settle()
+        #expect(fone.writes.isEmpty)
+        #expect(e.active == .manual) // sem regra, mas é por isso que o modo não voltou
+        #expect(fone.heldMode == nil)
+        e.set(.focus, focus)
+        await settle()
+        e.set(.focus, nil)
+        await settle()
+        #expect(fone.state[.soundMode] == .mode(.ambient)) // o padrão agora é o que a pessoa escolheu
+        #expect(e.active == nil)
+    }
+
+    @Test func modeChangedWithoutARuleDoesNotBlockTheNextRule() async {
+        let e = await heldByTheCall()
+        e.set(.call, nil)
+        await settle()
+        #expect(fone.heldMode == nil)
+        fone.state[.soundMode] = .mode(.ambient)
+        e.set(.focus, Rule(id: "f", name: "Foco", settings: [.soundMode: .mode(.noiseCanceling)]))
+        await settle()
+        #expect(fone.state[.soundMode] == .mode(.noiseCanceling))
+        #expect(e.counters.overridesKept == 0)
+    }
+
+    @Test func overrideSeenWithTheChannelOpenEndsAtTheContextChangeAsBefore() async {
+        let e = make()
+        e.set(.focus, focus)
+        await settle()
+        clock.now += .seconds(3)
+        fone.state[.soundMode] = .mode(.off)
+        e.deviceReported(fone.state)
+        #expect(fone.heldMode == .off)
+        fone.check = .fresh
+        e.set(.focus, Rule(id: "outro", name: "Outro", settings: [.soundMode: .mode(.ambient)]))
+        await settle()
+        #expect(fone.state[.soundMode] == .mode(.ambient))
+        #expect(e.counters.overridesKept == 0)
+    }
+
+    @Test func channelAlreadyOpenDoesNotCompare() async {
+        let e = make()
+        e.set(.call, call)
+        await settle()
+        fone.state[.soundMode] = .mode(.off) // o RET do SET ainda não chegou
+        e.set(.call, nil)
+        e.set(.focus, focus)
+        await settle()
+        #expect(fone.state[.soundMode] == .mode(.ambient))
+        #expect(e.counters.overridesKept == 0)
+    }
+
+    @Test func ruleThatFoundTheModeAlreadySetHoldsItToo() async {
+        fone.state[.soundMode] = .mode(.noiseCanceling)
+        let e = make()
+        e.set(.call, call)
+        await settle()
+        #expect(fone.writes.isEmpty)
+        #expect(fone.heldMode == .noiseCanceling)
+    }
+
+    @Test func heldModeSurvivesARestart() async {
+        let first = await heldByTheCall()
+        _ = first
+        fone.state[.soundMode] = .mode(.off)
+        fone.writes = []
+        let e = make()
+        e.set(.focus, focus)
+        await settle()
+        #expect(fone.writes.isEmpty)
+        #expect(e.active == .manual)
+    }
+
+    @Test func unavailableDefersTheCheckToTheRetry() async {
+        let e = await heldByTheCall()
+        fone.state[.soundMode] = .mode(.off)
+        fone.available = false
+        fone.writes = []
+        e.set(.call, nil)
+        e.set(.focus, focus)
+        await settle()
+        #expect(e.counters.overridesKept == 0)
+        fone.available = true
+        e.deviceAvailable()
+        await settle()
+        #expect(fone.writes.isEmpty)
+        #expect(e.counters.overridesKept == 1)
     }
 }

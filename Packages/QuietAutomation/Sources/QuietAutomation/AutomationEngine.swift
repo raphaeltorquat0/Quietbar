@@ -55,6 +55,10 @@ public struct AutomationEvent: Sendable, Equatable, Encodable {
         /// Passou a espera e o fone informa outra coisa.
         case divergence
         case failure, manual, overrideEnded, unavailable
+        /// Canal solto: o modo lido bate com o que o motor deixou. `latencyMs` é o tempo da leitura.
+        case verified
+        /// Canal solto: o fone não informou o modo a tempo. A regra é aplicada sem conferir.
+        case unverified
     }
 
     public var kind: Kind
@@ -72,16 +76,40 @@ public struct AutomationCounters: Sendable, Equatable, Encodable {
     public var writes = 0, confirmed = 0, divergent = 0, failed = 0
     /// Ajustes barrados no último instante porque o fone já estava no valor pedido.
     public var redundantBlocked = 0
+    /// Regras não aplicadas porque o modo mudou com o canal solto, e leituras sem resposta do modo.
+    public var overridesKept = 0, unverified = 0
+}
+
+/// O estado lido e quanto ele vale para conferir o modo.
+public struct DeviceReading: Sendable, Equatable {
+    public enum ModeCheck: Sendable {
+        /// Canal já aberto: o fone avisa cada mudança, e o valor guardado pode ser mais velho que um SET em andamento.
+        case notNeeded
+        /// O canal acabou de abrir: o modo veio do fone agora.
+        case fresh
+        /// O fone não informou o modo a tempo.
+        case failed
+    }
+
+    public var settings: Settings
+    public var check: ModeCheck
+
+    public init(settings: Settings, check: ModeCheck) {
+        self.settings = settings
+        self.check = check
+    }
 }
 
 /// Quem lê e escreve de verdade. No app, é o fone e o Som no Mac; nos testes, um falso.
 @MainActor
 public protocol AutomationDevice: AnyObject {
     /// Estado atual, abrindo o canal se `headphone`. `nil` = indisponível: o motor tenta de novo em `deviceAvailable`.
-    func read(headphone: Bool) async -> Settings?
+    func read(headphone: Bool) async -> DeviceReading?
     /// Aplica e devolve o que de fato foi enviado. Fica de fora o que o fone já tem, conferido no momento
     /// do envio, e o que ele não oferece, como o modo "cancelamento" num fone só com ambiente.
     func write(_ changes: Settings) async throws -> Settings
+    /// Modo em que uma regra deixou este fone. Persiste por fone: sobrevive ao canal fechar e ao app sair.
+    var heldMode: SoundMode? { get set }
 }
 
 /// Motor de prioridade, único ponto que decide e escreve o estado automático.
@@ -93,6 +121,8 @@ public final class AutomationEngine {
     public private(set) var rules: [RuleKind: Rule] = [:]
     public private(set) var manual: Settings = [:]
     public private(set) var counters = AutomationCounters()
+    /// Uma regra deixou de ser aplicada por causa de uma mudança vista só ao reabrir o canal.
+    private var overrideKept = false
     /// Cada decisão, além do log do sistema. Serve à validação e aos testes.
     @ObservationIgnored public var onEvent: ((AutomationEvent) -> Void)?
 
@@ -123,7 +153,7 @@ public final class AutomationEngine {
     /// Regra vencedora, para o indicador. O manual só aparece quando contraria uma regra.
     public var active: ActiveRule? {
         let ruled = rulesMerged
-        if manual.keys.contains(where: { ruled[$0] != nil }) { return .manual }
+        if overrideKept || manual.keys.contains(where: { ruled[$0] != nil }) { return .manual }
         return RuleKind.allCases.reversed().lazy.compactMap { kind in
             self.rules[kind].flatMap { $0.settings.isEmpty ? nil : ActiveRule.rule(kind, name: $0.name) }
         }.first
@@ -141,6 +171,7 @@ public final class AutomationEngine {
         log.notice("regra \(String(describing: kind), privacy: .public): \(rule?.name ?? "nenhuma", privacy: .private)")
         if contextChanged {
             forgetHeadphoneState() // o que mudou com o canal solto não pode valer contra a regra nova
+            overrideKept = false
             if !manual.isEmpty {
                 manual = [:]
                 record(.overrideEnded)
@@ -170,6 +201,7 @@ public final class AutomationEngine {
             guard old != value else { continue }
             known[field] = value
             manual[field] = ruled[field] == value ? nil : value // voltou ao da regra: acabou o override
+            if case .mode(let mode) = value, field == .soundMode, device.heldMode != nil { device.heldMode = mode }
             record(.manual, trigger: "device", fields: Self.describe([field: value]))
         }
     }
@@ -216,19 +248,26 @@ public final class AutomationEngine {
 
     private func transition() async {
         needsRetry = false
-        guard !target.isEmpty else { return }
-        guard let state = await device.read(headphone: target.keys.contains { $0.isHeadphone }) else {
+        guard !target.isEmpty else {
+            device.heldMode = nil
+            return
+        }
+        let started = now()
+        guard let reading = await device.read(headphone: target.keys.contains { $0.isHeadphone }) else {
             needsRetry = true
             record(.unavailable)
             return
         }
+        let state = reading.settings
         known.merge(state) { $1 }
+        checkHeldMode(reading, latencyMs: Self.ms(now() - started))
         let ruled = rulesMerged
         for field in ruled.keys where baseline[field] == nil && manual[field] == nil {
             baseline[field] = state[field]
         }
         // Só o que o aparelho informa: sem valor lido, o ajuste não existe neste fone.
-        let changes = target.filter { field, value in state[field].map { $0 != value } ?? false }
+        var changes = target.filter { field, value in state[field].map { $0 != value } ?? false }
+        if reading.check == .failed { changes[.soundMode] = target[.soundMode] }
         record(.decision, fields: Self.describe(changes))
         if !changes.isEmpty {
             counters.writes += 1
@@ -257,6 +296,23 @@ public final class AutomationEngine {
             }
         }
         baseline = baseline.filter { ruled[$0.key] != nil }
+        if ruled[.soundMode] != nil, case .mode(let mode)? = known[.soundMode] { device.heldMode = mode } else { device.heldMode = nil }
+    }
+
+    /// Com o canal solto o fone não avisa, então a mudança só aparece aqui. Se o modo não é o que a regra
+    /// deixou, a transição inteira não acontece: tudo que ela mudaria fica como está até o próximo contexto.
+    private func checkHeldMode(_ reading: DeviceReading, latencyMs: Int) {
+        guard target[.soundMode] != nil, manual[.soundMode] == nil else { return }
+        if reading.check == .failed {
+            counters.unverified += 1
+            record(.unverified, latencyMs: latencyMs)
+        }
+        guard reading.check == .fresh, let held = device.heldMode, let seen = reading.settings[.soundMode] else { return }
+        guard seen != .mode(held) else { return record(.verified, fields: Self.describe([.soundMode: seen]), latencyMs: latencyMs) }
+        manual.merge(reading.settings.filter { target[$0.key] != nil }) { $1 }
+        overrideKept = true
+        counters.overridesKept += 1
+        record(.manual, trigger: "channelReopened", fields: Self.describe([.soundMode: seen]), latencyMs: latencyMs)
     }
 
     // MARK: - Registro
