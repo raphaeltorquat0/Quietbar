@@ -11,7 +11,19 @@ struct AutomationTab: View {
         @Bindable var settings = device.settings
         Form {
             Section {
-                LabeledContent("Regra ativa", value: automation.indicator ?? String(localized: "Nenhuma"))
+                LabeledContent {
+                    Text(automation.indicator ?? String(localized: "Nenhuma"))
+                } label: {
+                    HStack {
+                        Text("Regra ativa")
+                        if settings.automationBeta {
+                            Text("Beta")
+                                .font(.caption2.weight(.bold))
+                                .padding(.horizontal, 6).padding(.vertical, 1)
+                                .background(.quaternary, in: Capsule())
+                        }
+                    }
+                }
             } footer: {
                 Text("Prioridade: ajuste manual › chamada › Foco › perfil por app › perfil por Wi-Fi › padrão. Um ajuste manual vale até a regra em vigor mudar.")
                     .font(.caption).foregroundStyle(.secondary)

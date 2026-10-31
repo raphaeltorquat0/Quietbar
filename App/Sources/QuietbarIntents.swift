@@ -129,6 +129,7 @@ struct SetNoiseModeIntent: AppIntent {
 
     @MainActor func perform() async throws -> some IntentResult {
         let mode = mode.mode
+        Telemetry.shared.modeRequested(.intent)
         try await onHeadphone { try await $0.setSoundMode(mode) }
         return .result()
     }

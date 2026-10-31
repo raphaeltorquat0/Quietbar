@@ -59,6 +59,9 @@ final class AppSettings {
     var appRulesEnabled: Bool { didSet { d.set(appRulesEnabled, forKey: "appRulesEnabled") } }
     var wifiRulesEnabled: Bool { didSet { d.set(wifiRulesEnabled, forKey: "wifiRulesEnabled") } }
 
+    /// Automação liberada para todos, com o rótulo "Beta". Sem interface: a chave existe para o fim do beta.
+    var automationBeta: Bool { didSet { d.set(automationBeta, forKey: "automationBeta") } }
+
     var ringNSColor: NSColor {
         ringColor.map { NSColor(srgbRed: $0[0], green: $0[1], blue: $0[2], alpha: 1) } ?? .controlAccentColor
     }
@@ -74,7 +77,7 @@ final class AppSettings {
                               "popupPosition": "topRight", "popupDuration": 5.0, "popupUse3D": true, "menuBarShowsPercent": false, "developerMode": false, "modelLightRing": false,
                               "callRuleEnabled": false, "callDelaySeconds": 3, "focusRuleEnabled": true,
                               "appRulesEnabled": true, "wifiRulesEnabled": true,
-                              "appRuleSmoothing": true, "appRuleEnterMs": 400, "appRuleHoldSeconds": 6])
+                              "automationBeta": true, "appRuleSmoothing": true, "appRuleEnterMs": 400, "appRuleHoldSeconds": 6])
         idleReleaseSeconds = d.integer(forKey: "idleReleaseSeconds")
         lowBatteryAlert = d.bool(forKey: "lowBatteryAlert")
         lowBatteryThreshold = d.integer(forKey: "lowBatteryThreshold")
@@ -100,6 +103,7 @@ final class AppSettings {
         focusRuleEnabled = d.bool(forKey: "focusRuleEnabled")
         appRulesEnabled = d.bool(forKey: "appRulesEnabled")
         wifiRulesEnabled = d.bool(forKey: "wifiRulesEnabled")
+        automationBeta = d.bool(forKey: "automationBeta")
     }
 
     func save<T: Encodable>(_ v: T, _ key: String) { d.set(try? JSONEncoder().encode(v), forKey: key) }
