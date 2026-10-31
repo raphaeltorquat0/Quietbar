@@ -35,6 +35,7 @@ Seus ajustes ficam no Mac: a única conexão com a internet é a procura de atua
 - **Som no Mac:** melhora o som do seu fone no Mac, com EQ paramétrico de até 10 filtros, A/B e curvas importadas do AutoEQ. Vale só para o áudio do Mac: não altera o cancelamento de ruído nem o som no celular ([como funciona](docs/AUDIO.md))
 - Bateria na barra de menus, com alerta de bateria baixa
 - Atalhos globais e perfis automáticos por app em primeiro plano ou rede Wi-Fi
+- **[Automação](#automação):** modo de som em chamadas, perfis por Foco e ações no app Atalhos
 - Popup animado ao conectar, com um modelo 3D do fone gerado em código
 - Liquid Glass no macOS 26+, no estilo da Central de Controle
 - Modo claro e escuro, cor de destaque do sistema, VoiceOver, PT-BR e inglês
@@ -98,6 +99,19 @@ DSEE). Clique direito: Conectar/Desconectar, Configurações, Procurar atualiza�
 "Ferramentas de desenvolvedor…". No macOS 26+ há também um botão "Modo de som do fone" para a
 Central de Controle (com o app aberto).
 
+## Automação
+
+Em **Configurações › Automação**, cada gatilho liga e desliga à parte. O painel mostra qual regra está em vigor.
+
+- **Chamadas** (vem desligado): quando algum app usa o microfone, o fone vai para o modo escolhido, e o modo anterior volta no fim. Funciona com Zoom, Meet, Teams, FaceTime, Slack e qualquer outro, porque o Quietbar observa o microfone, não o nome do app. Ele só vê se a entrada está em uso: não ouve o áudio e não pede permissão. Picos curtos são ignorados (3 s por padrão), e ditado ou gravadores podem entrar na lista de apps ignorados, a partir do macOS 14.2.
+- **Foco:** em Ajustes do Sistema › Foco, escolha um Foco e adicione o Quietbar em Filtros de Foco para associar um perfil a ele. Perfis criados com "Sem gatilho" servem para isso. Se o sistema não avisar a troca, o app percebe em até 30 s.
+- **Perfis por app e por Wi-Fi:** como antes, mas agora o ajuste volta atrás quando o perfil deixa de valer.
+- **App Atalhos e Siri:** definir modo de ruído, definir nível do ambiente, aplicar perfil, aplicar preset de EQ e consultar bateria, em português e inglês.
+
+Quando duas regras definem o mesmo ajuste, vale a primeira desta lista: ajuste manual › chamada › Foco › perfil por app › perfil por Wi-Fi › padrão. Cada regra só decide o que define: uma chamada que muda o modo mantém o nível de ambiente do perfil. "Padrão" é o valor de antes de uma regra mudar o ajuste.
+
+Um ajuste manual, inclusive pelo botão do fone, vale até a regra em vigor mudar. Trocar para um app sem perfil não conta. Com o painel fechado há mais de 15 s, o canal fica solto e o fone não avisa do botão físico: nesse intervalo, ele não conta como ajuste manual.
+
 ## Permissões
 
 | Permissão | Por quê |
@@ -106,7 +120,7 @@ Central de Controle (com o app aberto).
 | Bluetooth | falar com o fone. Na CLI, quem pede é o Terminal — reinicie o Terminal depois de autorizar. |
 | Localização (opcional) | o macOS só revela o nome da rede Wi-Fi a apps com localização; usado apenas nos perfis por Wi-Fi |
 | Notificações (opcional) | alerta de bateria baixa |
-| Microfone (opcional) | só o teste de eco da aba Desenvolvedor, para ler um dispositivo virtual. O app não usa o microfone |
+| Microfone (opcional) | só o teste de eco da aba Desenvolvedor, para ler um dispositivo virtual. O app não ouve o microfone: a automação de chamadas só vê se ele está em uso, o que não exige permissão |
 
 ## Atualizações
 
@@ -145,6 +159,7 @@ Nada do dia a dia precisa dele. `swift build -c release` gera `.build/release/md
 - O XM5 não tem botão personalizável (função `0xF3`) nem envia nomes de presets de EQ.
 - Os comandos de escrita foram validados contra um fone simulado; o roteiro de conferência
   em aparelho real está em [`docs/HARDWARE_TEST.md`](docs/HARDWARE_TEST.md).
+- A automação ainda não passou por um fone real, um Foco real nem pelo app Atalhos: o roteiro está em [`MANUAL_TEST.md`](MANUAL_TEST.md).
 
 ## Fora de escopo
 
@@ -160,6 +175,8 @@ Nada do dia a dia precisa dele. `swift build -c release` gera `.build/release/md
 - [`docs/PROTOCOL.md`](docs/PROTOCOL.md) — protocolo consolidado, com a origem de cada item
 - [`DECISIONS.md`](DECISIONS.md) — escolhas feitas onde a especificação era ambígua
 - [`docs/HARDWARE_TEST.md`](docs/HARDWARE_TEST.md) — o que já foi e o que falta verificar no fone
+- [`MANUAL_TEST.md`](MANUAL_TEST.md) — roteiro da automação no WH-1000XM5
+- [`CHANGELOG.md`](CHANGELOG.md) — o que mudou em cada versão
 - [`docs/RELEASING.md`](docs/RELEASING.md) — como assinar, notarizar e publicar
 - [`docs/GATEKEEPER_TEST.md`](docs/GATEKEEPER_TEST.md) — roteiro da primeira abertura após um download real
 - [`Packages/MDRKit`](Packages/MDRKit/README.md) — o protocolo como pacote Swift independente

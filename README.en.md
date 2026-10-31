@@ -28,6 +28,7 @@ Quietbar is a native Swift/SwiftUI app that speaks the Sony MDR v2 protocol dire
 - **Mac Sound:** improves your headphones' sound on your Mac, with a parametric EQ of up to 10 filters, A/B comparison and curves imported from AutoEQ. It only affects audio from your Mac and doesn't change noise canceling or the sound on your phone. It asks for the System Audio Recording permission; audio is processed in memory and nothing is recorded or sent ([details, in Portuguese](docs/AUDIO.md))
 - Battery in the menu bar, with a low battery alert
 - Global shortcuts and automatic profiles by foreground app or Wi-Fi network
+- **[Automation](#automation):** sound mode during calls, profiles per Focus, and actions in the Shortcuts app
 - Connection popup with a procedurally generated 3D model
 - Liquid Glass on macOS 26 and later, in the style of Control Center
 - Light and dark mode, VoiceOver, English and Brazilian Portuguese
@@ -76,6 +77,21 @@ make install
 ```
 
 Requires macOS 14 or later and Xcode 26 or later.
+
+## Automation
+
+In **Settings › Automation**, each trigger turns on and off separately. The panel shows which rule is in effect.
+
+- **Calls** (off by default): when any app uses the microphone, the headphones switch to the mode you choose, and the previous mode comes back afterwards. It works with Zoom, Meet, Teams, FaceTime, Slack and anything else, because Quietbar watches the microphone, not app names. It only sees whether the input is in use: it doesn't listen to the audio or ask for a permission. Short peaks are ignored (3 s by default), and dictation or recorders can go on the ignored apps list, on macOS 14.2 and later.
+- **Focus:** in System Settings › Focus, choose a Focus and add Quietbar under Focus Filters to link a profile to it. Profiles created with "Sem gatilho" (no trigger) are meant for this. If the system doesn't report the change, the app notices within 30 s.
+- **Per-app and Wi-Fi profiles:** as before, except that settings now go back when the profile stops applying.
+- **Shortcuts app and Siri:** set noise mode, set ambient level, apply profile, apply EQ preset and check the battery, in English and Portuguese.
+
+When two rules set the same thing, the first one in this list wins: manual setting › call › Focus › per-app profile › Wi-Fi profile › default. Each rule only decides what it sets: a call that changes the mode keeps the profile's ambient level. "Default" is the value from before a rule changed it.
+
+A manual change, including the button on the headphones, lasts until the rule in effect changes. Switching to an app without a profile doesn't count. With the panel closed for more than 15 s the channel is released and the headphones don't report the physical button, so in that window it doesn't count as a manual change.
+
+Automation hasn't been run yet with real headphones, a real Focus or the Shortcuts app. The test script is in [`MANUAL_TEST.md`](MANUAL_TEST.md), in Portuguese.
 
 ## Updates
 
