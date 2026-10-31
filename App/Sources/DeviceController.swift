@@ -213,6 +213,7 @@ final class DeviceController {
         let previous = tail
         let task = Task<T, Error> {
             await previous?.value
+            idleTask?.cancel() // a liberação por ociosidade fecharia o canal no meio da ação
             await ensureConnected()
             guard isReady, let session else { throw NotConnected() }
             defer { if visible == 0 { scheduleRelease() } }
