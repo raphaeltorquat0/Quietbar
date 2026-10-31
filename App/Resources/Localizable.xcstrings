@@ -1260,6 +1260,36 @@
           }
         }
       }
+    },
+    "Meu fone": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Headphones"
+          }
+        }
+      }
+    },
+    "Chamada começou. Cancelamento automático.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Call started. Noise cancelling, automatically."
+          }
+        }
+      }
+    },
+    "Chamada acabou. De volta ao ambiente.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Call ended. Back to ambient."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
