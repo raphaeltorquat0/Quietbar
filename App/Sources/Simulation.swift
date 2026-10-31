@@ -267,6 +267,7 @@ struct SimulatorSection: View {
             n.soundMode = mode
             Task { await t.event(.noiseControl(n)) }
         case "no_mode_reply": AutomationBridge.simulateNoModeReply = w.dropFirst().first == "on"
+        case "front": if w.count > 1 { ProfileEngine.shared.injectFront(w[1]) }
         case "mark": write(["kind": "mark", "text": w.dropFirst().joined(separator: " ")])
         case "unavailable": AutomationBridge.simulateUnavailable = w.dropFirst().first == "on"
         case "sleep": NSWorkspace.shared.notificationCenter.post(name: NSWorkspace.willSleepNotification, object: NSWorkspace.shared)

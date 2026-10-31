@@ -19,26 +19,28 @@ if [ "$MODE" = sim ]; then IDLE=3; LOOSE=6; ARGS=(--simulate wh1000xm5); else ID
 mono() { python3 -c 'import time;print(time.clock_gettime_ns(time.CLOCK_MONOTONIC_RAW)//1000000)'; }
 step() { echo "$(mono) $*" >> "$S"; }
 outside() { if [ "$MODE" = sim ]; then ctl button "$1"; else "$CLI" set mode "$1" > /dev/null 2>&1 || echo "falha no mdr-cli" >&2; fi; sleep 2; }
-boot() { start_app "$T" "${ARGS[@]}" -logTraffic YES -idleReleaseSeconds "$IDLE" -profiles "$PROFILES" "$@"; }
+# Primeiro plano injetado (--fake-front): o Mac pode seguir em uso. O caminho com `open -a` fica no E4.
+front() { case "$1" in Calculator) ctl front com.apple.calculator;; Dictionary) ctl front com.apple.Dictionary;; *) ctl front com.apple.Stickies;; esac; }
+boot() { start_app "$T" --fake-front "${ARGS[@]}" -logTraffic YES -idleReleaseSeconds "$IDLE" -profiles "$PROFILES" "$@"; }
 # O trace é reaberto a cada início: guarda o que já foi gravado.
 keep() { cat "$T" >> "$T.all" 2>/dev/null; }
 fin() { sleep 1; ctl state; sleep 0.5; ctl mark "fim $1"; step fim "$1"; }
 
 # cycle <cenário> <i> <mudar fora?> <app da troca> <espera>
 cycle() {
-    open -a Calculator; sleep 3
+    front Calculator; sleep 3
     ctl mark "aplicado $1 $2"; ctl state; sleep "$LOOSE"; ctl state; sleep 0.5
     [ "$3" = sim ] && outside "$FORA"
-    ctl mark "troca $1 $2"; step troca "$1 $2"; open -a "$4"; sleep "$5"
+    ctl mark "troca $1 $2"; step troca "$1 $2"; front "$4"; sleep "$5"
     fin "$1 $2"
-    open -a Stickies; sleep 8
+    front Stickies; sleep 8
 }
 
 take_over; forget_held
 rm -f "$LOG" "$S" "$T" "$T.all"
 [ "$MODE" = real ] && { "$CLI" set mode ambient > /dev/null 2>&1 || { echo "falha ao preparar o fone"; exit 1; }; sleep 1; }
-open -a Stickies; sleep 1
 boot
+front Stickies; sleep 1
 FORA=off
 ctl mark inicio
 for i in $(seq 1 "$N"); do cycle perfil "$i" sim Dictionary 4; done
@@ -71,19 +73,17 @@ if [ "$MODE" = real ] && [ "$VARIANT" = novo ]; then
     # Reinício: a regra deixa o modo, o app sai, o modo muda, o app volta com o perfil em primeiro plano.
     for i in 1 2 3; do
         boot; ctl mark "reinicio $i"
-        open -a Stickies; sleep 1; open -a Calculator; sleep 3; ctl state; sleep 1
+        front Stickies; sleep 1; front Calculator; sleep 3; ctl state; sleep 1
         stop_app; keep
         outside off
-        open -a Dictionary; sleep 1
         step troca "reinicio $i"
-        boot; sleep 2
+        boot; front Dictionary; sleep 4
         fin "reinicio $i"
         sleep 1; stop_app; keep
-        "$CLI" set mode ambient > /dev/null 2>&1; sleep 1; open -a Stickies; sleep 1
+        "$CLI" set mode ambient > /dev/null 2>&1; sleep 1
     done
 fi
 cp "$LOG" "$OUT/$NAME.traffic"
 rm -f "$LOG"; rmdir "$HOME/Library/Logs/Quietbar" 2>/dev/null
-pkill -x Calculator; pkill -x Dictionary; pkill -x Stickies
 forget_held
 python3 "$ROOT/scripts/validation/e5b_analyze.py" "$OUT" "$NAME"

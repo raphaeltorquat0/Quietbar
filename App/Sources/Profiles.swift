@@ -76,6 +76,9 @@ final class ProfileEngine: NSObject {
         guard !started else { return }
         started = true
         frontmostBundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+        #if DEBUG
+        if Self.injectedFront { frontmostBundleID = nil }
+        #endif
         NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main
         ) { note in
@@ -84,6 +87,7 @@ final class ProfileEngine: NSObject {
                 // Abrir as Configurações não é sair do app em que o usuário estava.
                 guard id != Bundle.main.bundleIdentifier else { return }
                 #if DEBUG
+                if Self.injectedFront { return }
                 HardwareTest.trace(front: id)
                 #endif
                 ProfileEngine.shared.frontmostBundleID = id
@@ -93,6 +97,18 @@ final class ProfileEngine: NSObject {
         if profiles.contains(where: { if case .wifi = $0.trigger { true } else { false } }) { startWiFi() }
         evaluate()
     }
+
+    #if DEBUG
+    /// Validação: `--fake-front` ignora o primeiro plano real, e o script informa o app pelo comando `front`.
+    /// Sem isso, a medição tira o foco de quem usa o Mac, e qualquer Cmd-Tab invalida o ciclo.
+    private static let injectedFront = CommandLine.arguments.contains("--fake-front")
+
+    func injectFront(_ id: String) {
+        HardwareTest.trace(front: id)
+        frontmostBundleID = id
+        evaluate()
+    }
+    #endif
 
     /// O macOS só revela o SSID para apps com autorização de localização.
     func startWiFi() {

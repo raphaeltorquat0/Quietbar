@@ -13,21 +13,28 @@ print("<" + json.dumps([p(1, "Calc", "com.apple.calculator", "noiseCanceling"), 
 PY
 )
 mono() { python3 -c 'import time;print(time.clock_gettime_ns(time.CLOCK_MONOTONIC_RAW)//1000000)'; }
-step() { echo "$(mono) $1" >> "$S"; open -a "$1"; }
+# Com FAKE_FRONT=1 o app recebe o primeiro plano por comando, sem tirar o foco de quem usa o Mac.
+step() {
+    echo "$(mono) $1" >> "$S"
+    if [ -z "$FAKE_FRONT" ]; then open -a "$1"; return; fi
+    case "$1" in Calculator) ctl front com.apple.calculator;; Dictionary) ctl front com.apple.Dictionary;; *) ctl front com.apple.Stickies;; esac
+}
 
 begin() {
     T="$OUT/e4-$VARIANT-$1.jsonl"; S="$OUT/e4-$VARIANT-$1.steps"
     rm -f "$LOG" "$S"
     "$ROOT/.build/debug/mdr-cli" set mode off > /dev/null 2>&1 || { echo "falha ao preparar o fone"; exit 1; }
     sleep 1
-    open -a Stickies; sleep 1
+    [ -n "$FAKE_FRONT" ] || { open -a Stickies; sleep 1; }
     forget_held
     if [ "$VARIANT" = antigo ]; then
         "$OLD_APP" -logTraffic YES -macSoundEnabled NO -profiles "$PROFILES" > "$OUT/app.out" 2>&1 &
         APP_PID=$!; sleep 4
     else
         EXTRA=(-appRuleSmoothing NO); [ "$VARIANT" = suave ] && EXTRA=(-appRuleSmoothing YES)
+        [ -n "$FAKE_FRONT" ] && EXTRA+=(--fake-front)
         start_app "$T" -logTraffic YES -profiles "$PROFILES" "${EXTRA[@]}"
+        [ -n "$FAKE_FRONT" ] && ctl front com.apple.Stickies
     fi
 }
 
@@ -62,5 +69,5 @@ if [ -z "$stop_clean" ]; then
     finish rajada
 fi
 rm -f "$LOG"; rmdir "$HOME/Library/Logs/Quietbar" 2>/dev/null
-pkill -x Calculator; pkill -x Dictionary; pkill -x Stickies
+[ -n "$FAKE_FRONT" ] || { pkill -x Calculator; pkill -x Dictionary; pkill -x Stickies; }
 python3 "$ROOT/scripts/validation/e4_analyze.py" "$OUT" "$VARIANT"
