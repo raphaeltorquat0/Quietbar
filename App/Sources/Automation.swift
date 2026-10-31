@@ -46,8 +46,10 @@ final class Automation {
     }
 
     /// Texto do indicador no menu. `nil` sem regra ativa.
-    var indicator: String? {
-        switch engine.active {
+    var indicator: String? { Self.label(for: engine.active) }
+
+    static func label(for rule: ActiveRule?) -> String? {
+        switch rule {
         case nil: nil
         case .manual: String(localized: "Ajuste manual")
         case .rule(.call, _): String(localized: "Em chamada")
