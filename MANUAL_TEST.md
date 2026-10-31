@@ -92,7 +92,8 @@ Crie um perfil por app para o Spotify (ou outro player): modo **Ambiente**, nív
 | 7.1 | Em chamada, com o painel aberto, mude para Ambiente | O modo fica; o painel mostra "Ajuste manual" |
 | 7.2 | Alterne para um app sem perfil | O ajuste manual continua |
 | 7.3 | Saia da chamada | O override acaba e o modo de antes da chamada volta |
-| 7.4 | Em chamada, com o painel aberto, aperte o botão NC/AMB do fone | Conta como ajuste manual. Simulado no E5; falta o botão físico |
+| 7.4 | Em chamada, com o painel aberto, aperte o botão NC/AMB do fone | Conta como ajuste manual. A mudança fora do app já foi provada no E5b; falta o botão físico |
+| 7.5 | Com um perfil ativo e o painel fechado há mais de 15 s, aperte o botão NC/AMB e troque de app | O modo fica, e o menu mostra "Ajuste manual". Depois de mais uma troca, a regra volta a valer |
 | 7.6 | Com o Speak-to-Chat ligado, fale fora de uma chamada, com um perfil ativo | Se o modo mudar sozinho e voltar, o indicador volta à regra |
 
 ## 8. Fone e sistema

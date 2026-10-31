@@ -110,7 +110,7 @@ Em **Configurações › Automação**, cada gatilho liga e desliga à parte. O 
 
 Quando duas regras definem o mesmo ajuste, vale a primeira desta lista: ajuste manual › chamada › Foco › perfil por app › perfil por Wi-Fi › padrão. Cada regra só decide o que define: uma chamada que muda o modo mantém o nível de ambiente do perfil. "Padrão" é o valor de antes de uma regra mudar o ajuste.
 
-Um ajuste manual, inclusive pelo botão do fone, vale até a regra em vigor mudar. Trocar para um app sem perfil não conta. Com o painel fechado há mais de 15 s, o canal fica solto e o fone não avisa do botão físico: o Quietbar só percebe ao reabrir o canal, e uma mudança de regra antes disso vence.
+Um ajuste manual, inclusive pelo botão do fone, vale até a regra em vigor mudar. Trocar para um app sem perfil não conta. Com o painel fechado há mais de 15 s, o canal fica solto e o fone não avisa do botão físico: o Quietbar percebe ao reabrir o canal e mantém o ajuste até a próxima mudança de regra.
 
 ## Permissões
 

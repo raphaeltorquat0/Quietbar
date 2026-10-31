@@ -89,7 +89,7 @@ In **Settings › Automation**, each trigger turns on and off separately. The pa
 
 When two rules set the same thing, the first one in this list wins: manual setting › call › Focus › per-app profile › Wi-Fi profile › default. Each rule only decides what it sets: a call that changes the mode keeps the profile's ambient level. "Default" is the value from before a rule changed it.
 
-A manual change, including the button on the headphones, lasts until the rule in effect changes. Switching to an app without a profile doesn't count. With the panel closed for more than 15 s the channel is released and the headphones don't report the physical button: Quietbar only notices when the channel reopens, and a rule change before that wins.
+A manual change, including the button on the headphones, lasts until the rule in effect changes. Switching to an app without a profile doesn't count. With the panel closed for more than 15 s the channel is released and the headphones don't report the physical button: Quietbar notices when the channel reopens and keeps your change until the next rule change.
 
 Automation has been [validated on a WH-1000XM5](docs/validation/1.4.0-sim.md), but not yet with Meet, Zoom, a real Focus or the Shortcuts app. The test script is in [`MANUAL_TEST.md`](MANUAL_TEST.md). Both documents are in Portuguese.
 
