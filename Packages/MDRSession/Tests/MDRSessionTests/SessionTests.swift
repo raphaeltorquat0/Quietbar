@@ -85,6 +85,20 @@ private func eventually(_ s: MDRSession, _ cond: @Sendable (MDRDeviceState) -> B
         #expect(await fake.received.last?.payload == [0x66, 0x17]) // releitura depois do SET
     }
 
+    @Test func settingTheCurrentValueSendsNothing() async throws {
+        let fake = FakeHeadphones()
+        let s = MDRSession(channel: fake, options: fastOptions())
+        try await s.connect()
+        #expect(await eventually(s) { $0.noiseControl?.soundMode == .noiseCanceling })
+        let level = try #require(await s.state.noiseControl?.ambientLevel)
+        let before = await fake.received.count
+        try await s.setSoundMode(.noiseCanceling)
+        try await s.setAmbientLevel(Int(level))
+        #expect(await fake.received.count == before)
+        try await s.setSoundMode(.ambient)
+        #expect(await fake.received.count == before + 2) // SET e releitura
+    }
+
     @Test func retriesAfterLostAck() async throws {
         let fake = FakeHeadphones()
         let s = MDRSession(channel: fake, options: fastOptions())

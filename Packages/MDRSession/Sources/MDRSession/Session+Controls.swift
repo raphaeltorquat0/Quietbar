@@ -14,6 +14,10 @@ public extension MDRSession {
         n.dragging = false
         change(&n)
         n.ambientLevel = min(20, max(n.inquiredType == 0x22 ? 1 : 0, n.ambientLevel))
+        // Painel, atalhos, Central de Controle e App Intents passam por aqui: o que o fone já tem não vira SET.
+        var current = state.noiseControl
+        current?.dragging = false
+        guard n != current else { return }
         try await set(.noiseControl(n))
     }
 
