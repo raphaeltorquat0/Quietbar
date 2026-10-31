@@ -1,0 +1,31 @@
+{
+  "activeDay" : true,
+  "appVersion" : "1.4.0",
+  "arch" : "arm64",
+  "automation" : {
+    "enabled" : true,
+    "overridesManual" : 1,
+    "trialDay" : null,
+    "triggersFired" : {
+      "app" : 0,
+      "call" : 1,
+      "focus" : 0,
+      "shortcut" : 0,
+      "wifi" : 0
+    }
+  },
+  "date" : "2026-09-21",
+  "deviceModelFamily" : "WH-1000XM5",
+  "installId" : "3f2a1c9e-7b44-4d0e-9a53-1c0de5a1b2c3",
+  "macOSMajor" : 27,
+  "manualModeChanges" : 2,
+  "modeChangesBySource" : {
+    "controlCenter" : 0,
+    "hotkey" : 0,
+    "intent" : 0,
+    "panel" : 1,
+    "physicalButton" : 1
+  },
+  "panelOpens" : 50,
+  "v" : 1
+}

@@ -12,6 +12,7 @@ let package = Package(
         .library(name: "MDRSimulator", targets: ["MDRSimulator"]),
         .library(name: "QuietAudio", targets: ["QuietAudio"]),
         .library(name: "QuietAutomation", targets: ["QuietAutomation"]),
+        .library(name: "QuietTelemetry", targets: ["QuietTelemetry"]),
         .executable(name: "mdr-cli", targets: ["mdr-cli"]),
     ],
     targets: [
@@ -50,6 +51,10 @@ let package = Package(
         .target(name: "QuietAutomation", dependencies: ["MDRKit"], path: "Packages/QuietAutomation/Sources/QuietAutomation"),
         .testTarget(name: "QuietAutomationTests", dependencies: ["QuietAutomation", "MDRKit"],
                     path: "Packages/QuietAutomation/Tests/QuietAutomationTests"),
+
+        // Métricas opt-in: sem SDK de terceiros e testáveis sem o app (DECISIONS.md #142).
+        .target(name: "QuietTelemetry", path: "Packages/QuietTelemetry/Sources/QuietTelemetry"),
+        .testTarget(name: "QuietTelemetryTests", dependencies: ["QuietTelemetry", "MDRSimulator"], path: "Packages/QuietTelemetry/Tests/QuietTelemetryTests"),
 
         .executableTarget(
             name: "mdr-cli",
