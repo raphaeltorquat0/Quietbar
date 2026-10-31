@@ -274,7 +274,7 @@ struct SimulatorSection: View {
         case "wake": NSWorkspace.shared.notificationCenter.post(name: NSWorkspace.didWakeNotification, object: NSWorkspace.shared)
         case "state":
             let c = engine.counters
-            write(["kind": "state", "phase": "\(d.snapshot.phase)", "mode": d.state.noiseControl?.soundMode.rawValue ?? "-",
+            write(["kind": "state", "phase": "\(d.snapshot.phase)", "openUIs": "\(d.openUIs)", "mode": d.state.noiseControl?.soundMode.rawValue ?? "-",
                    "rule": Automation.shared.indicator ?? "-", "writes": "\(c.writes)", "confirmed": "\(c.confirmed)", "divergent": "\(c.divergent)", "failed": "\(c.failed)", "redundantBlocked": "\(c.redundantBlocked)", "overridesKept": "\(c.overridesKept)", "unverified": "\(c.unverified)"])
         default: break
         }

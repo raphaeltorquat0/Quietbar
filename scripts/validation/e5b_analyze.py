@@ -24,28 +24,29 @@ for ms, kind, *rest in steps:
     if kind in ("troca", "fim"):
         windows.setdefault(" ".join(rest), {})[kind] = int(ms)
 
-def last_state(label):
+def last_state(text):
     state = None
     for e in events:
         if e.get("kind") == "state":
             state = e
-        if e.get("kind") == "mark" and e.get("text") == f"fim {label}":
+        if e.get("kind") == "mark" and e.get("text") == text:
             return state
 
 rows = {}
 for label, w in windows.items():
     scenario = label.split(" ")[0]
-    state = last_state(label) or {}
+    state = last_state(f"fim {label}") or {}
+    before = last_state(f"troca {label}") or {}
     inside = [s for s in sets if w["troca"] <= s <= w["fim"]]
     rows.setdefault(scenario, []).append({
-        "label": label, "mode": state.get("mode"), "rule": state.get("rule"),
+        "label": label, "mode": state.get("mode"), "rule": state.get("rule"), "loose": before.get("phase") == "disconnected", "uis": before.get("openUIs"),
         "sets": len(inside), "latency": inside[0] - w["troca"] if inside else None,
     })
 
 print(f"# {name}")
 for scenario, cycles in rows.items():
     kept = [c for c in cycles if c["mode"] == "off" and c["sets"] == 0 and c["rule"] == "Ajuste manual"]
-    print(f"{scenario}: n={len(cycles)} override preservado={len(kept)} modos={sorted({str(c['mode']) for c in cycles})} indicadores={sorted({str(c['rule']) for c in cycles})} SETs={sum(c['sets'] for c in cycles)}")
+    print(f"{scenario}: n={len(cycles)} canal solto antes da troca={sum(c['loose'] for c in cycles)} UIs abertas={sorted({str(c['uis']) for c in cycles})} override preservado={len(kept)} modos={sorted({str(c['mode']) for c in cycles})} indicadores={sorted({str(c['rule']) for c in cycles})} SETs={sum(c['sets'] for c in cycles)}")
     lat = sorted(c["latency"] for c in cycles if c["latency"] is not None)
     if lat:
         print(f"  troca até o SET, ms: n={len(lat)} mediana={statistics.median(lat):.0f} min={lat[0]} max={lat[-1]} todos={lat}")

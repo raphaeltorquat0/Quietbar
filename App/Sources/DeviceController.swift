@@ -172,6 +172,9 @@ final class DeviceController {
     }
 
     #if DEBUG
+    /// Validação: quantas UIs seguram o canal aberto agora.
+    var openUIs: Int { visible }
+
     /// Troca entre Bluetooth e fone simulado.
     func restartSession() async { await reset() }
 
