@@ -1,5 +1,13 @@
 import AppKit
+import MDRKit
 import Observation
+
+/// App cujo uso do microfone não conta como chamada.
+struct IgnoredApp: Codable, Hashable, Identifiable {
+    var bundleID: String
+    var name: String
+    var id: String { bundleID }
+}
 
 struct SavedEqualizer: Codable, Hashable, Identifiable {
     var id = UUID()
@@ -37,6 +45,16 @@ final class AppSettings {
     /// Cor do anel do modelo 3D (sRGB). `nil` = cor de destaque do sistema.
     var ringColor: [Double]? { didSet { save(ringColor, "ringColor") } }
 
+    /// Vem desligado: o app não muda o fone sozinho sem o usuário pedir.
+    var callRuleEnabled: Bool { didSet { d.set(callRuleEnabled, forKey: "callRuleEnabled") } }
+    var callMode: SoundMode { didSet { d.set(callMode.rawValue, forKey: "callMode") } }
+    /// Tempo que o microfone precisa ficar ligado ou desligado para contar. Ajustável: depende do app e do fone.
+    var callDelaySeconds: Int { didSet { d.set(callDelaySeconds, forKey: "callDelaySeconds") } }
+    var micIgnoredApps: [IgnoredApp] { didSet { save(micIgnoredApps, "micIgnoredApps") } }
+    var focusRuleEnabled: Bool { didSet { d.set(focusRuleEnabled, forKey: "focusRuleEnabled") } }
+    var appRulesEnabled: Bool { didSet { d.set(appRulesEnabled, forKey: "appRulesEnabled") } }
+    var wifiRulesEnabled: Bool { didSet { d.set(wifiRulesEnabled, forKey: "wifiRulesEnabled") } }
+
     var ringNSColor: NSColor {
         ringColor.map { NSColor(srgbRed: $0[0], green: $0[1], blue: $0[2], alpha: 1) } ?? .controlAccentColor
     }
@@ -49,7 +67,9 @@ final class AppSettings {
     private init() {
         d.register(defaults: ["idleReleaseSeconds": 15, "lowBatteryAlert": true, "lowBatteryThreshold": 20,
                               "batteryCheckMinutes": 15, "logTraffic": false, "popupEnabled": true,
-                              "popupPosition": "topRight", "popupDuration": 5.0, "popupUse3D": true, "menuBarShowsPercent": false, "developerMode": false, "modelLightRing": false])
+                              "popupPosition": "topRight", "popupDuration": 5.0, "popupUse3D": true, "menuBarShowsPercent": false, "developerMode": false, "modelLightRing": false,
+                              "callRuleEnabled": false, "callDelaySeconds": 3, "focusRuleEnabled": true,
+                              "appRulesEnabled": true, "wifiRulesEnabled": true])
         idleReleaseSeconds = d.integer(forKey: "idleReleaseSeconds")
         lowBatteryAlert = d.bool(forKey: "lowBatteryAlert")
         lowBatteryThreshold = d.integer(forKey: "lowBatteryThreshold")
@@ -65,6 +85,13 @@ final class AppSettings {
         popupDuration = d.double(forKey: "popupDuration")
         popupUse3D = d.bool(forKey: "popupUse3D")
         ringColor = Self.load("ringColor")
+        callRuleEnabled = d.bool(forKey: "callRuleEnabled")
+        callMode = d.string(forKey: "callMode").flatMap(SoundMode.init) ?? .noiseCanceling
+        callDelaySeconds = d.integer(forKey: "callDelaySeconds")
+        micIgnoredApps = Self.load("micIgnoredApps") ?? []
+        focusRuleEnabled = d.bool(forKey: "focusRuleEnabled")
+        appRulesEnabled = d.bool(forKey: "appRulesEnabled")
+        wifiRulesEnabled = d.bool(forKey: "wifiRulesEnabled")
     }
 
     func save<T: Encodable>(_ v: T, _ key: String) { d.set(try? JSONEncoder().encode(v), forKey: key) }

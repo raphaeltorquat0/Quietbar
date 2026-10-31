@@ -60,6 +60,7 @@ final class MacSound {
         didSet {
             d.set(enabled, forKey: "macSoundEnabled")
             syncEngine()
+            Automation.shared.report()
         }
     }
     var canProcess: Bool { permission == .granted || (permission == .unavailable && systemFlowAccepted) }
@@ -72,6 +73,7 @@ final class MacSound {
         didSet {
             d.set(preset.rawValue, forKey: "macSoundPreset")
             engine?.setCurve(curve)
+            Automation.shared.report()
         }
     }
     /// Curva importada; é o que o preset "Correção" toca.

@@ -16,6 +16,11 @@ struct QuietbarApp: App {
             print("áudio: \(tcc.status(.audioCapture)); microfone: \(tcc.status(.microphone)); problema: \(tcc.problem ?? "nenhum")")
             exit(0)
         }
+        if CommandLine.arguments.contains("--mic-status") {
+            // Só lê propriedades: serve para conferir o detector no app assinado, com sandbox.
+            print(MicMonitor.current())
+            exit(0)
+        }
         if let i = CommandLine.arguments.firstIndex(of: "--audio-selftest") {
             Self.audioSelfTest(uid: CommandLine.arguments.dropFirst(i + 1).first)
             RunLoop.main.run() // nunca chega ao SwiftUI: nada de Bluetooth nem `DeviceController` neste modo
@@ -36,6 +41,7 @@ struct QuietbarApp: App {
         HotKeys.shared.register()
         MacSound.shared.start()
         ProfileEngine.shared.start()
+        Automation.shared.start()
         PopupController.shared.start()
         Self.prewarm3D()
         StatusBar.shared.install()

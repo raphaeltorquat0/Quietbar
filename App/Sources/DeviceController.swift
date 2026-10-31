@@ -33,6 +33,7 @@ final class DeviceController {
             UserDefaults.standard.set(selectedAddress, forKey: "selectedAddress")
             if oldValue != selectedAddress {
                 MacSound.shared.targetChanged(selectedAddress)
+                Automation.shared.engine.forgetDevice()
                 Task { await reset() }
             }
         }
@@ -228,6 +229,7 @@ final class DeviceController {
         #endif
         if let b = snap.state.primaryBattery { lastBattery = b }
         checkBattery(snap.state.primaryBattery)
+        Automation.shared.report()
     }
 
     // MARK: - Bateria
@@ -277,6 +279,12 @@ final class DeviceController {
             self.refreshDevices()
             if connected, self.visible > 0 { Task { await self.ensureConnected() } }
             if connected { PopupController.shared.deviceConnected() }
+            if connected {
+                Task {
+                    try? await Task.sleep(for: .seconds(2)) // o serviço RFCOMM sobe logo depois do baseband
+                    Automation.shared.engine.deviceAvailable()
+                }
+            }
             if !connected { Task { await self.session?.disconnect() } }
         }
         watcher.start()

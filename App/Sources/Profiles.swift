@@ -2,7 +2,7 @@ import AppKit
 import CoreLocation
 import CoreWLAN
 import MDRKit
-import MDRSession
+import QuietAutomation
 import SwiftUI
 
 /// Conjunto de ajustes aplicado quando um app fica em foco ou o Mac entra numa rede Wi-Fi.
@@ -11,6 +11,8 @@ struct Profile: Codable, Hashable, Identifiable {
     enum Trigger: Codable, Hashable {
         case app(bundleID: String, name: String)
         case wifi(ssid: String)
+        /// Sem gatilho próprio: serve aos Filtros de Foco e aos Atalhos.
+        case none
     }
 
     var id = UUID()
@@ -26,28 +28,27 @@ struct Profile: Codable, Hashable, Identifiable {
     var macSound: Bool?
     var macPreset: String?
 
-    /// Só abre o canal com o fone se houver o que mudar nele.
-    var changesHeadphone: Bool {
-        soundMode != nil || ambientLevel != nil || focusOnVoice != nil || equalizerPresetID != nil || speakToChat != nil
+    /// O que o perfil define, no formato do motor de prioridade.
+    var settings: QuietAutomation.Settings {
+        var s = QuietAutomation.Settings()
+        s[.soundMode] = soundMode.map { .mode($0) }
+        s[.ambientLevel] = ambientLevel.map { .int($0) }
+        s[.focusOnVoice] = focusOnVoice.map { .bool($0) }
+        s[.equalizerPreset] = equalizerPresetID.map { .int(Int($0)) }
+        s[.speakToChat] = speakToChat.map { .bool($0) }
+        s[.macSound] = macSound.map { .bool($0) }
+        s[.macPreset] = macPreset.map { .text($0) }
+        return s
     }
+
+    var rule: Rule { Rule(id: id.uuidString, name: name, settings: settings) }
 
     var triggerLabel: String {
         switch trigger {
         case .app(_, let name): "App: \(name)"
         case .wifi(let ssid): "Wi-Fi: \(ssid)"
+        case .none: "Só Foco e Atalhos"
         }
-    }
-
-    func apply(_ s: MDRSession) async throws {
-        if soundMode != nil || ambientLevel != nil || focusOnVoice != nil {
-            try await s.setNoiseControl { n in
-                if let m = soundMode { n.soundMode = m }
-                if let l = ambientLevel { n.ambientLevel = UInt8(clamping: l) }
-                if let v = focusOnVoice { n.focusOnVoice = v }
-            }
-        }
-        if let id = equalizerPresetID { try await s.setEqualizerPreset(id) }
-        if let stc = speakToChat { try await s.setSpeakToChat(stc) }
     }
 }
 
@@ -56,7 +57,12 @@ final class ProfileEngine: NSObject {
     static let shared = ProfileEngine()
 
     var profiles: [Profile] = AppSettings.load("profiles") ?? [] {
-        didSet { AppSettings.shared.save(profiles, "profiles"); evaluate() }
+        didSet {
+            AppSettings.shared.save(profiles, "profiles")
+            QuietbarShortcuts.updateAppShortcutParameters()
+            evaluate()
+            Automation.shared.refreshFocusRule()
+        }
     }
     private(set) var activeProfileID: UUID?
     private(set) var currentSSID: String?
@@ -74,6 +80,8 @@ final class ProfileEngine: NSObject {
         ) { note in
             let id = (note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication)?.bundleIdentifier
             MainActor.assumeIsolated {
+                // Abrir as Configurações não é sair do app em que o usuário estava.
+                guard id != Bundle.main.bundleIdentifier else { return }
                 ProfileEngine.shared.frontmostBundleID = id
                 ProfileEngine.shared.evaluate()
             }
@@ -99,22 +107,21 @@ final class ProfileEngine: NSObject {
         evaluate()
     }
 
+    /// Só detecta o contexto: quem decide e escreve é o motor de prioridade.
     func evaluate() {
+        let settings = AppSettings.shared
         let enabled = profiles.filter(\.enabled)
-        let match = enabled.first {
+        let app = settings.appRulesEnabled ? enabled.first {
             if case .app(let id, _) = $0.trigger { return id == frontmostBundleID }
             return false
-        } ?? enabled.first {
+        } : nil
+        let wifi = settings.wifiRulesEnabled ? enabled.first {
             if case .wifi(let ssid) = $0.trigger { return ssid == currentSSID }
             return false
-        }
-        guard let match, match.id != activeProfileID else {
-            if match == nil { activeProfileID = nil }
-            return
-        }
-        activeProfileID = match.id
-        MacSound.shared.apply(enabled: match.macSound, preset: match.macPreset)
-        if match.changesHeadphone { DeviceController.shared.perform { try await match.apply($0) } }
+        } : nil
+        activeProfileID = (app ?? wifi)?.id
+        Automation.shared.engine.set(.app, app?.rule)
+        Automation.shared.engine.set(.wifi, wifi?.rule)
     }
 }
 
@@ -154,6 +161,7 @@ struct ProfilesTab: View {
                     Menu {
                         Button("App em foco…") { addAppProfile() }
                         Button("Rede Wi-Fi atual") { addWiFiProfile() }
+                        Button("Sem gatilho (Foco e Atalhos)") { addPlainProfile() }
                     } label: { Image(systemName: "plus") }
                     .menuStyle(.borderlessButton).fixedSize()
                     Button { engine.profiles.removeAll { $0.id == selection } } label: { Image(systemName: "minus") }
@@ -166,7 +174,7 @@ struct ProfilesTab: View {
             if let i = engine.profiles.firstIndex(where: { $0.id == selection }) {
                 ProfileEditor(profile: $engine.profiles[i], presets: device.state.equalizerPresets)
             } else {
-                Text("Perfis aplicam ajustes quando um app fica em foco ou o Mac entra numa rede Wi-Fi. App tem prioridade sobre Wi-Fi.")
+                Text("Perfis aplicam ajustes quando um app fica em foco ou o Mac entra numa rede Wi-Fi, e voltam atrás quando deixam de valer. A prioridade está na aba Automação.")
                     .foregroundStyle(.secondary).padding().frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
@@ -179,6 +187,12 @@ struct ProfilesTab: View {
         guard panel.runModal() == .OK, let url = panel.url, let bundle = Bundle(url: url), let id = bundle.bundleIdentifier else { return }
         let name = FileManager.default.displayName(atPath: url.path).replacingOccurrences(of: ".app", with: "")
         let p = Profile(name: name, trigger: .app(bundleID: id, name: name), soundMode: .noiseCanceling)
+        engine.profiles.append(p)
+        selection = p.id
+    }
+
+    private func addPlainProfile() {
+        let p = Profile(name: "Novo perfil", trigger: .none, soundMode: .noiseCanceling)
         engine.profiles.append(p)
         selection = p.id
     }

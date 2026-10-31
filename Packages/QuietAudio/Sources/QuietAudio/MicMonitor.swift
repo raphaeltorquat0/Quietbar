@@ -132,7 +132,8 @@ public final class MicMonitor: @unchecked Sendable {
 
     /// Ferramenta de linha de comando não tem bundle ID.
     private static func processName(_ pid: pid_t) -> String {
-        var name = [CChar](repeating: 0, count: 256)
-        return proc_name(pid, &name, UInt32(name.count)) > 0 ? String(cString: name) : "pid \(pid)"
+        var name = [UInt8](repeating: 0, count: 256)
+        let length = proc_name(pid, &name, UInt32(name.count))
+        return length > 0 ? String(decoding: name.prefix(Int(length)), as: UTF8.self) : "pid \(pid)"
     }
 }
