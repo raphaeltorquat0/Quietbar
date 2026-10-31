@@ -23,7 +23,7 @@ Um pacote por dia, no máximo. O formato completo está em [`telemetry-schema.md
 - Data do pacote
 - Versões do Quietbar e do macOS, e arquitetura
 - Modelo do fone, de uma lista conhecida
-- Se o dia teve uso, trocas de modo manuais por origem e aberturas do painel
+- Se o dia teve uso, trocas de modo manuais por origem e aberturas do painel. Uma troca sem pedido do app, como o botão do fone, vira `externalChange`
 - Se a automação está em uso, quantas vezes cada tipo de gatilho disparou e quantos ajustes contrariaram uma regra
 
 Contadores acima de 50 viram 50, para um perfil de uso incomum não identificar ninguém.

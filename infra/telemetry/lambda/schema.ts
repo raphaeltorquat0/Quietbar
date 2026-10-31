@@ -9,7 +9,7 @@ export const MODEL_FAMILIES = [
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const VERSION = /^\d{1,3}\.\d{1,3}(\.\d{1,3})?$/;
-const SOURCES = ['panel', 'controlCenter', 'hotkey', 'intent', 'physicalButton'];
+const SOURCES = ['panel', 'controlCenter', 'hotkey', 'intent', 'externalChange'];
 const TRIGGERS = ['call', 'focus', 'app', 'wifi', 'shortcut'];
 const TOP = ['v', 'installId', 'date', 'appVersion', 'macOSMajor', 'arch', 'deviceModelFamily', 'activeDay',
   'manualModeChanges', 'modeChangesBySource', 'automation', 'panelOpens'];

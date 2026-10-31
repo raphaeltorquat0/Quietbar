@@ -23,7 +23,7 @@ public struct ModeChangeTracker: Sendable {
         defer { self.mode = mode }
         guard let old = self.mode, let mode, old != mode else { return nil }
         defer { expected = nil }
-        guard let expected, now.timeIntervalSince(expected.at) <= Self.window else { return .physicalButton }
+        guard let expected, now.timeIntervalSince(expected.at) <= Self.window else { return .externalChange }
         if case .user(let source) = expected.origin { return source }
         return nil
     }

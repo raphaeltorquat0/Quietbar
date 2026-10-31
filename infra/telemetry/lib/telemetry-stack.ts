@@ -7,7 +7,7 @@ import type { Construct } from 'constructs';
 import { fileURLToPath } from 'node:url';
 
 export interface TelemetryStackProps extends StackProps {
-  /** Teto de execuções simultâneas: é o que limita o custo de um abuso. 0 desliga a reserva. */
+  /** Teto de execuções simultâneas: é o que limita o custo de um abuso. 0 omite a reserva, e a função fica sem teto próprio. */
   reservedConcurrency: number;
 }
 

@@ -17,7 +17,7 @@ struct PrivacyTab: View {
                 Text("Métricas")
             } footer: {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Métricas anônimas, opt-in, desligadas por padrão. No máximo um resumo por dia, com contadores, modelo do fone e versões. Nunca inclui nomes de fone, de rede, de app ou de Foco. Desligar apaga o que está guardado no Mac.")
+                    Text("Métricas anônimas, opt-in, desligadas por padrão. No máximo um resumo por dia encerrado: um ID aleatório trocado a cada 90 dias, data, contadores de uso, versões, arquitetura e modelo do fone de uma lista conhecida. Nunca inclui nomes de fone, de rede, de app ou de Foco. Não sai em rede com Dados Reduzidos, e no servidor é apagado em 400 dias. Desligar apaga o que está guardado no Mac.")
                     if telemetry.endpoint == nil {
                         Text("Esta versão não tem servidor configurado: nada é enviado.")
                     }

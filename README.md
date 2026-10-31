@@ -125,7 +125,7 @@ Um ajuste manual, inclusive pelo botão do fone, vale até a regra em vigor muda
 
 ## Métricas
 
-Métricas anônimas, opt-in, desligadas por padrão. Se você ligar, o app envia no máximo um resumo por dia: um ID aleatório trocado a cada 90 dias, data, versões, modelo do fone de uma lista conhecida e contadores de uso. Nunca inclui nome de fone, rede, app ou Foco. Configurações › Privacidade liga, desliga e mostra o JSON exato do próximo envio. Veja [`docs/PRIVACY.md`](docs/PRIVACY.md) e o [schema](docs/telemetry-schema.md).
+Métricas anônimas, opt-in, desligadas por padrão. Se você ligar, o app envia no máximo um resumo por dia encerrado: um ID aleatório trocado a cada 90 dias, data, versões do app e do macOS, arquitetura, modelo do fone de uma lista conhecida e contadores de uso, limitados a 50: trocas de modo manuais por origem, gatilhos da automação, ajustes contra uma regra e aberturas do painel. Nunca inclui nome de fone, rede, app, Foco ou perfil. Não sai em rede com Dados Reduzidos, um pacote não enviado é descartado em 3 dias, e o servidor apaga cada pacote em 400 dias, sem gravar o IP. Sem um servidor configurado na versão, nada é enviado. Configurações › Privacidade liga, desliga e mostra o JSON exato do próximo envio; desligar apaga o que está no Mac. Veja [`docs/PRIVACY.md`](docs/PRIVACY.md) e o [schema](docs/telemetry-schema.md).
 
 ## Atualizações
 

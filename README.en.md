@@ -95,7 +95,7 @@ Automation has been [validated on a WH-1000XM5](docs/validation/1.4.0-sim.md), b
 
 ## Metrics
 
-Anonymous metrics, opt-in, off by default. If you turn them on, the app sends at most one summary per day: a random ID replaced every 90 days, the date, versions, the headphone model from a known list and usage counters. It never includes headphone, network, app or Focus names. Settings › Privacy turns this on and off and shows the exact JSON of the next report. See the [schema](docs/telemetry-schema.md).
+Anonymous metrics, opt-in, off by default. If you turn them on, the app sends at most one summary per finished day: a random ID replaced every 90 days, the date, app and macOS versions, architecture, the headphone model from a known list and usage counters capped at 50: manual mode changes by source, automation triggers, changes against a rule and panel opens. It never includes headphone, network, app, Focus or profile names. Nothing is sent on Low Data Mode networks, an unsent report is dropped after 3 days, and the server deletes each report after 400 days without storing the IP. With no server configured in the build, nothing is sent. Settings › Privacy turns this on and off and shows the exact JSON of the next report; turning it off erases what's on your Mac. See the [schema](docs/telemetry-schema.md).
 
 ## Updates
 

@@ -136,7 +136,7 @@ public final class TelemetryRecorder {
             manualModeChanges: cap(day.modeChanges.values.reduce(0, +)),
             modeChangesBySource: .init(panel: cap(day.modeChanges["panel"]), controlCenter: cap(day.modeChanges["controlCenter"]),
                                        hotkey: cap(day.modeChanges["hotkey"]), intent: cap(day.modeChanges["intent"]),
-                                       physicalButton: cap(day.modeChanges["physicalButton"])),
+                                       externalChange: cap(day.modeChanges["externalChange"])),
             automation: .init(enabled: c.automationEnabled, trialDay: c.trialDay,
                               triggersFired: .init(call: cap(day.triggers["call"]), focus: cap(day.triggers["focus"]), app: cap(day.triggers["app"]),
                                                    wifi: cap(day.triggers["wifi"]), shortcut: cap(day.triggers["shortcut"])),

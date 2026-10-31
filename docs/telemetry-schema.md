@@ -15,7 +15,7 @@ Pacote diário enviado pelo Quietbar **só com o opt-in ligado**. A política es
   "deviceModelFamily": "WH-1000XM5",
   "activeDay": true,
   "manualModeChanges": 2,
-  "modeChangesBySource": { "panel": 1, "controlCenter": 0, "hotkey": 0, "intent": 0, "physicalButton": 1 },
+  "modeChangesBySource": { "panel": 1, "controlCenter": 0, "hotkey": 0, "intent": 0, "externalChange": 1 },
   "automation": {
     "enabled": true,
     "trialDay": null,
@@ -58,9 +58,9 @@ Só conta quando o fone informa um modo diferente do anterior. Pedir o modo atua
 | `controlCenter` | Controle da Central de Controle |
 | `hotkey` | Atalhos globais |
 | `intent` | "Definir modo de ruído" no app Atalhos |
-| `physicalButton` | Mudança sem pedido do app nos últimos 3 s, com o canal aberto |
+| `externalChange` | Mudança sem pedido do app nos últimos 3 s, com o canal aberto |
 
-`physicalButton` é, na prática, "fora do app": o Speak-to-Chat ou o celular em multiponto também caem aqui. Com o canal solto, o fone não avisa, então a troca não entra neste contador.
+`externalChange` é, na prática, "fora do app": o Speak-to-Chat ou o celular em multiponto também caem aqui. Com o canal solto, o fone não avisa, então a troca não entra neste contador.
 
 ## Modelos conhecidos
 

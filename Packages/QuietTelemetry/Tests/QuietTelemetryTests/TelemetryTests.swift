@@ -46,7 +46,7 @@ private func object(_ data: Data) -> [String: Any] { (try? JSONSerialization.jso
         let r = make(b)
         r.recordModeChange(.panel)
         r.recordModeChange(.panel)
-        r.recordModeChange(.physicalButton)
+        r.recordModeChange(.externalChange)
         r.recordModeChange(.hotkey)
         r.recordTrigger(.call)
         r.recordTrigger(.shortcut)
@@ -57,7 +57,7 @@ private func object(_ data: Data) -> [String: Any] { (try? JSONSerialization.jso
         #expect(json["activeDay"] as? Bool == true)
         #expect(json["panelOpens"] as? Int == 1)
         let sources = json["modeChangesBySource"] as? [String: Int]
-        #expect(sources == ["panel": 2, "controlCenter": 0, "hotkey": 1, "intent": 0, "physicalButton": 1])
+        #expect(sources == ["panel": 2, "controlCenter": 0, "hotkey": 1, "intent": 0, "externalChange": 1])
         let automation = json["automation"] as? [String: Any]
         #expect(automation?["triggersFired"] as? [String: Int] == ["call": 1, "focus": 0, "app": 0, "wifi": 0, "shortcut": 1])
         #expect(automation?["overridesManual"] as? Int == 1)
@@ -248,7 +248,7 @@ private func object(_ data: Data) -> [String: Any] { (try? JSONSerialization.jso
         b.automation = true
         let r = make(b)
         r.recordModeChange(.panel)
-        r.recordModeChange(.physicalButton)
+        r.recordModeChange(.externalChange)
         r.recordTrigger(.call)
         r.recordOverride()
         for _ in 0..<60 { r.recordPanelOpen() }
@@ -286,9 +286,9 @@ private func object(_ data: Data) -> [String: Any] { (try? JSONSerialization.jso
     @Test func unannouncedChangeIsThePhysicalButton() {
         var t = ModeChangeTracker()
         _ = t.observe("off", at: start)
-        #expect(t.observe("ambient", at: start + 1) == .physicalButton)
+        #expect(t.observe("ambient", at: start + 1) == .externalChange)
         t.expect(.user(.hotkey), at: start)
-        #expect(t.observe("off", at: start + 4) == .physicalButton) // a intenção venceu
+        #expect(t.observe("off", at: start + 4) == .externalChange) // a intenção venceu
     }
 
     @Test func reopeningTheChannelIsNotAChange() {

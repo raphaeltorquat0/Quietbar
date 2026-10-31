@@ -105,7 +105,7 @@ final class Telemetry {
         NSApp.activate()
         let alert = NSAlert()
         alert.messageText = String(localized: "Compartilhar métricas anônimas de uso?")
-        alert.informativeText = String(localized: "Para saber quais recursos são usados, o Quietbar pode enviar um resumo por dia: contadores, modelo do fone e versões. Nunca inclui nomes de fone, de rede, de app ou de Foco. Vem desligado, e você pode mudar em Ajustes › Privacidade.")
+        alert.informativeText = String(localized: "Para saber quais recursos são usados, o Quietbar pode enviar um resumo por dia: um ID aleatório, contadores de uso, modelo do fone e versões. Nunca inclui nomes de fone, de rede, de app ou de Foco. Vem desligado, e você pode mudar em Configurações › Privacidade.")
         alert.addButton(withTitle: String(localized: "Agora não")) // primeiro botão: o padrão do Return
         alert.addButton(withTitle: String(localized: "Ativar métricas"))
         alert.buttons[0].keyEquivalent = "\r"

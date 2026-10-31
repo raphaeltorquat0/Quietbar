@@ -2,7 +2,7 @@ import Foundation
 
 /// De onde veio uma troca de modo de som.
 public enum ModeSource: String, Codable, CaseIterable, Sendable {
-    case panel, controlCenter, hotkey, intent, physicalButton
+    case panel, controlCenter, hotkey, intent, externalChange
 }
 
 /// O que disparou a automação.
@@ -13,7 +13,7 @@ public enum AutomationTrigger: String, Codable, CaseIterable, Sendable {
 /// Pacote diário, schema v1 (docs/telemetry-schema.md). O que não está aqui não sai do Mac.
 public struct TelemetryPacket: Encodable, Equatable, Sendable {
     public struct Sources: Encodable, Equatable, Sendable {
-        var panel, controlCenter, hotkey, intent, physicalButton: Int
+        var panel, controlCenter, hotkey, intent, externalChange: Int
     }
 
     public struct Triggers: Encodable, Equatable, Sendable {

@@ -24,7 +24,7 @@
     "hotkey" : 0,
     "intent" : 0,
     "panel" : 1,
-    "physicalButton" : 1
+    "externalChange" : 1
   },
   "panelOpens" : 50,
   "v" : 1

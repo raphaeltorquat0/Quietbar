@@ -1191,26 +1191,6 @@
         }
       }
     },
-    "Métricas anônimas, opt-in, desligadas por padrão. No máximo um resumo por dia, com contadores, modelo do fone e versões. Nunca inclui nomes de fone, de rede, de app ou de Foco. Desligar apaga o que está guardado no Mac.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Anonymous metrics, opt-in, off by default. At most one summary per day, with counters, headphone model and versions. It never includes headphone, network, app or Focus names. Turning this off erases what is stored on your Mac."
-          }
-        }
-      }
-    },
-    "Para saber quais recursos são usados, o Quietbar pode enviar um resumo por dia: contadores, modelo do fone e versões. Nunca inclui nomes de fone, de rede, de app ou de Foco. Vem desligado, e você pode mudar em Ajustes › Privacidade.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "To learn which features are used, Quietbar can send one summary per day: counters, headphone model and versions. It never includes headphone, network, app or Focus names. It's off by default, and you can change this in Settings › Privacy."
-          }
-        }
-      }
-    },
     "Política de privacidade": {
       "localizations": {
         "en": {
@@ -1257,6 +1237,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "See what is sent"
+          }
+        }
+      }
+    },
+    "Métricas anônimas, opt-in, desligadas por padrão. No máximo um resumo por dia encerrado: um ID aleatório trocado a cada 90 dias, data, contadores de uso, versões, arquitetura e modelo do fone de uma lista conhecida. Nunca inclui nomes de fone, de rede, de app ou de Foco. Não sai em rede com Dados Reduzidos, e no servidor é apagado em 400 dias. Desligar apaga o que está guardado no Mac.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anonymous metrics, opt-in, off by default. At most one summary per finished day: a random ID replaced every 90 days, the date, usage counters, versions, architecture and the headphone model from a known list. It never includes headphone, network, app or Focus names. Nothing is sent on Low Data Mode networks, and the server deletes it after 400 days. Turning this off erases what is stored on your Mac."
+          }
+        }
+      }
+    },
+    "Para saber quais recursos são usados, o Quietbar pode enviar um resumo por dia: um ID aleatório, contadores de uso, modelo do fone e versões. Nunca inclui nomes de fone, de rede, de app ou de Foco. Vem desligado, e você pode mudar em Configurações › Privacidade.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To learn which features are used, Quietbar can send one summary per day: a random ID, usage counters, headphone model and versions. It never includes headphone, network, app or Focus names. It's off by default, and you can change this in Settings › Privacy."
           }
         }
       }
