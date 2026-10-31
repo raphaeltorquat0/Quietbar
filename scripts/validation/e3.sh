@@ -5,6 +5,8 @@ preflight_mic; build_tools
 T="$OUT/e3.jsonl"; A="$OUT/e3-audio.jsonl"; : > "$A"
 take_over
 start_app "$T"
+"$MIC" sample 420 > "$OUT/e3-samples.jsonl" &
+SAMPLER=$!
 ctl state; sleep 1
 for r in 1 2 3 4 5 6 7 8 9 10; do
     ctl mark "rep $r a2dp"; "$MIC" output >> "$A"
@@ -19,6 +21,7 @@ for r in 1 2 3 4 5 6 7 8 9 10; do
 done
 ctl mode ambient; sleep 2; ctl state; sleep 1
 stop_app
+kill "$SAMPLER" 2>/dev/null
 python3 - "$T" "$A" <<'PY'
 import json, statistics as st, sys
 ev = [json.loads(l) for l in open(sys.argv[1])]
