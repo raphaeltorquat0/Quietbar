@@ -1080,6 +1080,186 @@
           }
         }
       }
+    },
+    "Agora não": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not now"
+          }
+        }
+      }
+    },
+    "Além das métricas, se você ligar, o Quietbar só usa a internet para procurar atualizações.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Besides the metrics, if you turn them on, Quietbar only uses the internet to check for updates."
+          }
+        }
+      }
+    },
+    "Ativar métricas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on metrics"
+          }
+        }
+      }
+    },
+    "Beta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beta"
+          }
+        }
+      }
+    },
+    "Compartilhar métricas anônimas de uso?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share anonymous usage metrics?"
+          }
+        }
+      }
+    },
+    "Enviar métricas anônimas de uso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send anonymous usage metrics"
+          }
+        }
+      }
+    },
+    "Esta versão não tem servidor configurado: nada é enviado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This version has no server configured: nothing is sent."
+          }
+        }
+      }
+    },
+    "Exemplo do formato: com as métricas desligadas, nada é contado nem enviado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sample of the format: with metrics off, nothing is counted or sent."
+          }
+        }
+      }
+    },
+    "Fechar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        }
+      }
+    },
+    "Internet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Internet"
+          }
+        }
+      }
+    },
+    "Métricas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metrics"
+          }
+        }
+      }
+    },
+    "Métricas anônimas, opt-in, desligadas por padrão. No máximo um resumo por dia, com contadores, modelo do fone e versões. Nunca inclui nomes de fone, de rede, de app ou de Foco. Desligar apaga o que está guardado no Mac.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anonymous metrics, opt-in, off by default. At most one summary per day, with counters, headphone model and versions. It never includes headphone, network, app or Focus names. Turning this off erases what is stored on your Mac."
+          }
+        }
+      }
+    },
+    "Para saber quais recursos são usados, o Quietbar pode enviar um resumo por dia: contadores, modelo do fone e versões. Nunca inclui nomes de fone, de rede, de app ou de Foco. Vem desligado, e você pode mudar em Ajustes › Privacidade.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To learn which features are used, Quietbar can send one summary per day: counters, headphone model and versions. It never includes headphone, network, app or Focus names. It's off by default, and you can change this in Settings › Privacy."
+          }
+        }
+      }
+    },
+    "Política de privacidade": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy policy"
+          }
+        }
+      }
+    },
+    "Privacidade": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy"
+          }
+        }
+      }
+    },
+    "Próximo envio, com o dia de hoje até agora. Ele sai depois que o dia terminar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next report, with today so far. It goes out after the day ends."
+          }
+        }
+      }
+    },
+    "Próximo envio, exatamente como sairá.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next report, exactly as it will go out."
+          }
+        }
+      }
+    },
+    "Ver o que é enviado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See what is sent"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

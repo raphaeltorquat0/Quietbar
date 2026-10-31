@@ -21,7 +21,10 @@ struct MenuBarView: View {
     private var actions: PanelActions {
         let d = device
         return PanelActions(
-            setMode: { m in d.perform { try await $0.setSoundMode(m) } },
+            setMode: { m in
+                Telemetry.shared.modeRequested(.panel)
+                d.perform { try await $0.setSoundMode(m) }
+            },
             setAmbient: { v in d.perform { try await $0.setAmbientLevel(v) } },
             setFocusOnVoice: { v in d.perform { try await $0.setFocusOnVoice(v) } },
             setPreset: { id in d.perform { try await $0.setEqualizerPreset(id) } },

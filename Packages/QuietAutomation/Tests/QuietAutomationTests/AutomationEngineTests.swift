@@ -346,11 +346,11 @@ private func settle() async { for _ in 0..<40 { await Task.yield() } }
         await settle()
         clock.now += .milliseconds(250)
         e.deviceReported(fone.state)
-        #expect(events.map(\.kind) == [.trigger, .decision, .write, .confirm])
+        #expect(events.map(\.kind) == [.trigger, .ruleStarted, .decision, .write, .confirm])
         #expect(events[0].trigger == "rule.call")
-        #expect(events[2].fields == ["soundMode": "noiseCanceling"])
-        #expect(events[3].rule == "call")
-        #expect(events[3].latencyMs == 250)
+        #expect(events[3].fields == ["soundMode": "noiseCanceling"])
+        #expect(events[4].rule == "call")
+        #expect(events[4].latencyMs == 250)
         #expect(e.counters == AutomationCounters(writes: 1, confirmed: 1))
     }
 
@@ -391,6 +391,17 @@ private func settle() async { for _ in 0..<40 { await Task.yield() } }
         #expect(e.counters.writes == 0)
         #expect(e.counters.redundantBlocked == 1)
         #expect(e.counters.confirmed == 0)
+    }
+
+    @Test func onlyAContextChangeCountsAsRuleStarted() async {
+        let e = make()
+        var started: [String] = []
+        e.onEvent = { if $0.kind == .ruleStarted { started.append($0.trigger ?? "") } }
+        e.set(.call, call)
+        e.set(.call, Rule(id: "call", name: "Chamada", settings: [.soundMode: .mode(.off)])) // mesmo id: edição
+        e.set(.call, nil)
+        e.set(.focus, focus)
+        #expect(started == ["call", "focus"])
     }
 
     // MARK: - Ler antes de escrever

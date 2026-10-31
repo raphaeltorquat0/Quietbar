@@ -275,6 +275,7 @@ final class DeviceController {
         if let b = snap.state.primaryBattery { lastBattery = b }
         checkBattery(snap.state.primaryBattery)
         Automation.shared.report()
+        Telemetry.shared.modeReported(snap.state.noiseControl?.soundMode)
     }
 
     // MARK: - Bateria

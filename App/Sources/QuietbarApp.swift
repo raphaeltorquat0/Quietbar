@@ -41,6 +41,7 @@ struct QuietbarApp: App {
         HotKeys.shared.register()
         MacSound.shared.start()
         ProfileEngine.shared.start()
+        Telemetry.shared.start() // antes da automação: nada do motor passa sem contar
         Automation.shared.start()
         PopupController.shared.start()
         Self.prewarm3D()

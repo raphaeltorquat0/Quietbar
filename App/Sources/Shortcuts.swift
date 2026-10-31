@@ -2,6 +2,7 @@ import AppKit
 import Carbon.HIToolbox
 import MDRKit
 import MDRSession
+import QuietTelemetry
 import SwiftUI
 
 enum ShortcutAction: String, CaseIterable, Codable, Identifiable {
@@ -25,9 +26,10 @@ enum ShortcutAction: String, CaseIterable, Codable, Identifiable {
         }
     }
 
-    @MainActor func run(_ device: DeviceController) {
+    @MainActor func run(_ device: DeviceController, source: ModeSource = .hotkey) {
         if self == .showPopup { return PopupController.shared.present() }
         if self == .toggleMacSound { return MacSound.shared.toggle() }
+        Telemetry.shared.modeRequested(source)
         device.perform { s in
             let st = await s.state
             let mode = st.noiseControl?.soundMode

@@ -63,6 +63,12 @@ import SwiftUI
             NSApp.activate() // aberto pelo terminal: sem isso, o painel perde o foco e fecha
             if args.contains("--headless") {
                 // Sem painel: o canal é solto como no uso real.
+            } else if args.contains("--privacy-window") {
+                let w = NSWindow(contentRect: NSRect(x: 200, y: 100, width: 560, height: 520), styleMask: [.titled], backing: .buffered, defer: false)
+                w.contentView = NSHostingView(rootView: PrivacyTab())
+                w.level = .floating
+                w.makeKeyAndOrderFront(nil)
+                window = w
             } else if args.contains("--mac-sound-window") || args.contains("--automation-window") { // a aba numa janela própria, para conferir com `screencapture -l`
                 let automation = args.contains("--automation-window")
                 let w = NSWindow(contentRect: NSRect(x: 200, y: 100, width: 560, height: automation ? 760 : 1250), styleMask: [.titled], backing: .buffered, defer: false)

@@ -19,6 +19,7 @@ struct SettingsView: View {
             ProfilesTab().tabItem { Label("Perfis", systemImage: "person.crop.rectangle.stack") }.tag("profiles")
             AutomationTab().tabItem { Label("Automação", systemImage: "wand.and.stars") }.tag("automation")
             PopupTab().tabItem { Label("Popup", systemImage: "rectangle.portrait.on.rectangle.portrait") }.tag("popup")
+            PrivacyTab().tabItem { Label("Privacidade", systemImage: "hand.raised") }.tag("privacy")
             if device.settings.developerMode {
                 DeveloperTab().tabItem { Label("Desenvolvedor", systemImage: "hammer") }.tag("developer")
             }
@@ -148,7 +149,10 @@ struct SoundTab: View {
         Form {
             DeviceSection(title: "Controle de som ambiente") {
                 if let n = s.noiseControl {
-                    Picker("Modo", selection: deviceBinding(n.soundMode, default: .off) { m in device.perform { try await $0.setSoundMode(m) } }) {
+                    Picker("Modo", selection: deviceBinding(n.soundMode, default: .off) { m in
+                        Telemetry.shared.modeRequested(.panel)
+                        device.perform { try await $0.setSoundMode(m) }
+                    }) {
                         ForEach(SoundMode.allCases, id: \.self) { Text($0.label).tag($0) }
                     }
                     .pickerStyle(.segmented)

@@ -8,7 +8,7 @@ enum ControlCenterBridge {
     static func start() {
         CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), nil, { _, _, _, _, _ in
             DispatchQueue.main.async {
-                MainActor.assumeIsolated { ShortcutAction.toggleNcAmbient.run(DeviceController.shared) }
+                MainActor.assumeIsolated { ShortcutAction.toggleNcAmbient.run(DeviceController.shared, source: .controlCenter) }
             }
         }, toggleSoundMode as CFString, nil, .deliverImmediately)
     }

@@ -167,6 +167,7 @@ struct PopupView: View {
                         model.remaining = max(model.remaining, 3)
                         let next: SoundMode = mode == .noiseCanceling ? .ambient : .noiseCanceling
                         if model.demo != nil { model.demo?.mode = next; return }
+                        Telemetry.shared.modeRequested(.panel)
                         device.perform { try await $0.setSoundMode(next) }
                     } label: {
                         Label(mode.label, systemImage: mode.symbol)

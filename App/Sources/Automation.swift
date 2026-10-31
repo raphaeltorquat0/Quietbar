@@ -36,9 +36,6 @@ final class Automation {
         guard !started else { return }
         started = true
         monitor.onChange = { Automation.shared.micChanged($0) }
-        #if DEBUG
-        engine.onEvent = { HardwareTest.trace($0) }
-        #endif
         settingsChanged()
         Task {
             while true {
@@ -129,6 +126,7 @@ final class Automation {
     /// "Aplicar perfil" dos Atalhos: conta como ajuste manual e vale até a próxima mudança de contexto.
     func apply(_ profile: Profile) {
         engine.applyManually(profile.settings)
+        Telemetry.shared.profileAppliedByShortcut()
     }
 }
 

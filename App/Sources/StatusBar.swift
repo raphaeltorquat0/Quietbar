@@ -63,6 +63,7 @@ import SwiftUI
 
     func openPanel() {
         guard panel == nil, let button = item.button, let buttonWindow = button.window else { return }
+        Telemetry.shared.panelOpened()
         let p = KeyPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: true)
         p.level = .popUpMenu
         p.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary, .transient, .ignoresCycle]

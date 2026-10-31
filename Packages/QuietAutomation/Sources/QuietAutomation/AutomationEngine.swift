@@ -55,6 +55,8 @@ public struct AutomationEvent: Sendable, Equatable, Encodable {
         /// Passou a espera e o fone informa outra coisa.
         case divergence
         case failure, manual, overrideEnded, unavailable
+        /// Uma regra entrou em vigor. `trigger` é o tipo dela.
+        case ruleStarted
         /// Canal solto: o modo lido bate com o que o motor deixou. `latencyMs` é o tempo da leitura.
         case verified
         /// Canal solto: o fone não informou o modo a tempo. A regra é aplicada sem conferir.
@@ -170,6 +172,7 @@ public final class AutomationEngine {
         record(.trigger, trigger: "rule.\(kind)")
         log.notice("regra \(String(describing: kind), privacy: .public): \(rule?.name ?? "nenhuma", privacy: .private)")
         if contextChanged {
+            if rule != nil { record(.ruleStarted, trigger: String(describing: kind)) }
             forgetHeadphoneState() // o que mudou com o canal solto não pode valer contra a regra nova
             overrideKept = false
             if !manual.isEmpty {
