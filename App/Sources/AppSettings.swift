@@ -51,7 +51,7 @@ final class AppSettings {
     /// Tempo que o microfone precisa ficar ligado ou desligado para contar. Ajustável: depende do app e do fone.
     var callDelaySeconds: Int { didSet { d.set(callDelaySeconds, forKey: "callDelaySeconds") } }
     var micIgnoredApps: [IgnoredApp] { didSet { save(micIgnoredApps, "micIgnoredApps") } }
-    /// Suavização dos perfis por app, atrás de flag até o resultado da validação (DECISIONS.md #136). Sem interface.
+    /// Suavização dos perfis por app (DECISIONS.md #136). Sem interface; a chave `appRuleSmoothing` desliga.
     var appRuleSmoothing: Bool { didSet { d.set(appRuleSmoothing, forKey: "appRuleSmoothing") } }
     var appRuleEnterMs: Int { didSet { d.set(appRuleEnterMs, forKey: "appRuleEnterMs") } }
     var appRuleHoldSeconds: Int { didSet { d.set(appRuleHoldSeconds, forKey: "appRuleHoldSeconds") } }
@@ -74,7 +74,7 @@ final class AppSettings {
                               "popupPosition": "topRight", "popupDuration": 5.0, "popupUse3D": true, "menuBarShowsPercent": false, "developerMode": false, "modelLightRing": false,
                               "callRuleEnabled": false, "callDelaySeconds": 3, "focusRuleEnabled": true,
                               "appRulesEnabled": true, "wifiRulesEnabled": true,
-                              "appRuleSmoothing": false, "appRuleEnterMs": 400, "appRuleHoldSeconds": 6])
+                              "appRuleSmoothing": true, "appRuleEnterMs": 400, "appRuleHoldSeconds": 6])
         idleReleaseSeconds = d.integer(forKey: "idleReleaseSeconds")
         lowBatteryAlert = d.bool(forKey: "lowBatteryAlert")
         lowBatteryThreshold = d.integer(forKey: "lowBatteryThreshold")
