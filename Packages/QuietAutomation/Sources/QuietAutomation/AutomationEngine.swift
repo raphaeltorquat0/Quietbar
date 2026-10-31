@@ -97,10 +97,10 @@ public final class AutomationEngine {
         guard rules[kind] != rule else { return }
         let contextChanged = rules[kind]?.id != rule?.id
         rules[kind] = rule
-        log.info("regra \(String(describing: kind), privacy: .public): \(rule?.name ?? "nenhuma")")
+        log.notice("regra \(String(describing: kind), privacy: .public): \(rule?.name ?? "nenhuma", privacy: .private)")
         if contextChanged, !manual.isEmpty {
             manual = [:]
-            log.info("override manual encerrado pela mudança de contexto")
+            log.notice("override manual encerrado pela mudança de contexto")
         }
         schedule()
     }
@@ -108,7 +108,7 @@ public final class AutomationEngine {
     /// Ajustes escolhidos pelo usuário sem passar pelo fone antes, como "aplicar perfil" nos Atalhos.
     public func applyManually(_ settings: Settings) {
         manual.merge(settings) { $1 }
-        log.info("override manual pedido: \(settings.count, privacy: .public) ajustes")
+        log.notice("override manual pedido: \(settings.count, privacy: .public) ajustes")
         schedule()
     }
 
@@ -125,7 +125,7 @@ public final class AutomationEngine {
             guard old != value else { continue }
             known[field] = value
             manual[field] = ruled[field] == value ? nil : value // voltou ao da regra: acabou o override
-            log.info("mudança manual em \(String(describing: field), privacy: .public)")
+            log.notice("mudança manual em \(String(describing: field), privacy: .public)")
         }
     }
 
@@ -172,7 +172,7 @@ public final class AutomationEngine {
         guard !target.isEmpty else { return }
         guard let state = await device.read(headphone: target.keys.contains { $0.isHeadphone }) else {
             needsRetry = true
-            log.info("fone indisponível: transição pendente")
+            log.notice("fone indisponível: transição pendente")
             return
         }
         known.merge(state) { $1 }
@@ -182,8 +182,12 @@ public final class AutomationEngine {
         }
         // Só o que o aparelho informa: sem valor lido, o ajuste não existe neste fone.
         let changes = target.filter { field, value in state[field].map { $0 != value } ?? false }
-        let label = active.map { String(describing: $0) } ?? "padrão"
-        log.info("decisão: \(label, privacy: .private) escreve \(changes.count, privacy: .public) ajustes")
+        let label = switch active {
+        case nil: "padrão"
+        case .manual: "manual"
+        case .rule(let kind, _): String(describing: kind)
+        }
+        log.notice("decisão: \(label, privacy: .public) escreve \(changes.count, privacy: .public) ajustes")
         if !changes.isEmpty {
             do {
                 known.merge(try await device.write(changes)) { $1 }

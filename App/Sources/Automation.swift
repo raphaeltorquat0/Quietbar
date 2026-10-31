@@ -1,4 +1,4 @@
-import AppIntents
+import Foundation
 import MDRKit
 import MDRSession
 import Observation
@@ -18,6 +18,7 @@ final class Automation {
     @ObservationIgnored private let monitor = MicMonitor()
     @ObservationIgnored private var inCall = false
     @ObservationIgnored private var focusProfileID: UUID?
+    @ObservationIgnored private var focusPollWorks = false
     @ObservationIgnored private var wasReady = false
     @ObservationIgnored private var started = false
     @ObservationIgnored private lazy var debouncer = Debouncer(delay: .seconds(settings.callDelaySeconds)) { [weak self] active in
@@ -95,12 +96,12 @@ final class Automation {
         engine.set(.focus, rule)
     }
 
+    /// Vazio só vale depois de `current` já ter devolvido um perfil: se ele não funcionar neste sistema,
+    /// uma consulta vazia não pode apagar o que o `perform` entregou.
     private func refreshFocus() async {
-        do {
-            focusChanged(try await QuietbarFocusFilter.current.profile?.id)
-        } catch SetFocusFilterIntentError.notFound {
-            focusChanged(nil)
-        } catch {} // o sistema não respondeu: fica o último valor conhecido
+        let id = (try? await QuietbarFocusFilter.current)?.profile?.id
+        if id != nil { focusPollWorks = true }
+        if id != nil || focusPollWorks { focusChanged(id) }
     }
 
     // MARK: - Fone
