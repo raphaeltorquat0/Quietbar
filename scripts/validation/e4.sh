@@ -21,6 +21,7 @@ begin() {
     "$ROOT/.build/debug/mdr-cli" set mode off > /dev/null 2>&1 || { echo "falha ao preparar o fone"; exit 1; }
     sleep 1
     open -a Stickies; sleep 1
+    forget_held
     if [ "$VARIANT" = antigo ]; then
         "$OLD_APP" -logTraffic YES -macSoundEnabled NO -profiles "$PROFILES" > "$OUT/app.out" 2>&1 &
         APP_PID=$!; sleep 4

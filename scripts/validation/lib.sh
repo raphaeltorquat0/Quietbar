@@ -1,7 +1,7 @@
 # Comum aos experimentos. Sem cliques, sem diálogos: o app Debug roda do shell e herda as permissões dele.
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 OUT="$ROOT/.build/validation"
-APP="$ROOT/.build/xcode-debug/Build/Products/Debug/Quietbar.app/Contents/MacOS/Quietbar"
+APP="${APP_OVERRIDE:-$ROOT/.build/xcode-debug/Build/Products/Debug/Quietbar.app/Contents/MacOS/Quietbar}"
 MIC="$OUT/mic"
 CTL="$OUT/ctl"
 mkdir -p "$OUT"
@@ -27,6 +27,9 @@ start_app() {
     APP_PID=$!
     sleep 4
 }
+
+# O modo que a regra deixou no fone sobrevive ao app: cada rodada começa sem ele.
+forget_held() { defaults delete io.github.raphaeltorquat0.Quietbar automationHeldModes 2>/dev/null; true; }
 
 ctl() { echo "$*" > "$CTL"; }
 stop_app() { kill "$APP_PID" 2>/dev/null; wait "$APP_PID" 2>/dev/null; rm -f "$CTL"; }

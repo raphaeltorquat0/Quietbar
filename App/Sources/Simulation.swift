@@ -253,6 +253,20 @@ struct SimulatorSection: View {
         case "rule": // rule <call|focus|app|wifi> <modo|none>
             guard w.count > 2, let kind = RuleKind.allCases.first(where: { "\($0)" == w[1] }) else { return }
             engine.set(kind, SoundMode(rawValue: w[2]).map { Rule(id: "validation.\(w[1])", name: w[1], settings: [.soundMode: .mode($0)]) })
+        case "shortcut": // shortcut <noiseCanceling|ambient|off|toggleNcAmbient>: o caminho do atalho global e da Central de Controle
+            if w.count > 1, let action = ShortcutAction(rawValue: w[1]) { action.run(d) }
+        case "intent": // intent <noiseCanceling|ambient|off>: o perform do App Intent, no processo do app
+            guard w.count > 1, let option = NoiseModeOption(rawValue: w[1]) else { return }
+            Task {
+                let intent = SetNoiseModeIntent()
+                intent.mode = option
+                _ = try? await intent.perform()
+            }
+        case "button": // button <modo>: botão físico do fone simulado; com o canal solto, nada chega ao app
+            guard w.count > 1, let mode = SoundMode(rawValue: w[1]), var n = d.state.noiseControl, let t = Simulation.shared.transport else { return }
+            n.soundMode = mode
+            Task { await t.event(.noiseControl(n)) }
+        case "no_mode_reply": AutomationBridge.simulateNoModeReply = w.dropFirst().first == "on"
         case "mark": write(["kind": "mark", "text": w.dropFirst().joined(separator: " ")])
         case "unavailable": AutomationBridge.simulateUnavailable = w.dropFirst().first == "on"
         case "sleep": NSWorkspace.shared.notificationCenter.post(name: NSWorkspace.willSleepNotification, object: NSWorkspace.shared)
@@ -260,7 +274,7 @@ struct SimulatorSection: View {
         case "state":
             let c = engine.counters
             write(["kind": "state", "phase": "\(d.snapshot.phase)", "mode": d.state.noiseControl?.soundMode.rawValue ?? "-",
-                   "rule": Automation.shared.indicator ?? "-", "writes": "\(c.writes)", "confirmed": "\(c.confirmed)", "divergent": "\(c.divergent)", "failed": "\(c.failed)", "redundantBlocked": "\(c.redundantBlocked)"])
+                   "rule": Automation.shared.indicator ?? "-", "writes": "\(c.writes)", "confirmed": "\(c.confirmed)", "divergent": "\(c.divergent)", "failed": "\(c.failed)", "redundantBlocked": "\(c.redundantBlocked)", "overridesKept": "\(c.overridesKept)", "unverified": "\(c.unverified)"])
         default: break
         }
     }
