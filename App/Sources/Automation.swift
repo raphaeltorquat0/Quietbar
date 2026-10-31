@@ -23,6 +23,9 @@ final class Automation {
     @ObservationIgnored private var started = false
     @ObservationIgnored private lazy var debouncer = Debouncer(delay: .seconds(settings.callDelaySeconds)) { [weak self] active in
         self?.inCall = active
+        #if DEBUG
+        HardwareTest.trace(call: active)
+        #endif
         self?.refreshCall()
     }
 
@@ -33,6 +36,9 @@ final class Automation {
         guard !started else { return }
         started = true
         monitor.onChange = { Automation.shared.micChanged($0) }
+        #if DEBUG
+        engine.onEvent = { HardwareTest.trace($0) }
+        #endif
         settingsChanged()
         Task {
             while true {
@@ -73,6 +79,10 @@ final class Automation {
 
     private func micChanged(_ usage: MicUsage) {
         micUsage = usage
+        engine.noteTrigger("mic", detail: "running=\(usage.deviceRunning) processes=\(usage.processes?.count ?? -1)")
+        #if DEBUG
+        HardwareTest.trace(mic: usage)
+        #endif
         debouncer.input(usage.inCall(ignoring: Set(settings.micIgnoredApps.map(\.bundleID))))
     }
 
@@ -84,7 +94,8 @@ final class Automation {
     // MARK: - Foco
 
     /// Só o que o Filtro de Foco entrega, por API pública. Sair do Foco chega como perfil vazio.
-    func focusChanged(_ id: UUID?) {
+    func focusChanged(_ id: UUID?, source: String = "focus.perform") {
+        if id != focusProfileID { engine.noteTrigger(source, detail: id == nil ? "off" : "on") }
         focusProfileID = id
         refreshFocusRule()
     }
@@ -101,7 +112,7 @@ final class Automation {
     private func refreshFocus() async {
         let id = (try? await QuietbarFocusFilter.current)?.profile?.id
         if id != nil { focusPollWorks = true }
-        if id != nil || focusPollWorks { focusChanged(id) }
+        if id != nil || focusPollWorks { focusChanged(id, source: "focus.poll") }
     }
 
     // MARK: - Fone
@@ -150,11 +161,19 @@ extension MacSound {
 
 /// O fone e o Som no Mac como o motor os enxerga.
 @MainActor
-private final class AutomationBridge: AutomationDevice {
+final class AutomationBridge: AutomationDevice {
+    #if DEBUG
+    /// Validação: o fone some, como no instante depois de acordar o Mac.
+    static var simulateUnavailable = false
+    #endif
+
     func read(headphone: Bool) async -> Settings? {
         var out = MacSound.shared.automationSettings
         guard headphone else { return out }
         let device = DeviceController.shared
+        #if DEBUG
+        if Self.simulateUnavailable { return nil }
+        #endif
         guard device.isBluetoothConnected else { return nil }
         let state = try? await device.run { session in
             for _ in 0..<20 {

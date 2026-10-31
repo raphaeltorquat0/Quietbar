@@ -320,4 +320,36 @@ private func settle() async { for _ in 0..<40 { await Task.yield() } }
         await settle()
         #expect(mode == .mode(.noiseCanceling)) // o "anterior" era do outro fone
     }
+
+    @Test func logsTriggerDecisionWriteAndConfirmationWithLatency() async {
+        let e = make()
+        var events: [AutomationEvent] = []
+        e.onEvent = { events.append($0) }
+        e.set(.call, call)
+        await settle()
+        clock.now += .milliseconds(250)
+        e.deviceReported(fone.state)
+        #expect(events.map(\.kind) == [.trigger, .decision, .write, .confirm])
+        #expect(events[0].trigger == "rule.call")
+        #expect(events[2].fields == ["soundMode": "noiseCanceling"])
+        #expect(events[3].rule == "call")
+        #expect(events[3].latencyMs == 250)
+        #expect(e.counters == AutomationCounters(writes: 1, confirmed: 1))
+    }
+
+    @Test func failedWriteIsCounted() async {
+        let e = make()
+        fone.failNext = true
+        e.set(.call, call)
+        await settle()
+        #expect(e.counters == AutomationCounters(writes: 1, failed: 1))
+    }
+
+    @Test func noWriteNoCount() async {
+        fone.state[.soundMode] = .mode(.noiseCanceling)
+        let e = make()
+        e.set(.call, call)
+        await settle()
+        #expect(e.counters.writes == 0)
+    }
 }

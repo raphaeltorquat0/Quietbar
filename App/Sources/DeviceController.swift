@@ -267,10 +267,11 @@ final class DeviceController {
         nc.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { _ in
             MainActor.assumeIsolated {
                 let c = DeviceController.shared
-                guard c.visible > 0 else { return }
                 Task {
                     try? await Task.sleep(for: .seconds(3)) // o Bluetooth volta alguns segundos depois do wake
-                    await c.ensureConnected()
+                    if c.visible > 0 { await c.ensureConnected() }
+                    // Sem aviso de conexão, porque o link não caiu, uma transição pendente ficaria presa.
+                    Automation.shared.engine.deviceAvailable()
                 }
             }
         }
