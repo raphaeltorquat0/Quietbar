@@ -15,7 +15,7 @@ Control your Sony headphones (WH-1000XM5, WF-1000XM5, LinkBuds…) from the macO
 <img src="docs/media/demo.gif" width="640" alt="Connection popup and sound mode switching in the panel">
 </p>
 
-Quietbar is a native Swift/SwiftUI app that speaks the Sony MDR v2 protocol directly over Bluetooth (RFCOMM). Your settings stay on your Mac, and there's no account. The only internet use is the update check, which you can turn off.
+Quietbar is a native Swift/SwiftUI app that speaks the Sony MDR v2 protocol directly over Bluetooth (RFCOMM). Your settings stay on your Mac, and there's no account. It uses the internet for the update check, which you can turn off, and for anonymous metrics, opt-in, off by default ([what is collected, in Portuguese](docs/PRIVACY.md), and the [schema](docs/telemetry-schema.md)).
 
 > Independent project. **Not affiliated with, endorsed by or supported by Sony.**
 > "Sony", "WH-1000XM5", "WF-1000XM5", "LinkBuds" and other model names are trademarks of their respective owners, used only to indicate compatibility.
@@ -92,6 +92,10 @@ When two rules set the same thing, the first one in this list wins: manual setti
 A manual change, including the button on the headphones, lasts until the rule in effect changes. Switching to an app without a profile doesn't count. With the panel closed for more than 15 s the channel is released and the headphones don't report the physical button: Quietbar notices when the channel reopens and keeps your change until the next rule change.
 
 Automation has been [validated on a WH-1000XM5](docs/validation/1.4.0-sim.md), but not yet with Meet, Zoom, a real Focus or the Shortcuts app. The test script is in [`MANUAL_TEST.md`](MANUAL_TEST.md). Both documents are in Portuguese.
+
+## Metrics
+
+Anonymous metrics, opt-in, off by default. If you turn them on, the app sends at most one summary per day: a random ID replaced every 90 days, the date, versions, the headphone model from a known list and usage counters. It never includes headphone, network, app or Focus names. Settings › Privacy turns this on and off and shows the exact JSON of the next report. See the [schema](docs/telemetry-schema.md).
 
 ## Updates
 

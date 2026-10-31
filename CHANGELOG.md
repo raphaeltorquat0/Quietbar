@@ -15,6 +15,9 @@ As notas completas de cada versão ficam em [`docs/releases/`](docs/releases/) e
 - Perfis sem gatilho, para Foco e Atalhos.
 - **Som no Mac:** EQ paramétrico só para o áudio do Mac, detalhado em [`docs/releases/1.4.0.md`](docs/releases/1.4.0.md).
 
+- **Métricas anônimas, opt-in, desligadas por padrão:** Configurações › Privacidade liga, desliga e mostra o JSON exato do próximo envio. Veja [`docs/PRIVACY.md`](docs/PRIVACY.md).
+- Automação em beta gratuito, com o rótulo "Beta" na aba.
+
 ### Alterado
 
 - Perfis por app e por Wi-Fi agora **voltam atrás** quando deixam de valer. Antes, o último ajuste ficava.

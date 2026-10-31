@@ -22,7 +22,7 @@ Controle seus fones <b>Sony</b> (WH-1000XM5, WF-1000XM5, LinkBuds…) pela barra
 </p>
 
 App nativo em Swift/SwiftUI que fala o protocolo Sony MDR v2 direto pelo Bluetooth (RFCOMM).
-Seus ajustes ficam no Mac: a única conexão com a internet é a procura de atualizações, que dá para desligar.
+Seus ajustes ficam no Mac. O app usa a internet para procurar atualizações, o que dá para desligar, e para métricas anônimas, opt-in, desligadas por padrão ([o que é coletado](docs/PRIVACY.md)).
 
 > Projeto independente. **Não é afiliado, endossado nem suportado pela Sony.**
 > "Sony", "WH-1000XM5", "WF-1000XM5", "LinkBuds" e os demais nomes de modelos são marcas de seus respectivos donos, citadas só para indicar compatibilidade.
@@ -120,7 +120,12 @@ Um ajuste manual, inclusive pelo botão do fone, vale até a regra em vigor muda
 | Bluetooth | falar com o fone. Na CLI, quem pede é o Terminal — reinicie o Terminal depois de autorizar. |
 | Localização (opcional) | o macOS só revela o nome da rede Wi-Fi a apps com localização; usado apenas nos perfis por Wi-Fi |
 | Notificações (opcional) | alerta de bateria baixa |
+| Rede | procurar atualizações e, só se você ligar, enviar as métricas |
 | Microfone (opcional) | só o teste de eco da aba Desenvolvedor, para ler um dispositivo virtual. O app não ouve o microfone: a automação de chamadas só vê se ele está em uso, o que não exige permissão |
+
+## Métricas
+
+Métricas anônimas, opt-in, desligadas por padrão. Se você ligar, o app envia no máximo um resumo por dia: um ID aleatório trocado a cada 90 dias, data, versões, modelo do fone de uma lista conhecida e contadores de uso. Nunca inclui nome de fone, rede, app ou Foco. Configurações › Privacidade liga, desliga e mostra o JSON exato do próximo envio. Veja [`docs/PRIVACY.md`](docs/PRIVACY.md) e o [schema](docs/telemetry-schema.md).
 
 ## Atualizações
 

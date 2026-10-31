@@ -104,6 +104,17 @@ Crie um perfil por app para o Spotify (ou outro player): modo **Ambiente**, nív
 | 8.2 | Feche a tampa em chamada e abra depois do fim | O app não fica preso em "Em chamada". O sono foi injetado no E9; falta o real |
 | 8.3 | Depois de cada bloco, abra Desenvolvedor › Log | Sem escritas repetidas nem erros de ACK |
 
+## 9. Métricas
+
+Depende do deploy de `infra/telemetry` e da URL em `App/Support/Info.plist`, num build Release com sandbox.
+
+| # | Ação | Esperado |
+|---|---|---|
+| 9.1 | Abra o app pela primeira vez | Uma pergunta, com **Agora não** como padrão; não volta ao reabrir |
+| 9.2 | Ligue em Configurações › Privacidade, use o app e espere virar o dia | Um item novo na tabela, com o JSON igual ao de **Ver o que é enviado** |
+| 9.3 | Com a rede em Dados Reduzidos, repita | Nada chega |
+| 9.4 | Desligue as métricas | Sem novos itens |
+
 ## Atalhos do E7
 
 Para medir se o Foco chega por `perform()` ou pela consulta de 30 s, crie estes atalhos no app Atalhos, com **estes nomes exatos**. Antes, instale a 1.4.0 com `make install`, abra o app e faça os passos 4.1 com o perfil "Teste".
