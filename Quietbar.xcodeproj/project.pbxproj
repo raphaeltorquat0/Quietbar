@@ -38,6 +38,7 @@
 		C2C73A7935414E007E2FDF47 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C9EADF4AEA31E57C5D2E018 /* SwiftUI.framework */; };
 		C98C317FAF52C195C763195E /* AppShortcuts.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 86C94C91B0BB93E0D730D844 /* AppShortcuts.xcstrings */; };
 		CA8128836DF6A85A93D06EB6 /* Telemetry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8492F1A21588037520845A2F /* Telemetry.swift */; };
+		CD5F1F772BC5BC4AD6F9048F /* AutomationDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 332DC0F8A75C3225ED133C73 /* AutomationDemo.swift */; };
 		D24AC5EB3BE8594D0EC080AB /* Simulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9843EA39B727B5E4032860A1 /* Simulation.swift */; };
 		D50AC8A5F68C7E99ADE65F0F /* DeveloperTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5026D463C4EF96FAE5805490 /* DeveloperTab.swift */; };
 		DC358D01EF23714EB03ABB5B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2B1A7D6751AA76BE8A2FFCF0 /* Assets.xcassets */; };
@@ -83,10 +84,12 @@
 		0758B1DDE173670F42002BB1 /* QuietbarIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuietbarIntents.swift; sourceTree = "<group>"; };
 		0D4526A10BD3500F2860F0A2 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		1735D0B536BC9F24EE9BBD85 /* AutomationTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomationTab.swift; sourceTree = "<group>"; };
+		20FAB22704C32D5DF6553C38 /* sonyctl_macos */ = {isa = PBXFileReference; lastKnownFileType = folder; name = sonyctl_macos; path = .; sourceTree = SOURCE_ROOT; };
 		22A44C60BD66C3FC3B1A8B34 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		285EF06533C520AFDA960E52 /* Updates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Updates.swift; sourceTree = "<group>"; };
 		2A8999D82FE5D45F03AE5247 /* PanelControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelControls.swift; sourceTree = "<group>"; };
 		2B1A7D6751AA76BE8A2FFCF0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		332DC0F8A75C3225ED133C73 /* AutomationDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomationDemo.swift; sourceTree = "<group>"; };
 		43C257976F7F3F5B27D0A311 /* PressKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PressKit.swift; sourceTree = "<group>"; };
 		4C9EADF4AEA31E57C5D2E018 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		5026D463C4EF96FAE5805490 /* DeveloperTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperTab.swift; sourceTree = "<group>"; };
@@ -117,7 +120,6 @@
 		E689B6483FC7D446807B1524 /* DeviceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceController.swift; sourceTree = "<group>"; };
 		E95BB0AFD5218FDDCF1F6DAB /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		EFDDB74D13EAD0A8486AC2B8 /* QuietbarControls.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuietbarControls.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		F821168BBAEA12E0E8544F97 /* qb-telemetry */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "qb-telemetry"; path = .; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -153,7 +155,7 @@
 		044843ED4D3956710BD3FB42 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				F821168BBAEA12E0E8544F97 /* qb-telemetry */,
+				20FAB22704C32D5DF6553C38 /* sonyctl_macos */,
 			);
 			path = Packages;
 			sourceTree = "<group>";
@@ -163,6 +165,7 @@
 			children = (
 				E95BB0AFD5218FDDCF1F6DAB /* AppSettings.swift */,
 				8145CABC0B8B7EA29B4025B6 /* Automation.swift */,
+				332DC0F8A75C3225ED133C73 /* AutomationDemo.swift */,
 				1735D0B536BC9F24EE9BBD85 /* AutomationTab.swift */,
 				0D4526A10BD3500F2860F0A2 /* Components.swift */,
 				C5B1E7BC89D8E3FC8678E979 /* ConnectionPopup.swift */,
@@ -373,6 +376,7 @@
 			files = (
 				E80843557ADC5D34F74C47B8 /* AppSettings.swift in Sources */,
 				BE2B07E17B8C1C403C359573 /* Automation.swift in Sources */,
+				CD5F1F772BC5BC4AD6F9048F /* AutomationDemo.swift in Sources */,
 				5B4CA07914DF2A5D1AD54B5F /* AutomationTab.swift in Sources */,
 				A668E326F360720412943C8E /* Components.swift in Sources */,
 				E3E70312A2884E5EA8D92294 /* ConnectionPopup.swift in Sources */,
@@ -414,7 +418,7 @@
 /* Begin PBXTargetDependency section */
 		B25F9612E580A03540C91675 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = "TEMP_5612F033-3918-4E84-8C2A-7F9DC198A8CF" /* MDRSimulator */;
+			productRef = "TEMP_2E77B178-793D-4560-8257-161463171D3D" /* MDRSimulator */;
 		};
 		DF552CBE810537470F8789A7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -731,7 +735,7 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = MDRSession;
 		};
-		"TEMP_5612F033-3918-4E84-8C2A-7F9DC198A8CF" /* MDRSimulator */ = {
+		"TEMP_2E77B178-793D-4560-8257-161463171D3D" /* MDRSimulator */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MDRSimulator;
 		};

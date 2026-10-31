@@ -12,7 +12,12 @@ Controle seus fones <b>Sony</b> (WH-1000XM5, WF-1000XM5, LinkBuds…) pela barra
 </p>
 
 <p align="center">
-<img src="docs/media/demo.gif" width="640" alt="Popup de conexão e troca do modo de som no painel">
+<a href="https://raphaeltorquat0.github.io/site/quietbar/">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/media/automation/automation-16x10-dark-pt.gif">
+  <img src="docs/media/automation/automation-16x10-light-pt.gif" width="640" alt="O painel do Quietbar vai de Ambiente para Cancelar ruído quando uma chamada começa, e volta quando ela acaba">
+</picture>
+</a>
 </p>
 
 <p align="center">
@@ -41,6 +46,8 @@ Seus ajustes ficam no Mac. O app usa a internet para procurar atualizações, o 
 - Modo claro e escuro, cor de destaque do sistema, VoiceOver, PT-BR e inglês
 
 O app só mostra o que o fone anuncia na conexão. macOS 14 ou mais novo, Apple Silicon e Intel.
+
+<p align="center"><img src="docs/media/demo.gif" width="640" alt="Popup de conexão e troca do modo de som no painel"></p>
 
 ## Compatibilidade
 
