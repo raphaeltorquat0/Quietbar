@@ -248,6 +248,7 @@ struct SimulatorSection: View {
                     write(["kind": "direct", "mode": mode.rawValue, "ok": "false", "error": error.localizedDescription])
                 }
             }
+        case "mode_read": d.perform { _ in } // só abre o canal, como a checagem de bateria
         case "rule": // rule <call|focus|app|wifi> <modo|none>
             guard w.count > 2, let kind = RuleKind.allCases.first(where: { "\($0)" == w[1] }) else { return }
             engine.set(kind, SoundMode(rawValue: w[2]).map { Rule(id: "validation.\(w[1])", name: w[1], settings: [.soundMode: .mode($0)]) })

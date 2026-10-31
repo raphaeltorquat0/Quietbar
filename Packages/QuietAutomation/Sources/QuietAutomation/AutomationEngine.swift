@@ -98,7 +98,8 @@ public final class AutomationEngine {
     @ObservationIgnored private let log = Logger(subsystem: "io.github.raphaeltorquat0.Quietbar", category: "automation")
     /// Valor de cada ajuste antes de uma regra mudá-lo.
     @ObservationIgnored private var baseline: Settings = [:]
-    /// Último valor visto em cada ajuste, para reconhecer o que mudou sem passar pelo motor.
+    /// Último valor visto em cada ajuste, para reconhecer o que mudou sem passar pelo motor. Sobrevive ao
+    /// canal fechar: o botão físico não avisa com o canal solto, e a diferença aparece ao reabrir.
     @ObservationIgnored private var known: Settings = [:]
     @ObservationIgnored private var pumping = false
     @ObservationIgnored private var dirty = false
@@ -135,9 +136,12 @@ public final class AutomationEngine {
         rules[kind] = rule
         record(.trigger, trigger: "rule.\(kind)")
         log.notice("regra \(String(describing: kind), privacy: .public): \(rule?.name ?? "nenhuma", privacy: .private)")
-        if contextChanged, !manual.isEmpty {
-            manual = [:]
-            record(.overrideEnded)
+        if contextChanged {
+            forgetHeadphoneState() // o que mudou com o canal solto não pode valer contra a regra nova
+            if !manual.isEmpty {
+                manual = [:]
+                record(.overrideEnded)
+            }
         }
         schedule()
     }
@@ -172,11 +176,6 @@ public final class AutomationEngine {
         record(.trigger, trigger: source, fields: detail.map { ["detail": $0] })
     }
 
-    /// O canal fechou: o próximo estado lido é ponto de partida, não mudança.
-    public func deviceLost() {
-        known = known.filter { !$0.key.isHeadphone }
-    }
-
     /// O fone voltou. Só escreve se ficou algo pendente: abrir o painel não reimpõe regra.
     public func deviceAvailable() {
         if needsRetry { schedule() }
@@ -184,9 +183,11 @@ public final class AutomationEngine {
 
     /// Outro fone foi escolhido: o que estava guardado era do anterior.
     public func forgetDevice() {
-        deviceLost()
+        forgetHeadphoneState()
         baseline = baseline.filter { !$0.key.isHeadphone }
     }
+
+    private func forgetHeadphoneState() { known = known.filter { !$0.key.isHeadphone } }
 
     // MARK: - Transição
 

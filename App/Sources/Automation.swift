@@ -122,7 +122,6 @@ final class Automation {
         let device = DeviceController.shared
         let ready = device.isReady
         if ready, !wasReady { engine.deviceAvailable() }
-        if !ready, wasReady { engine.deviceLost() }
         wasReady = ready
         engine.deviceReported((ready ? device.state.automationSettings : [:]).merging(MacSound.shared.automationSettings) { $1 })
     }

@@ -205,14 +205,25 @@ private func settle() async { for _ in 0..<40 { await Task.yield() } }
     @Test func stateChangedWithTheChannelClosedDoesNotBeatTheNextRule() async {
         let e = make()
         e.deviceReported(fone.state)
-        e.deviceLost()
         fone.state[.soundMode] = .mode(.ambient) // apertou o botão com o canal solto
-        e.deviceReported(fone.state)
         e.set(.call, call)
         await settle()
         #expect(mode == .mode(.noiseCanceling))
         e.set(.call, nil)
         await settle()
+        #expect(mode == .mode(.ambient))
+    }
+
+    @Test func changeMadeWithTheChannelClosedIsManualWhenItReopens() async {
+        let e = make()
+        e.deviceReported(fone.state)
+        e.set(.call, call)
+        await settle()
+        clock.now += .seconds(3)
+        e.deviceReported(fone.state) // ainda aberto, igual à regra
+        fone.state[.soundMode] = .mode(.ambient) // canal solto: nada chega
+        e.deviceReported(fone.state) // canal reabriu
+        #expect(e.active == .manual)
         #expect(mode == .mode(.ambient))
     }
 
