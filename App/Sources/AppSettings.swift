@@ -51,6 +51,10 @@ final class AppSettings {
     /// Tempo que o microfone precisa ficar ligado ou desligado para contar. Ajustável: depende do app e do fone.
     var callDelaySeconds: Int { didSet { d.set(callDelaySeconds, forKey: "callDelaySeconds") } }
     var micIgnoredApps: [IgnoredApp] { didSet { save(micIgnoredApps, "micIgnoredApps") } }
+    /// Suavização dos perfis por app, atrás de flag até o resultado da validação (DECISIONS.md #136). Sem interface.
+    var appRuleSmoothing: Bool { didSet { d.set(appRuleSmoothing, forKey: "appRuleSmoothing") } }
+    var appRuleEnterMs: Int { didSet { d.set(appRuleEnterMs, forKey: "appRuleEnterMs") } }
+    var appRuleHoldSeconds: Int { didSet { d.set(appRuleHoldSeconds, forKey: "appRuleHoldSeconds") } }
     var focusRuleEnabled: Bool { didSet { d.set(focusRuleEnabled, forKey: "focusRuleEnabled") } }
     var appRulesEnabled: Bool { didSet { d.set(appRulesEnabled, forKey: "appRulesEnabled") } }
     var wifiRulesEnabled: Bool { didSet { d.set(wifiRulesEnabled, forKey: "wifiRulesEnabled") } }
@@ -69,7 +73,8 @@ final class AppSettings {
                               "batteryCheckMinutes": 15, "logTraffic": false, "popupEnabled": true,
                               "popupPosition": "topRight", "popupDuration": 5.0, "popupUse3D": true, "menuBarShowsPercent": false, "developerMode": false, "modelLightRing": false,
                               "callRuleEnabled": false, "callDelaySeconds": 3, "focusRuleEnabled": true,
-                              "appRulesEnabled": true, "wifiRulesEnabled": true])
+                              "appRulesEnabled": true, "wifiRulesEnabled": true,
+                              "appRuleSmoothing": false, "appRuleEnterMs": 400, "appRuleHoldSeconds": 6])
         idleReleaseSeconds = d.integer(forKey: "idleReleaseSeconds")
         lowBatteryAlert = d.bool(forKey: "lowBatteryAlert")
         lowBatteryThreshold = d.integer(forKey: "lowBatteryThreshold")
@@ -89,6 +94,9 @@ final class AppSettings {
         callMode = d.string(forKey: "callMode").flatMap(SoundMode.init) ?? .noiseCanceling
         callDelaySeconds = d.integer(forKey: "callDelaySeconds")
         micIgnoredApps = Self.load("micIgnoredApps") ?? []
+        appRuleSmoothing = d.bool(forKey: "appRuleSmoothing")
+        appRuleEnterMs = d.integer(forKey: "appRuleEnterMs")
+        appRuleHoldSeconds = d.integer(forKey: "appRuleHoldSeconds")
         focusRuleEnabled = d.bool(forKey: "focusRuleEnabled")
         appRulesEnabled = d.bool(forKey: "appRulesEnabled")
         wifiRulesEnabled = d.bool(forKey: "wifiRulesEnabled")

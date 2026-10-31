@@ -188,14 +188,21 @@ final class AutomationBridge: AutomationDevice {
     }
 
     func write(_ changes: Settings) async throws -> Settings {
-        var applied = changes
         let device = DeviceController.shared
-        // Fone só com ambiente: o modo "cancelamento" não existe nele.
-        if changes[.soundMode] == .mode(.noiseCanceling), device.state.noiseControl?.inquiredType == 0x22 {
-            applied[.soundMode] = nil
+        var applied = changes
+        let wanted = changes.filter(\.key.isHeadphone)
+        if !wanted.isEmpty {
+            // Dentro da fila: é o estado na hora do envio, depois de qualquer ação que estava na frente.
+            let sent = try await device.run { s -> QuietAutomation.Settings in
+                let state = await s.state
+                var send = wanted.filter { state.automationSettings[$0.key] != $0.value }
+                // Fone só com ambiente: o modo "cancelamento" não existe nele.
+                if send[.soundMode] == .mode(.noiseCanceling), state.noiseControl?.inquiredType == 0x22 { send[.soundMode] = nil }
+                if !send.isEmpty { try await send.apply(to: s) }
+                return send
+            }
+            for field in wanted.keys where sent[field] == nil { applied[field] = nil }
         }
-        let head = applied.filter(\.key.isHeadphone)
-        if !head.isEmpty { try await device.run { try await head.apply(to: $0) } }
         let sound = MacSound.shared
         if case .bool(let on)? = applied[.macSound] { sound.apply(enabled: on, preset: nil) }
         if case .text(let preset)? = applied[.macPreset] { sound.apply(enabled: nil, preset: preset) }

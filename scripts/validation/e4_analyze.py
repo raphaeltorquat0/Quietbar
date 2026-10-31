@@ -1,47 +1,78 @@
 #!/usr/bin/env python3
-"""E4: conta SETs de NC no tráfego e compara o estado lido com o esperado em cada passo."""
-import datetime, json, os, sys
+"""E4: critério de aceite. Lê o traffic.log (tempo monotônico em ms), independente do motor.
 
-out, variant = sys.argv[1], sys.argv[2]
-mode_of = lambda en, amb: "off" if not en else "ambient" if amb else "noiseCanceling"
-total = {}
-for interval in (1, 3, 10):
-    base = f"{out}/e4-{variant}-{interval}"
-    if not os.path.exists(base + ".traffic"):
-        continue
-    sets, reports = [], []
-    for line in open(base + ".traffic"):
-        stamp, way, *hexes = line.split()
+Mudança audível: o fone informa um modo diferente do anterior.
+SET redundante: SET de NC igual ao último estado que o fone informou (GET ou NOTIFY).
+Mudança real de perfil: o perfil do app em frente muda. App sem perfil só conta se ficar mais que HOLD s,
+porque antes disso é passagem. Depende só dos passos, não da variante medida.
+"""
+import json, os, sys
+
+out = sys.argv[1]
+variants = sys.argv[2:] or ["antigo", "novo", "suave"]
+HOLD = float(os.environ.get("HOLD", 6)) * 1000
+PROFILE = {"Calculator": "Calc", "Dictionary": "Dict"}
+
+
+def traffic(path):
+    """(ms, mão, bytes do NC) de cada SET enviado e estado recebido."""
+    rows = []
+    for line in open(path):
+        ms, _, way, *hexes = line.split()
         b = bytes.fromhex("".join(hexes))
-        if len(b) < 12 or b[1] not in (0x0C,):
+        if len(b) < 12 or b[1] != 0x0C:
             continue
         p = b[7:-2]
-        t = datetime.datetime.fromisoformat(stamp.replace("Z", "+00:00")).timestamp() * 1000
-        if way == ">>" and p[0] == 0x68 and p[1] == 0x17:
-            sets.append(t)
-        if way == "<<" and p[0] in (0x67, 0x69) and p[1] == 0x17:
-            reports.append((t, mode_of(p[3] == 1, p[4] == 1)))
-    steps = [(int(a), b) for a, b in (l.split() for l in open(base + ".steps"))]
-    profile = {"Calculator": "noiseCanceling", "Dictionary": "ambient"}
-    held = "off"
-    wrong = 0
-    checked = 0
-    for i, (t, app) in enumerate(steps[:-1]):
-        # Esperado: perfil do app; sem perfil, o novo volta ao padrão e o antigo mantém o último.
-        if variant == "antigo":
-            held = profile.get(app, held)
-        else:
-            held = profile.get(app, "off")
-        end = steps[i + 1][0]
-        seen = [m for rt, m in reports if rt <= end]
-        checked += 1
-        if not seen or seen[-1] != held:
-            wrong += 1
-    ev = []
-    if os.path.exists(base + ".jsonl"):
-        ev = [json.loads(l) for l in open(base + ".jsonl")]
-    count = lambda k: sum(e["kind"] == k for e in ev)
-    minutes = (steps[-1][0] - steps[0][0]) / 60000
-    print(f"{variant:9} intervalo {interval:>2} s: passos {len(steps):>3}  SETs NC {len(sets):>3} ({len(sets) / minutes:5.1f}/min)  "
-          f"motor: escritas {count('write'):>3} confirmadas {count('confirm'):>3} divergentes {count('divergence')} falhas {count('failure')} manuais {count('manual')}  "
-          f"passos com estado errado no fim {wrong}/{checked}")
+        if len(p) > 6 and p[1] == 0x17 and ((way == ">>" and p[0] == 0x68) or (way == "<<" and p[0] in (0x67, 0x69))):
+            rows.append((int(ms), way, tuple(p[3:7])))
+    return rows
+
+
+def mode(s):
+    return "off" if not s[0] else "ambient" if s[1] else "cancelamento"
+
+
+def real_changes(steps):
+    count = 0
+    current = None
+    for i, (t, app) in enumerate(steps):
+        stay = steps[i + 1][0] - t if i + 1 < len(steps) else 0
+        name = PROFILE.get(app)
+        if name is None and stay <= HOLD:
+            continue
+        if name != current:
+            count += 1
+            current = name
+    return count
+
+
+print("| Variante | Intervalo | Passos | Mudanças reais de perfil | Mudanças audíveis | Audíveis por mudança real | SETs de NC | SETs/min | SETs redundantes | Confirmados pelo motor |")
+print("|---|---|---:|---:|---:|---:|---:|---:|---:|---:|")
+for variant in variants:
+    for interval in ("1", "5", "10", "rajada"):
+        base = f"{out}/e4-{variant}-{interval}"
+        if not os.path.exists(base + ".traffic"):
+            continue
+        rows = traffic(base + ".traffic")
+        steps = [(int(a), b) for a, b in (l.split() for l in open(base + ".steps"))]
+        begin = steps[0][0]
+        last = None
+        audible = sets = redundant = 0
+        for ms, way, state in rows:
+            if way == ">>":
+                if ms >= begin:
+                    sets += 1
+                    redundant += last == state
+            else:
+                if last is not None and ms >= begin and mode(last) != mode(state):
+                    audible += 1
+                last = state
+        real = real_changes(steps)
+        minutes = (steps[-1][0] - begin) / 60000 or 1
+        engine = "-"
+        if os.path.exists(base + ".jsonl"):
+            ev = [json.loads(l) for l in open(base + ".jsonl")]
+            n = lambda k: sum(e["kind"] == k for e in ev)
+            engine = f"{n('confirm')}/{n('write')}, {n('divergence')} div., {n('failure')} falhas"
+        name = f"{interval} s" if interval != "rajada" else "rajada"
+        print(f"| {variant} | {name} | {len(steps)} | {real} | {audible} | {audible / real:.2f} | {sets} | {sets / minutes:.1f} | {redundant} | {engine} |")

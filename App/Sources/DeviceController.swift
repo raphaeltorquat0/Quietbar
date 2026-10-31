@@ -322,13 +322,15 @@ enum Notifier {
     }
 }
 
-/// Log de tráfego em `~/Library/Logs/Quietbar/traffic.log`, no mesmo formato do `mdr-cli --log-hex`.
+/// Log de tráfego em `~/Library/Logs/Quietbar/traffic.log`: tempo monotônico em ms, hora e o frame como no
+/// `mdr-cli --log-hex`. Só o monotônico ordena frames de uma sessão: a hora tem resolução de 1 s e pode ser ajustada.
 enum TrafficLog {
     static let url = FileManager.default.homeDirectoryForCurrentUser
         .appending(path: "Library/Logs/Quietbar/traffic.log")
 
     @Sendable static func append(_ dir: MDRSession.Direction, _ bytes: [UInt8]) {
-        let line = "\(Date().ISO8601Format()) \(dir == .tx ? ">>" : "<<") \(bytes.hex)\n"
+        let ms = clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW) / 1_000_000
+        let line = "\(ms) \(Date().ISO8601Format()) \(dir == .tx ? ">>" : "<<") \(bytes.hex)\n"
         try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         if let h = try? FileHandle(forWritingTo: url) {
             h.seekToEndOfFile()

@@ -70,6 +70,7 @@ final class ProfileEngine: NSObject {
 
     @ObservationIgnored private let location = CLLocationManager()
     @ObservationIgnored private var started = false
+    @ObservationIgnored private let smoother = RuleSmoother(enter: .zero, exit: .zero) { Automation.shared.engine.set(.app, $0) }
 
     func start() {
         guard !started else { return }
@@ -120,8 +121,11 @@ final class ProfileEngine: NSObject {
             return false
         } : nil
         activeProfileID = (app ?? wifi)?.id
-        Automation.shared.engine.set(.app, app?.rule)
         Automation.shared.engine.set(.wifi, wifi?.rule)
+        smoother.enabled = settings.appRuleSmoothing
+        smoother.enter = .milliseconds(settings.appRuleEnterMs)
+        smoother.exit = .seconds(settings.appRuleHoldSeconds)
+        smoother.update(app?.rule)
     }
 }
 

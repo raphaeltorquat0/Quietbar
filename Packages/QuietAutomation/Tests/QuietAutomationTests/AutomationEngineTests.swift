@@ -10,6 +10,7 @@ private final class FakeDevice: AutomationDevice {
     var writes: [Settings] = []
     var reads: [Bool] = []
     var failNext = false
+    var alreadyThere = false
     var inFlight = 0
     var maxInFlight = 0
     /// Segura a escrita até o teste soltar.
@@ -30,6 +31,7 @@ private final class FakeDevice: AutomationDevice {
             failNext = false
             throw CancellationError()
         }
+        if alreadyThere { return [:] }
         writes.append(changes)
         state.merge(changes) { $1 }
         return changes
@@ -362,5 +364,28 @@ private func settle() async { for _ in 0..<40 { await Task.yield() } }
         e.set(.call, call)
         await settle()
         #expect(e.counters.writes == 0)
+    }
+
+    @Test func noSetWhenTheHeadphoneAlreadyHasTheValue() async {
+        let e = make()
+        e.set(.call, call)
+        await settle()
+        #expect(fone.writes.count == 1)
+        e.set(.focus, Rule(id: "f", name: "Foco", settings: [.soundMode: .mode(.ambient)]))
+        await settle()
+        #expect(fone.writes.count == 1) // a chamada vence e o fone já está nesse modo
+        e.set(.focus, nil)
+        await settle()
+        #expect(fone.writes.count == 1)
+    }
+
+    @Test func valueThatArrivedBeforeTheSendIsNotAWrite() async {
+        fone.alreadyThere = true
+        let e = make()
+        e.set(.call, call)
+        await settle()
+        #expect(e.counters.writes == 0)
+        #expect(e.counters.redundantBlocked == 1)
+        #expect(e.counters.confirmed == 0)
     }
 }

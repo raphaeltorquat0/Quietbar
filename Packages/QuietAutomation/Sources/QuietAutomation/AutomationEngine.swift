@@ -70,6 +70,8 @@ public struct AutomationEvent: Sendable, Equatable, Encodable {
 
 public struct AutomationCounters: Sendable, Equatable, Encodable {
     public var writes = 0, confirmed = 0, divergent = 0, failed = 0
+    /// Ajustes barrados no último instante porque o fone já estava no valor pedido.
+    public var redundantBlocked = 0
 }
 
 /// Quem lê e escreve de verdade. No app, é o fone e o Som no Mac; nos testes, um falso.
@@ -77,7 +79,8 @@ public struct AutomationCounters: Sendable, Equatable, Encodable {
 public protocol AutomationDevice: AnyObject {
     /// Estado atual, abrindo o canal se `headphone`. `nil` = indisponível: o motor tenta de novo em `deviceAvailable`.
     func read(headphone: Bool) async -> Settings?
-    /// Aplica e devolve o que de fato foi escrito (um fone sem cancelamento recusa esse modo, por exemplo).
+    /// Aplica e devolve o que de fato foi enviado. Fica de fora o que o fone já tem, conferido no momento
+    /// do envio, e o que ele não oferece, como o modo "cancelamento" num fone só com ambiente.
     func write(_ changes: Settings) async throws -> Settings
 }
 
@@ -232,8 +235,15 @@ public final class AutomationEngine {
             awaiting = (changes, now())
             record(.write, fields: Self.describe(changes))
             do {
-                known.merge(try await device.write(changes)) { $1 }
-                echoUntil = now() + Self.echoGrace
+                let sent = try await device.write(changes)
+                known.merge(sent) { $1 }
+                counters.redundantBlocked += changes.count - sent.count
+                if sent.isEmpty {
+                    counters.writes -= 1
+                    awaiting = nil
+                } else {
+                    echoUntil = now() + Self.echoGrace
+                }
                 Task { [weak self] in
                     try? await Task.sleep(for: Self.echoGrace)
                     self?.giveUpOnConfirmation()

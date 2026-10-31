@@ -259,7 +259,7 @@ struct SimulatorSection: View {
         case "state":
             let c = engine.counters
             write(["kind": "state", "phase": "\(d.snapshot.phase)", "mode": d.state.noiseControl?.soundMode.rawValue ?? "-",
-                   "rule": Automation.shared.indicator ?? "-", "writes": "\(c.writes)", "confirmed": "\(c.confirmed)", "divergent": "\(c.divergent)", "failed": "\(c.failed)"])
+                   "rule": Automation.shared.indicator ?? "-", "writes": "\(c.writes)", "confirmed": "\(c.confirmed)", "divergent": "\(c.divergent)", "failed": "\(c.failed)", "redundantBlocked": "\(c.redundantBlocked)"])
         default: break
         }
     }

@@ -31,7 +31,7 @@ private struct DiagnosticsSection: View {
     var body: some View {
         Section("Diagnóstico") {
             let c = Automation.shared.engine.counters
-            LabeledContent("Escritas da automação", value: "\(c.writes) (\(c.confirmed) confirmadas, \(c.divergent) divergentes, \(c.failed) falhas)")
+            LabeledContent("Escritas da automação", value: "\(c.writes) (\(c.confirmed) confirmadas, \(c.divergent) divergentes, \(c.failed) falhas, \(c.redundantBlocked) redundantes barrados)")
             LabeledContent("Quietbar", value: Diagnostics.appVersion)
             LabeledContent("macOS", value: ProcessInfo.processInfo.operatingSystemVersionString)
             LabeledContent("Fone", value: device.state.modelName ?? "—")
