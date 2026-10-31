@@ -45,6 +45,7 @@ final class DeviceController {
     @ObservationIgnored private var batteryTimer: Timer?
     @ObservationIgnored private var visible = 0
     @ObservationIgnored private var connecting: Task<Void, Never>?
+    @ObservationIgnored private var tail: Task<Void, Never>?
     @ObservationIgnored private var lowBatteryNotified = false
     @ObservationIgnored private let watcher = BluetoothWatcher()
 
@@ -194,12 +195,30 @@ final class DeviceController {
 
     /// Executa uma ação no fone: conecta se preciso e, sem UI aberta, solta o canal depois.
     func perform(_ action: @escaping @Sendable (MDRSession) async throws -> Void) {
+        let task = enqueue(action)
         Task {
-            await ensureConnected()
-            guard isReady, let session else { return }
-            do { try await action(session) } catch { lastError = error.localizedDescription }
-            if visible == 0 { scheduleRelease() }
+            do { try await task.value } catch is NotConnected {} catch { lastError = error.localizedDescription }
         }
+    }
+
+    /// Como `perform`, para quem precisa do resultado: Atalhos e o motor de automação.
+    func run<T: Sendable>(_ action: @escaping @Sendable (MDRSession) async throws -> T) async throws -> T {
+        try await enqueue(action).value
+    }
+
+    /// Único caminho de escrita no fone: uma ação de cada vez, na ordem em que chegaram. Os `set` partem do
+    /// último estado lido, então duas ações juntas podiam desfazer uma à outra.
+    private func enqueue<T: Sendable>(_ action: @escaping @Sendable (MDRSession) async throws -> T) -> Task<T, Error> {
+        let previous = tail
+        let task = Task<T, Error> {
+            await previous?.value
+            await ensureConnected()
+            guard isReady, let session else { throw NotConnected() }
+            defer { if visible == 0 { scheduleRelease() } }
+            return try await action(session)
+        }
+        tail = Task { _ = await task.result }
+        return task
     }
 
     private func received(_ snap: MDRSession.Snapshot) {
@@ -274,6 +293,10 @@ final class DeviceController {
             }
         }
     }
+}
+
+struct NotConnected: LocalizedError {
+    var errorDescription: String? { String(localized: "O fone não está conectado.") }
 }
 
 enum Notifier {
