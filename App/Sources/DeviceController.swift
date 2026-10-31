@@ -21,6 +21,8 @@ final class DeviceController {
     var lastError: String?
     /// Última bateria lida; o canal é solto 15 s após fechar a UI, mas o ícone continua mostrando o valor.
     private(set) var lastBattery: BatteryStatus?
+    /// Vezes em que o watchdog fechou um canal que a liberação por ociosidade deixou aberto.
+    private(set) var watchdogCloses = 0
 
     var state: MDRDeviceState { snapshot.state }
     var isReady: Bool { snapshot.phase == .ready }
@@ -49,6 +51,9 @@ final class DeviceController {
     @ObservationIgnored private var tail: Task<Void, Never>?
     @ObservationIgnored private var lowBatteryNotified = false
     @ObservationIgnored private let watcher = BluetoothWatcher()
+    @ObservationIgnored private var watchdog = ChannelWatchdog()
+    @ObservationIgnored private var busy = 0
+    @ObservationIgnored private var lastActivity = ContinuousClock.now
 
     private init() {
         selectedAddress = UserDefaults.standard.string(forKey: "selectedAddress")
@@ -56,6 +61,12 @@ final class DeviceController {
         if selectedAddress == nil { selectedAddress = BluetoothDevices.preferredSony(among: devices)?.address }
         observeSystem()
         scheduleBatteryCheck()
+        Task {
+            while true {
+                try? await Task.sleep(for: Self.watchdogTick)
+                await checkChannel()
+            }
+        }
     }
 
     func refreshDevices() {
@@ -68,6 +79,7 @@ final class DeviceController {
 
     func uiAppeared() {
         visible += 1
+        lastActivity = .now
         idleTask?.cancel()
         refreshDevices()
         Task { await ensureConnected() }
@@ -75,6 +87,7 @@ final class DeviceController {
 
     func uiDisappeared() {
         visible = max(0, visible - 1)
+        lastActivity = .now
         if visible == 0 { scheduleRelease() }
     }
 
@@ -86,6 +99,28 @@ final class DeviceController {
             guard !Task.isCancelled, let self, self.visible == 0 else { return }
             await self.session?.disconnect()
         }
+    }
+
+    // MARK: - Watchdog
+
+    private static let watchdogTick = Duration.seconds(5)
+    /// A liberação normal tem a preferência: o watchdog só age depois dela.
+    private static let watchdogMargin = 5
+
+    /// Olha as janelas de verdade: um contador `visible` que ficou alto também prende o canal.
+    private var interfaceVisible: Bool {
+        visible > 0 && NSApp.windows.contains { $0.isVisible && $0.className != "NSStatusBarWindow" }
+    }
+
+    private func checkChannel() async {
+        let idle = settings.idleReleaseSeconds + Self.watchdogMargin
+        let status = ChannelWatchdog.Status(channelOpen: isReady, interfaceVisible: interfaceVisible, busy: busy > 0, lastActivity: lastActivity)
+        guard watchdog.shouldClose(status, limit: .seconds(idle), now: .now) else { return }
+        watchdogCloses = watchdog.closes
+        ProtocolLog.shared.note("Watchdog: canal aberto há mais de \(idle) s sem interface. Fechado (\(visible) UIs contadas).")
+        visible = 0
+        idleTask?.cancel()
+        await session?.forceDisconnect()
     }
 
     // MARK: - Sessão
@@ -120,6 +155,7 @@ final class DeviceController {
         let s = session ?? makeSession(selectedAddress ?? "")
         do {
             try await s.connect()
+            lastActivity = .now
             lastError = nil
         } catch {
             lastError = error.localizedDescription
@@ -219,7 +255,12 @@ final class DeviceController {
             idleTask?.cancel() // a liberação por ociosidade fecharia o canal no meio da ação
             await ensureConnected()
             guard isReady, let session else { throw NotConnected() }
-            defer { if visible == 0 { scheduleRelease() } }
+            busy += 1
+            defer {
+                busy -= 1
+                lastActivity = .now
+                if visible == 0 { scheduleRelease() }
+            }
             return try await action(session)
         }
         tail = Task { _ = await task.result }

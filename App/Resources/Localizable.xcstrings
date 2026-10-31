@@ -1070,6 +1070,16 @@
           }
         }
       }
+    },
+    "Fechamentos pelo watchdog": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watchdog closes"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
