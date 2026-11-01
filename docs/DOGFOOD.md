@@ -89,3 +89,21 @@ O relatório calcula cada um e dá o veredito.
 `profile.applied`, `set.sent`, `set.redundant`, `link.up`, `link.down`, `channel.open`, `channel.close`,
 `watchdog.close`, `protocol.error`, `macsound.set`, `macsound.sample`, `moment`, `moment.note`, `hotkey.failed`,
 `update.check`, `log.full`.
+
+## Build novo pede Bluetooth de novo
+
+Build ad-hoc é outra identidade para o macOS. Depois de cada instalação, o sistema pede o Bluetooth, e o app fica
+parado no início, sem ícone nem atalho, até a resposta: `IOBluetoothDevice.pairedDevices` não volta antes disso, e ele
+é chamado no `init` do `DeviceController`. Só o `app.open` é gravado nesse meio-tempo.
+
+## Verificação da instalação (2026-11-01)
+
+| Evento | Onde foi visto |
+|---|---|
+| `app.open`, `update.check` (`newerThanFeed`, feed 1.3.1), `moment` por ⌃⌥⌘M, `link.up`, `protocol.error` | App instalado, no build anterior ao final, com a mesma versão. O app final só chegou ao `app.open`. |
+| `call.start`, `call.end`, `rule.applied`, `rule.undone`, `rule.check`, `set.sent`, `channel.open`, `channel.close`, `app.close` | Build Debug no terminal, com o fone real e o microfone interno. |
+| `moment.note`, Esc, foco no campo | Build Debug, com o código final do painel e fone simulado. |
+| `manual` (atalho, Atalhos, externo, `late`), `profile.applied`, `rule.noop`, `rule.pending`, `override.end` | Build Debug, com fone simulado. |
+| `focus.change`, `macsound.set`, `macsound.sample`, `watchdog.close`, `set.redundant`, `link.down`, `log.full`, `hotkey.failed`, `dogfood.on`, `dogfood.off` | Não ocorreram no app. Parte deles só passou pelo histórico inventado de `scripts/test_dogfood_report.py`. |
+
+Os eventos dessa verificação estão em `verificacao-2026-11-01/`, fora da conta dos critérios.
