@@ -17,6 +17,7 @@ As notas completas de cada versão ficam em [`docs/releases/`](docs/releases/) e
 
 - **Métricas anônimas, opt-in, desligadas por padrão:** Configurações › Privacidade liga, desliga e mostra o JSON exato do próximo envio. Veja [`docs/PRIVACY.md`](docs/PRIVACY.md).
 - Automação em beta gratuito, com o rótulo "Beta" na aba.
+- Teste interno: registro local de uso na aba Desenvolvedor, com ⌃⌥⌘M para marcar um momento e `scripts/dogfood-report`. Veja [`docs/DOGFOOD.md`](docs/DOGFOOD.md).
 
 ### Alterado
 

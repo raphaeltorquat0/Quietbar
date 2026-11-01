@@ -31,6 +31,7 @@ dev: ## Compila em Debug e roda o app no terminal (logs aqui; Ctrl-C para sair)
 
 test: ## Roda todos os testes (MDRKit, MDRSession, HeadphoneModel)
 	swift test
+	python3 scripts/test_dogfood_report.py
 
 release: ## Build Release universal e .dmg em dist/ (Developer ID com QUIETBAR_SIGN_IDENTITY; senão, ad-hoc)
 	scripts/release.sh
