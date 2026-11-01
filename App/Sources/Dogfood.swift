@@ -6,7 +6,6 @@ import QuietAudio
 import QuietAutomation
 import QuietTelemetry
 import ServiceManagement
-import SwiftUI
 
 /// Teste interno: registra o uso em JSONL, só neste Mac. Nada daqui vai para a rede (docs/DOGFOOD.md).
 /// Nome de rede só em hash, e o estado vem do que o app já sabe: nunca abre o canal nem manda SET.
@@ -22,6 +21,7 @@ final class Dogfood {
     private var pending: [String: Any?]?
     private var call: (started: Date, apps: [String])?
     private var started = false
+    private var terminate: DispatchSourceSignal?
 
     private static let sample = Duration.seconds(300)
 
@@ -37,6 +37,12 @@ final class Dogfood {
                 Dogfood.shared.log.flush()
             }
         }
+        // `make install` e o `pkill` encerram por sinal: sem isto, todo update pareceria uma queda.
+        signal(SIGTERM, SIG_IGN)
+        let term = DispatchSource.makeSignalSource(signal: SIGTERM, queue: .main)
+        term.setEventHandler { NSApp.terminate(nil) }
+        term.resume()
+        terminate = term
         Task {
             var cpu = AudioProbe.cpuSeconds(), time = Date()
             while true {
@@ -204,54 +210,63 @@ extension KeyCombo {
 }
 
 /// Campo curto do "marcar momento". Não ativa o app: o que estava em primeiro plano não perde o foco.
+/// Em AppKit porque o `FocusState` da SwiftUI não pega o foco numa janela de um app inativo.
 @MainActor
-final class MomentPanel {
+final class MomentPanel: NSObject, NSTextFieldDelegate {
     static let shared = MomentPanel()
 
     private final class Panel: NSPanel {
         override var canBecomeKey: Bool { true }
-        override func cancelOperation(_ sender: Any?) { MomentPanel.shared.close() }
     }
 
     private var panel: NSPanel?
+    private var save: ((String) -> Void)?
 
     func present(_ save: @escaping (String) -> Void) {
         close()
-        let p = Panel(contentRect: NSRect(x: 0, y: 0, width: 420, height: 92), styleMask: [.titled, .closable, .nonactivatingPanel], backing: .buffered, defer: false)
+        self.save = save
+        let field = NSTextField()
+        field.placeholderString = String(localized: "O que aconteceu?")
+        field.delegate = self
+        field.target = self
+        field.action = #selector(submit)
+        let hint = NSTextField(labelWithString: String(localized: "O estado do app já foi gravado. Return salva, Esc fecha sem texto."))
+        hint.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+        hint.textColor = .secondaryLabelColor
+        let stack = NSStackView(views: [field, hint])
+        stack.orientation = .vertical
+        stack.alignment = .leading
+        stack.edgeInsets = NSEdgeInsets(top: 14, left: 14, bottom: 14, right: 14)
+        field.widthAnchor.constraint(equalToConstant: 392).isActive = true
+
+        let p = Panel(contentRect: NSRect(x: 0, y: 0, width: 420, height: 84), styleMask: [.titled, .closable, .nonactivatingPanel], backing: .buffered, defer: false)
         p.title = String(localized: "Marcar momento")
         p.level = .floating
         p.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
         p.isReleasedWhenClosed = false
-        p.contentView = NSHostingView(rootView: MomentField { note in
-            if !note.isEmpty { save(note) }
-            MomentPanel.shared.close()
-        })
+        p.contentView = stack
         p.center()
         p.makeKeyAndOrderFront(nil)
+        p.makeFirstResponder(field)
         panel = p
+    }
+
+    @objc private func submit(_ field: NSTextField) {
+        let note = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !note.isEmpty { save?(note) }
+        close()
+    }
+
+    /// Com o campo em foco, o Esc vai para o editor de texto, não para a janela.
+    func control(_ control: NSControl, textView: NSTextView, doCommandBy selector: Selector) -> Bool {
+        guard selector == #selector(NSResponder.cancelOperation(_:)) else { return false }
+        close()
+        return true
     }
 
     private func close() {
         panel?.close()
         panel = nil
-    }
-}
-
-private struct MomentField: View {
-    let done: (String) -> Void
-    @State private var note = ""
-    @FocusState private var focused: Bool
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            TextField("O que aconteceu?", text: $note)
-                .textFieldStyle(.roundedBorder)
-                .focused($focused)
-                .onSubmit { done(note.trimmingCharacters(in: .whitespacesAndNewlines)) }
-            Text("O estado do app já foi gravado. Return salva, Esc fecha sem texto.")
-                .font(.caption).foregroundStyle(.secondary)
-        }
-        .padding(14)
-        .onAppear { focused = true }
+        save = nil
     }
 }
