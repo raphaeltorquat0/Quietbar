@@ -17,6 +17,7 @@
 		2CA2F9E155AAFDB9AE1D9A60 /* MacSoundTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9FF9BC9CF7AC1C9C8195B0 /* MacSoundTab.swift */; };
 		30B5AFDF470B79D7D2E0B5C0 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 0528E04F6642BDBBB82B90AE /* Localizable.xcstrings */; };
 		3BC6EE86C1310F1F16334F7C /* QuietbarControls.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = EFDDB74D13EAD0A8486AC2B8 /* QuietbarControls.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		3E2F3C425371031DC5F3EF42 /* SiteCaptures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 805AC7AC0617F3A8C4470ACC /* SiteCaptures.swift */; };
 		444D9008C2CE459DB413CAE8 /* Sparkle-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 5450C3163EF32382EA56FFB7 /* Sparkle-LICENSE.txt */; };
 		4EE2AD566D8518B672A610A9 /* ProtocolLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64FCB687A295807BCC467D05 /* ProtocolLog.swift */; };
 		55575B2ABBF47CF3559C7906 /* StatusBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6765529F3829519180CD6F /* StatusBar.swift */; };
@@ -100,6 +101,7 @@
 		6A5F3C7054A1D2754390EC94 /* QuietbarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuietbarApp.swift; sourceTree = "<group>"; };
 		7293F759BEDD528E9841E932 /* PanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelView.swift; sourceTree = "<group>"; };
 		7A837D05662D77D3D91B3C5F /* PanelPreviews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelPreviews.swift; sourceTree = "<group>"; };
+		805AC7AC0617F3A8C4470ACC /* SiteCaptures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteCaptures.swift; sourceTree = "<group>"; };
 		8145CABC0B8B7EA29B4025B6 /* Automation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Automation.swift; sourceTree = "<group>"; };
 		8492F1A21588037520845A2F /* Telemetry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Telemetry.swift; sourceTree = "<group>"; };
 		86C94C91B0BB93E0D730D844 /* AppShortcuts.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = AppShortcuts.xcstrings; sourceTree = "<group>"; };
@@ -185,6 +187,7 @@
 				22A44C60BD66C3FC3B1A8B34 /* SettingsView.swift */,
 				621C215115C7F95676029BE6 /* Shortcuts.swift */,
 				9843EA39B727B5E4032860A1 /* Simulation.swift */,
+				805AC7AC0617F3A8C4470ACC /* SiteCaptures.swift */,
 				AA6765529F3829519180CD6F /* StatusBar.swift */,
 				8492F1A21588037520845A2F /* Telemetry.swift */,
 				285EF06533C520AFDA960E52 /* Updates.swift */,
@@ -399,6 +402,7 @@
 				F3C5495A8F31D9DA79CC9BC7 /* SettingsView.swift in Sources */,
 				AD9FC4A606565CED254FA8AE /* Shortcuts.swift in Sources */,
 				D24AC5EB3BE8594D0EC080AB /* Simulation.swift in Sources */,
+				3E2F3C425371031DC5F3EF42 /* SiteCaptures.swift in Sources */,
 				55575B2ABBF47CF3559C7906 /* StatusBar.swift in Sources */,
 				CA8128836DF6A85A93D06EB6 /* Telemetry.swift in Sources */,
 				AF1168603033131E4704FF97 /* Updates.swift in Sources */,

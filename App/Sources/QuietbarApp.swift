@@ -35,6 +35,11 @@ struct QuietbarApp: App {
             Task { @MainActor in await AutomationDemo.run(to: URL(fileURLWithPath: dir)) }
             return
         }
+        if let i = CommandLine.arguments.firstIndex(of: "--site-captures") {
+            let dir = CommandLine.arguments.dropFirst(i + 1).first ?? "/tmp/quietbar-site-captures"
+            Task { @MainActor in await SiteCaptures.run(to: URL(fileURLWithPath: dir)) }
+            return
+        }
         if let i = CommandLine.arguments.firstIndex(of: "--press-kit") {
             let dir = CommandLine.arguments.dropFirst(i + 1).first ?? "/tmp/quietbar-press-kit"
             Task { @MainActor in await PressKit.run(to: URL(fileURLWithPath: dir)) }
