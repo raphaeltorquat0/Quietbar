@@ -38,7 +38,7 @@ struct SettingsView: View {
 /// Seção que só aparece com o fone pronto.
 struct DeviceSection<Content: View>: View {
     @Environment(DeviceController.self) private var device
-    let title: String
+    let title: LocalizedStringKey
     @ViewBuilder let content: () -> Content
 
     var body: some View {

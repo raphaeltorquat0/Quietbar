@@ -1290,6 +1290,146 @@
           }
         }
       }
+    },
+    "Preset do fone": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Headphone preset"
+          }
+        }
+      }
+    },
+    "Curva (dB)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curve (dB)"
+          }
+        }
+      }
+    },
+    "Zerar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset"
+          }
+        }
+      }
+    },
+    "Editar aplica no preset Custom (ou no User Setting selecionado).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edits apply to the Custom preset (or the selected User Setting)."
+          }
+        }
+      }
+    },
+    "Presets salvos neste Mac": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Presets saved on this Mac"
+          }
+        }
+      }
+    },
+    "Nome": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "Salvar curva atual": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save current curve"
+          }
+        }
+      }
+    },
+    "Nome deste preset": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name of this preset"
+          }
+        }
+      }
+    },
+    "Aplicar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply"
+          }
+        }
+      }
+    },
+    "O fone desativou o equalizador agora (ex.: em chamada).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The headphones turned the equalizer off for now (for example, during a call)."
+          }
+        }
+      }
+    },
+    "Este fone não expõe um equalizador editável.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These headphones don't have an editable equalizer."
+          }
+        }
+      }
+    },
+    "Conecte o fone para ver estes ajustes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect your headphones to see these settings."
+          }
+        }
+      }
+    },
+    "Cancelamento": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noise cancelling"
+          }
+        }
+      }
+    },
+    "Alternar Cancelamento / Ambiente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switch between Noise cancelling and Ambient"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
