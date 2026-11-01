@@ -59,6 +59,14 @@ final class AppSettings {
     var appRulesEnabled: Bool { didSet { d.set(appRulesEnabled, forKey: "appRulesEnabled") } }
     var wifiRulesEnabled: Bool { didSet { d.set(wifiRulesEnabled, forKey: "wifiRulesEnabled") } }
 
+    /// Teste interno: grava o uso em disco, só neste Mac. Ligado pela aba Desenvolvedor.
+    var dogfoodEnabled: Bool {
+        didSet {
+            d.set(dogfoodEnabled, forKey: "dogfoodEnabled")
+            Dogfood.shared.enabledChanged(dogfoodEnabled)
+        }
+    }
+
     /// Automação liberada para todos, com o rótulo "Beta". Sem interface: a chave existe para o fim do beta.
     var automationBeta: Bool { didSet { d.set(automationBeta, forKey: "automationBeta") } }
 
@@ -77,7 +85,7 @@ final class AppSettings {
                               "popupPosition": "topRight", "popupDuration": 5.0, "popupUse3D": true, "menuBarShowsPercent": false, "developerMode": false, "modelLightRing": false,
                               "callRuleEnabled": false, "callDelaySeconds": 3, "focusRuleEnabled": true,
                               "appRulesEnabled": true, "wifiRulesEnabled": true,
-                              "automationBeta": true, "appRuleSmoothing": true, "appRuleEnterMs": 400, "appRuleHoldSeconds": 6])
+                              "dogfoodEnabled": false, "automationBeta": true, "appRuleSmoothing": true, "appRuleEnterMs": 400, "appRuleHoldSeconds": 6])
         idleReleaseSeconds = d.integer(forKey: "idleReleaseSeconds")
         lowBatteryAlert = d.bool(forKey: "lowBatteryAlert")
         lowBatteryThreshold = d.integer(forKey: "lowBatteryThreshold")
@@ -104,6 +112,7 @@ final class AppSettings {
         appRulesEnabled = d.bool(forKey: "appRulesEnabled")
         wifiRulesEnabled = d.bool(forKey: "wifiRulesEnabled")
         automationBeta = d.bool(forKey: "automationBeta")
+        dogfoodEnabled = d.bool(forKey: "dogfoodEnabled")
     }
 
     func save<T: Encodable>(_ v: T, _ key: String) { d.set(try? JSONEncoder().encode(v), forKey: key) }

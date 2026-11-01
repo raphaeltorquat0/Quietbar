@@ -60,6 +60,7 @@ final class MacSound {
         didSet {
             d.set(enabled, forKey: "macSoundEnabled")
             syncEngine()
+            Dogfood.shared.record("macsound.set", ["on": enabled, "processing": isOn, "preset": preset.rawValue])
             Automation.shared.report()
         }
     }

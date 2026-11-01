@@ -23,6 +23,7 @@ final class Automation {
     @ObservationIgnored private var started = false
     @ObservationIgnored private lazy var debouncer = Debouncer(delay: .seconds(settings.callDelaySeconds)) { [weak self] active in
         self?.inCall = active
+        Dogfood.shared.callChanged(active, apps: self?.micUsage.processes)
         #if DEBUG
         HardwareTest.trace(call: active)
         #endif
@@ -69,6 +70,7 @@ final class Automation {
             monitor.stop()
             debouncer.reset()
             inCall = false
+            Dogfood.shared.callChanged(false, apps: nil)
             micUsage = MicUsage(deviceRunning: false, processes: [])
         }
         refreshCall()
@@ -94,7 +96,10 @@ final class Automation {
 
     /// Só o que o Filtro de Foco entrega, por API pública. Sair do Foco chega como perfil vazio.
     func focusChanged(_ id: UUID?, source: String = "focus.perform") {
-        if id != focusProfileID { engine.noteTrigger(source, detail: id == nil ? "off" : "on") }
+        if id != focusProfileID {
+            engine.noteTrigger(source, detail: id == nil ? "off" : "on")
+            Dogfood.shared.record("focus.change", ["active": id != nil, "profile": ProfileEngine.shared.profiles.first { $0.id == id }?.name])
+        }
         focusProfileID = id
         refreshFocusRule()
     }

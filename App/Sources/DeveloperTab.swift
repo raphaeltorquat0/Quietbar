@@ -12,6 +12,7 @@ struct DeveloperTab: View {
             #if DEBUG
             SimulatorSection()
             #endif
+            DogfoodSection()
             DiagnosticsSection()
             MacSoundDeveloperSection()
             PopupTestSection()
@@ -20,6 +21,21 @@ struct DeveloperTab: View {
             ProtocolLogSection()
         }
         .formStyle(.grouped)
+    }
+}
+
+// MARK: - Teste interno
+
+private struct DogfoodSection: View {
+    @Bindable private var settings = AppSettings.shared
+
+    var body: some View {
+        Section("Teste interno") {
+            Toggle("Registrar o uso neste Mac", isOn: $settings.dogfoodEnabled)
+            Button("Mostrar os dados no Finder") { NSWorkspace.shared.activateFileViewerSelecting([Dogfood.directory]) }
+            Text("Grava eventos em JSONL, só neste Mac: nada vai para a rede. \(KeyCombo.moment.display) marca um momento com o estado do app. Nunca grava áudio, nome de rede em texto nem conteúdo de janelas.")
+                .font(.caption).foregroundStyle(.secondary)
+        }
     }
 }
 

@@ -47,6 +47,10 @@ O endpoint é uma função na AWS, com o código em [`infra/telemetry`](../infra
 
 O áudio é processado em memória, e nada é gravado ou enviado ([detalhes](AUDIO.md)).
 
+## Teste interno
+
+A aba Desenvolvedor tem um modo de teste, desligado por padrão, que grava eventos de uso em arquivos neste Mac. Nada desses arquivos vai para a rede, e nunca incluem áudio, nome de rede em texto ou conteúdo de janelas ([detalhes](DOGFOOD.md)).
+
 ## Permissões
 
 A lista de permissões e o motivo de cada uma estão no [README](../README.md).

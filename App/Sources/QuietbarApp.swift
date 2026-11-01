@@ -48,6 +48,7 @@ struct QuietbarApp: App {
         #endif
         // `make install` abre o app com esta flag: só o próprio app pode se registrar como item de login.
         if CommandLine.arguments.contains("--register-login-item") { try? SMAppService.mainApp.register() }
+        Dogfood.shared.start()
         HotKeys.shared.register()
         MacSound.shared.start()
         ProfileEngine.shared.start()

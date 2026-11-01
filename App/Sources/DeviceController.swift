@@ -54,6 +54,8 @@ final class DeviceController {
     @ObservationIgnored private var watchdog = ChannelWatchdog()
     @ObservationIgnored private var busy = 0
     @ObservationIgnored private var lastActivity = ContinuousClock.now
+    /// Por que o canal vai fechar. Sem motivo, ele caiu sozinho.
+    @ObservationIgnored private var closing: String?
 
     private init() {
         selectedAddress = UserDefaults.standard.string(forKey: "selectedAddress")
@@ -97,6 +99,7 @@ final class DeviceController {
         idleTask = Task { [weak self] in
             try? await Task.sleep(for: delay)
             guard !Task.isCancelled, let self, self.visible == 0 else { return }
+            self.closing = "idle"
             await self.session?.disconnect()
         }
     }
@@ -118,6 +121,8 @@ final class DeviceController {
         guard watchdog.shouldClose(status, limit: .seconds(idle), now: .now) else { return }
         watchdogCloses = watchdog.closes
         ProtocolLog.shared.note("Watchdog: canal aberto há mais de \(idle) s sem interface. Fechado (\(visible) UIs contadas).")
+        Dogfood.shared.record("watchdog.close", ["uis": visible, "idleS": idle])
+        closing = "watchdog"
         visible = 0
         idleTask?.cancel()
         await session?.forceDisconnect()
@@ -183,6 +188,7 @@ final class DeviceController {
 
     /// "Desconectar" do menu: solta o canal e a conexão Bluetooth do fone com o Mac.
     func disconnectDevice() async {
+        closing = "menu"
         await session?.disconnect()
         if !simulating, let a = selectedAddress { BluetoothDevices.disconnect(a) }
         refreshDevices()
@@ -197,7 +203,10 @@ final class DeviceController {
         #endif
         let s = MDRSession(channel: channel, traffic: { dir, bytes in
             if toFile { TrafficLog.append(dir, bytes) }
-            Task { @MainActor in ProtocolLog.shared.add(dir, bytes) }
+            Task { @MainActor in
+                ProtocolLog.shared.add(dir, bytes)
+                Dogfood.shared.traffic(dir, bytes)
+            }
         })
         session = s
         observer?.cancel()
@@ -237,7 +246,13 @@ final class DeviceController {
     func perform(_ action: @escaping @Sendable (MDRSession) async throws -> Void) {
         let task = enqueue(action)
         Task {
-            do { try await task.value } catch is NotConnected {} catch { lastError = error.localizedDescription }
+            do {
+                try await task.value
+            } catch is NotConnected {
+            } catch {
+                lastError = error.localizedDescription
+                Dogfood.shared.record("protocol.error", ["kind": "action", "error": lastError])
+            }
         }
     }
 
@@ -268,6 +283,10 @@ final class DeviceController {
     }
 
     private func received(_ snap: MDRSession.Snapshot) {
+        if snap.phase != snapshot.phase {
+            Dogfood.shared.channelChanged(from: snapshot.phase, to: snap.phase, reason: closing)
+            closing = nil
+        }
         snapshot = snap
         #if DEBUG
         HardwareTest.log()
@@ -308,7 +327,10 @@ final class DeviceController {
     private func observeSystem() {
         let nc = NSWorkspace.shared.notificationCenter
         nc.addObserver(forName: NSWorkspace.willSleepNotification, object: nil, queue: .main) { _ in
-            MainActor.assumeIsolated { _ = Task { await DeviceController.shared.session?.disconnect() } }
+            MainActor.assumeIsolated {
+                DeviceController.shared.closing = "sleep"
+                _ = Task { await DeviceController.shared.session?.disconnect() }
+            }
         }
         nc.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { _ in
             MainActor.assumeIsolated {
@@ -323,6 +345,7 @@ final class DeviceController {
         }
         watcher.onChange = { [weak self] address, connected in
             guard let self, address == self.selectedAddress else { return }
+            Dogfood.shared.record(connected ? "link.up" : "link.down")
             self.refreshDevices()
             if connected, self.visible > 0 { Task { await self.ensureConnected() } }
             if connected { PopupController.shared.deviceConnected() }
@@ -332,7 +355,10 @@ final class DeviceController {
                     Automation.shared.engine.deviceAvailable()
                 }
             }
-            if !connected { Task { await self.session?.disconnect() } }
+            if !connected {
+                self.closing = "link"
+                Task { await self.session?.disconnect() }
+            }
         }
         watcher.start()
 

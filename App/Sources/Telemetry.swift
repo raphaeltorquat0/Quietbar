@@ -55,7 +55,10 @@ final class Telemetry {
     func modeRequested(_ source: ModeSource) { tracker.expect(.user(source), at: Date()) }
 
     func modeReported(_ mode: SoundMode?) {
-        if let source = tracker.observe(mode?.rawValue, at: Date()) { recorder.recordModeChange(source) }
+        if let source = tracker.observe(mode?.rawValue, at: Date()) {
+            recorder.recordModeChange(source)
+            Dogfood.shared.manual(source, to: mode)
+        }
     }
 
     func panelOpened() { recorder.recordPanelOpen() }
@@ -66,6 +69,7 @@ final class Telemetry {
         #if DEBUG
         HardwareTest.trace(event)
         #endif
+        Dogfood.shared.handle(event)
         switch event.kind {
         case .ruleStarted:
             if let trigger = event.trigger.flatMap(AutomationTrigger.init(rawValue:)) { recorder.recordTrigger(trigger) }

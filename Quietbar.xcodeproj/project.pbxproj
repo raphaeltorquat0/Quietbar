@@ -26,6 +26,7 @@
 		6E825011F722CF70EC0F9805 /* PanelControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8999D82FE5D45F03AE5247 /* PanelControls.swift */; };
 		7D1AA783287C66799FDAA0C4 /* QuietbarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A5F3C7054A1D2754390EC94 /* QuietbarApp.swift */; };
 		8249C76B689F489AE270576B /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BFDD4022653354E2552EB540 /* WidgetKit.framework */; };
+		8C1FF0FBC177193E414A29A8 /* Dogfood.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E6AEACF2BA88B5966BA63D /* Dogfood.swift */; };
 		912CE03B702C801EFFDDC6DF /* QuietTelemetry in Frameworks */ = {isa = PBXBuildFile; productRef = 409715532AA8C8697C0B5DD7 /* QuietTelemetry */; };
 		97829A26D6AF70F4F9ECDD88 /* QuietAudio in Frameworks */ = {isa = PBXBuildFile; productRef = CF9BF86A6D2C2433BC2C3459 /* QuietAudio */; };
 		A62F23B59BB5B25402306ACB /* MDRSession in Frameworks */ = {isa = PBXBuildFile; productRef = FAD7807A0489F2F72F8609BF /* MDRSession */; };
@@ -84,6 +85,7 @@
 		0528E04F6642BDBBB82B90AE /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		0758B1DDE173670F42002BB1 /* QuietbarIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuietbarIntents.swift; sourceTree = "<group>"; };
 		0D4526A10BD3500F2860F0A2 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
+		15E6AEACF2BA88B5966BA63D /* Dogfood.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dogfood.swift; sourceTree = "<group>"; };
 		1735D0B536BC9F24EE9BBD85 /* AutomationTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomationTab.swift; sourceTree = "<group>"; };
 		20FAB22704C32D5DF6553C38 /* sonyctl_macos */ = {isa = PBXFileReference; lastKnownFileType = folder; name = sonyctl_macos; path = .; sourceTree = SOURCE_ROOT; };
 		22A44C60BD66C3FC3B1A8B34 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -174,6 +176,7 @@
 				C191D66CBB722B4503ADE4CE /* ControlCenterBridge.swift */,
 				5026D463C4EF96FAE5805490 /* DeveloperTab.swift */,
 				E689B6483FC7D446807B1524 /* DeviceController.swift */,
+				15E6AEACF2BA88B5966BA63D /* Dogfood.swift */,
 				A0A1D70B5F7ACD718F8431E5 /* EqualizerTab.swift */,
 				D31DDF0234A11C66470731BF /* MacSound.swift */,
 				DD9FF9BC9CF7AC1C9C8195B0 /* MacSoundTab.swift */,
@@ -386,6 +389,7 @@
 				A7ADD00688CC326586E22F04 /* ControlCenterBridge.swift in Sources */,
 				D50AC8A5F68C7E99ADE65F0F /* DeveloperTab.swift in Sources */,
 				B2D72CE5891642BEEDCC6D0C /* DeviceController.swift in Sources */,
+				8C1FF0FBC177193E414A29A8 /* Dogfood.swift in Sources */,
 				0F716386549DB4C763F4B570 /* EqualizerTab.swift in Sources */,
 				B7EC7922B122F322AE718CCE /* MacSound.swift in Sources */,
 				2CA2F9E155AAFDB9AE1D9A60 /* MacSoundTab.swift in Sources */,
