@@ -21,6 +21,14 @@ private let cancelling = NoiseControl(inquiredType: 0x17, enabled: true, ambient
     #expect(audit.observe(.tx, frame(.noiseControl(ambient), .set)) == .redundant("\(MDRMessage.noiseControl(ambient))"))
 }
 
+/// Tráfego de 04/11 ao desligar o multiponto: o fone pede confirmação 0x07 e a resposta repete o código.
+@Test func respostaAoAlertaDoFoneNaoEhRedundante() {
+    var audit = SetAudit()
+    let alert = MDRMessage.alert(messageType: 0x07, action: 0x01)
+    _ = audit.observe(.rx, frame(alert, .notify))
+    #expect(audit.observe(.tx, frame(alert, .set)) == .sent("\(alert)"))
+}
+
 @Test func retransmissaoSemAckNaoContaDeNovo() {
     var audit = SetAudit()
     let set = frame(.noiseControl(cancelling), .set)

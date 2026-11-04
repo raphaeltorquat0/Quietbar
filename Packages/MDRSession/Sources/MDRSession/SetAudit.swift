@@ -19,6 +19,8 @@ public struct SetAudit: Sendable {
         let payload = message.command(.set).payload
         let key = [frame.type == .mdr ? 1 : 2] + payload.prefix(2)
         guard direction == .tx else {
+            // O alerta é um pedido do fone, não estado: a resposta repete o código dele por definição.
+            if case .alert = message { return nil }
             informed[key] = payload
             return nil
         }
