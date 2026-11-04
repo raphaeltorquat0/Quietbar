@@ -1,0 +1,354 @@
+#!/usr/bin/env python3
+"""Resumo em markdown do teste interno do Quietbar (docs/DOGFOOD.md).
+
+    scripts/dogfood-report [--since AAAA-MM-DD] [--until AAAA-MM-DD] [--dir PASTA] [--crashes PASTA] [--out ARQUIVO]
+"""
+import argparse
+import json
+import re
+import statistics
+import sys
+from collections import Counter, defaultdict
+from datetime import datetime, timedelta
+from pathlib import Path
+
+HOME = Path.home()
+DEFAULT_DIRS = [
+    HOME / "Library/Application Support/Quietbar/dogfood",
+    HOME / "Library/Containers/io.github.raphaeltorquat0.Quietbar/Data/Library/Application Support/Quietbar/dogfood",
+]
+CRASHES = HOME / "Library/Logs/DiagnosticReports"
+
+# Um ajuste manual até aqui depois de uma troca automática é sinal de que a regra errou.
+AFTER_AUTO = timedelta(seconds=120)
+# Um gesto que muda vários ajustes chega como um `manual` por campo, a milissegundos um do outro.
+SAME_GESTURE = timedelta(seconds=1)
+# Depois do fim da chamada, a volta ainda pode precisar reabrir o canal.
+RETURN_WINDOW = timedelta(seconds=30)
+# Queda do canal perto de uma queda do Bluetooth é a mesma coisa.
+LINK_WINDOW = timedelta(seconds=5)
+# Um momento com "watchdog" no texto, até aqui depois, explica o fechamento.
+EXPLAIN_WINDOW = timedelta(minutes=30)
+
+MIN_DAYS, MIN_CALLS, MIN_CORRECT, MAX_MANUAL_PER_DAY = 7, 10, 0.95, 1
+
+KNOWN = {
+    "app.open", "app.close", "dogfood.on", "dogfood.off", "rule.applied", "rule.undone", "rule.noop", "rule.pending",
+    "rule.check", "rule.divergence", "manual", "manual.applied", "override.end", "call.start", "call.end", "focus.change",
+    "profile.applied", "set.sent", "set.redundant", "link.up", "link.down", "channel.open", "channel.close",
+    "watchdog.close", "protocol.error", "macsound.set", "macsound.sample", "moment", "moment.note", "hotkey.failed",
+    "update.check", "log.full",
+}
+# Sinal de que o fone estava em uso. Abrir o app no login não conta como dia de uso.
+USE = {"channel.open", "call.start", "rule.applied", "rule.undone", "manual", "moment"}
+
+
+def when(event):
+    return datetime.fromisoformat(event["t"].replace("Z", "+00:00"))
+
+
+def load(folder, since, until):
+    events, broken = [], 0
+    for path in sorted(folder.glob("*.jsonl")):
+        if (since and path.stem < since) or (until and path.stem > until):
+            continue
+        for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+            try:
+                event = json.loads(line)
+                event["_at"] = when(event)
+                event["_day"] = event["t"][:10]
+                events.append(event)
+            except (ValueError, KeyError):
+                broken += 1
+    events.sort(key=lambda e: e["_at"])
+    return merge_gestures(events), broken
+
+
+def merge_gestures(events):
+    merged, last = [], None
+    for e in events:
+        if (e["ev"] == "manual" and last and e.get("source") == last.get("source")
+                and e["_at"] - last["_at"] <= SAME_GESTURE and "fields" in e and "fields" in last):
+            last["fields"] = {**last["fields"], **e["fields"]}
+            continue
+        merged.append(e)
+        last = e if e["ev"] == "manual" else None
+    return merged
+
+
+def crashes(folder, start, end):
+    """Só o Quietbar de /Applications: builds de desenvolvimento também deixam relatórios aqui."""
+    found = []
+    for path in sorted(list(folder.glob("Quietbar*")) + list(folder.glob("Retired/Quietbar*"))):
+        try:
+            first, _, rest = path.read_text(errors="replace").partition("\n")
+            head = json.loads(first)
+            body = json.loads(rest) if path.suffix == ".ips" else {}
+        except (ValueError, OSError):
+            head, body = {}, {}
+        stamp = re.search(r"(\d{4}-\d{2}-\d{2})-(\d{6})", path.name)
+        if not stamp:
+            continue
+        at = datetime.strptime("".join(stamp.groups()), "%Y-%m-%d%H%M%S").astimezone()
+        if start and at < start or end and at > end + timedelta(days=1):
+            continue
+        where = body.get("procPath", "")
+        if where and not where.startswith("/Applications/"):
+            continue
+        reason = (body.get("exception") or {}).get("type", path.suffix)
+        found.append({"path": path, "at": at, "version": head.get("app_version", "?"), "reason": reason})
+    return found
+
+
+def call_rows(events):
+    rows, open_call = [], None
+    for i, e in enumerate(events):
+        if e["ev"] == "call.start":
+            open_call = {"start": e, "index": i}
+        elif e["ev"] == "call.end" and open_call:
+            rows.append(judge(events, open_call, e, i))
+            open_call = None
+    if open_call:
+        rows.append({"at": open_call["start"]["_at"], "apps": open_call["start"].get("apps") or [], "duration": None,
+                     "counted": False, "correct": False, "why": "em andamento ou sem fim registrado",
+                     "wanted": open_call["start"].get("wanted"), "before": None, "headphone": open_call["start"].get("headphone")})
+    return rows
+
+
+def judge(events, opened, end, end_index):
+    start, wanted = opened["start"], opened["start"].get("wanted")
+    row = {"at": start["_at"], "apps": start.get("apps") or [], "duration": end.get("durationS"), "wanted": wanted,
+           "headphone": start.get("headphone"), "before": None, "counted": bool(start.get("headphone"))}
+    during = events[opened["index"] + 1:end_index]
+    switched = next((e for e in during if e["ev"] == "rule.applied" and e.get("rule") == "call" and e.get("to") == wanted), None)
+    already = next((e for e in during if e["ev"] == "rule.noop" and e.get("rule") == "call" and e.get("mode") == wanted), None)
+    manual = [e for e in during if e["ev"] == "manual"]
+    row["before"] = switched.get("from") if switched else wanted if already else None
+    if not row["counted"]:
+        row.update(correct=False, why="fone fora do Mac: não conta")
+        return row
+    if manual:
+        row.update(correct=False, why=f"ajuste manual durante a chamada ({manual[0].get('source')})")
+        return row
+    if not switched and not already:
+        row.update(correct=False, why="não trocou")
+        return row
+    if already:
+        row.update(correct=True, why="já estava no modo; nada a trocar")
+        return row
+    limit = end["_at"] + RETURN_WINDOW
+    after = [e for e in events[end_index + 1:] if e["_at"] <= limit]
+    back = any(e["ev"] in ("rule.undone", "rule.applied") and e.get("to") == row["before"] for e in after)
+    row.update(correct=back, why="trocou e voltou" if back else f"não voltou para {row['before']}")
+    return row
+
+
+def after_automatic(events):
+    hits, last = [], None
+    for e in events:
+        if e["ev"] in ("rule.applied", "rule.undone"):
+            last = e
+        elif e["ev"] == "manual":
+            # Visto só ao reabrir o canal: a hora é a da descoberta, mas contrariou o que a regra deixou.
+            if e.get("late") or (last and e["_at"] - last["_at"] <= AFTER_AUTO):
+                hits.append((e, last))
+    return hits
+
+
+def closes(events):
+    links = [e["_at"] for e in events if e["ev"] == "link.down"]
+    return [e for e in events if e["ev"] == "channel.close" and e.get("reason") == "unexpected"
+            and not any(abs(at - e["_at"]) <= LINK_WINDOW for at in links)]
+
+
+def explained(close, notes):
+    return any(timedelta(0) <= at - close["_at"] <= EXPLAIN_WINDOW and "watchdog" in note.lower() for at, note in notes)
+
+
+def percentile(values, q):
+    ordered = sorted(values)
+    return ordered[min(len(ordered) - 1, int(q * len(ordered)))]
+
+
+def fmt(at):
+    return at.strftime("%d/%m %H:%M:%S")
+
+
+def status(ok):
+    return "✅" if ok else "❌"
+
+
+def report(events, broken, crash_list):
+    out = []
+    w = out.append
+    if not events:
+        return "# Quietbar: teste interno\n\nSem eventos no período. A chave está ligada em Configurações › Desenvolvedor?\n"
+
+    days = sorted({e["_day"] for e in events})
+    used = sorted({e["_day"] for e in events if e["ev"] in USE})
+    by = defaultdict(list)
+    for e in events:
+        by[e["ev"]].append(e)
+
+    calls = call_rows(events)
+    counted = [c for c in calls if c["counted"]]
+    right = [c for c in counted if c["correct"]]
+    suspicious = after_automatic(events)
+    per_day = Counter(e["_day"] for e, _ in suspicious)
+    errors = by["protocol.error"]
+    notes = {e.get("id"): e.get("note") for e in by["moment.note"]}
+    timed_notes = [(e["_at"], e.get("note", "")) for e in by["moment.note"]]
+    unexplained = [e for e in by["watchdog.close"] if not explained(e, timed_notes)]
+    dropped = closes(events)
+    redundant = by["set.redundant"]
+    opens = by["app.open"]
+    unclean = sum(1 for a, b in zip(opens, opens[1:])
+                  if not any(a["_at"] <= e["_at"] <= b["_at"] for e in by["app.close"]))
+    rate = len(right) / len(counted) if counted else 0
+    worst_day = max(per_day.values(), default=0)
+
+    w("# Quietbar: teste interno\n")
+    w(f"Período: {days[0]} a {days[-1]}. Dias de uso: **{len(used)}**. Eventos: {len(events)}.")
+    versions = sorted({f"{e.get('version')} ({e.get('build')})" for e in opens})
+    systems = sorted({str(e.get("macOS")) for e in opens})
+    if versions:
+        w(f"Versões: {', '.join(versions)}. macOS: {', '.join(systems)}.")
+    w("\n> Os dados vêm só deste Mac. Com o canal solto o fone não avisa: o botão físico só aparece ao reabrir o canal, com `late`.\n")
+
+    w("## Critérios para liberar a 1.4.0\n")
+    w("| Critério | Medido | |")
+    w("|---|---|---|")
+    rows = [
+        (f"{MIN_DAYS} dias de uso real", f"{len(used)} dias", len(used) >= MIN_DAYS),
+        (f"Pelo menos {MIN_CALLS} chamadas", f"{len(counted)} chamadas com o fone", len(counted) >= MIN_CALLS),
+        ("Zero falhas", f"{len(crash_list)} relatórios de falha, {len(errors)} erros de protocolo", not crash_list and not errors),
+        (f"Troca correta em {MIN_CORRECT:.0%} das chamadas, com volta ao modo anterior", f"{len(right)} de {len(counted)} ({rate:.0%})", bool(counted) and rate >= MIN_CORRECT),
+        (f"No máximo {MAX_MANUAL_PER_DAY} ajuste manual por dia logo após troca automática", f"pior dia: {worst_day}", worst_day <= MAX_MANUAL_PER_DAY),
+        ("Zero SETs redundantes", f"{len(redundant)}", not redundant),
+        ("Nenhum fechamento pelo watchdog sem explicação", f"{len(unexplained)} sem explicação, de {len(by['watchdog.close'])}", not unexplained),
+    ]
+    for name, measured, ok in rows:
+        w(f"| {name} | {measured} | {status(ok)} |")
+    verdict = all(ok for _, _, ok in rows)
+    w(f"\n**Veredito: {'pode liberar' if verdict else 'ainda não libera'}.**\n")
+
+    w("## Chamadas\n")
+    if calls:
+        w("| Início | Duração | App | Fone | Antes | Durante | Resultado |")
+        w("|---|---|---|---|---|---|---|")
+        for c in calls:
+            duration = f"{c['duration']} s" if c["duration"] is not None else "?"
+            mark = status(c["correct"]) if c["counted"] else "–"
+            w(f"| {fmt(c['at'])} | {duration} | {', '.join(c['apps']) or '?'} | {'sim' if c['headphone'] else 'não'} | {c['before'] or '?'} | {c['wanted'] or '?'} | {mark} {c['why']} |")
+    else:
+        w("Nenhuma chamada detectada. A regra de chamada está ligada na aba Automação?")
+    w("")
+
+    w("## Trocas automáticas\n")
+    applied = Counter(e.get("rule") for e in by["rule.applied"])
+    if applied or by["rule.undone"]:
+        w("| Regra | Aplicada | Ack mediano |")
+        w("|---|---|---|")
+        for rule, count in applied.most_common():
+            acks = [e["ackMs"] for e in by["rule.applied"] if e.get("rule") == rule and "ackMs" in e]
+            w(f"| {rule} | {count} | {statistics.median(acks):.0f} ms |" if acks else f"| {rule} | {count} | ? |")
+        w(f"\nDesfeitas: {len(by['rule.undone'])}. Sem nada a escrever: {len(by['rule.noop'])}. Pendentes (fone indisponível): {len(by['rule.pending'])}. Divergências: {len(by['rule.divergence'])}.")
+        checks = Counter(e.get("result") for e in by["rule.check"])
+        if checks:
+            w(f"Conferências com o canal solto: {dict(checks)}.")
+    else:
+        w("Nenhuma.")
+    w("")
+    w(f"Trocas de Foco: {len(by['focus.change'])}. Perfis aplicados: {dict(Counter(e.get('kind') for e in by['profile.applied'])) or 0}.\n")
+
+    w("## Ajustes manuais\n")
+    sources = Counter(e.get("source") for e in by["manual"])
+    w(f"Total: {len(by['manual'])}. Por origem: {dict(sources) or 0}.\n")
+    w(f"Logo depois de uma troca automática (até {AFTER_AUTO.seconds} s): **{len(suspicious)}**. É o sinal de que a regra errou.\n")
+    for e, auto in suspicious:
+        cause = f"depois de `{auto['ev']}` {auto.get('rule')} → {auto.get('to')}" if auto else "visto ao reabrir o canal"
+        w(f"- {fmt(e['_at'])}: {e.get('source')} → {e.get('to') or e.get('fields')}, {cause}")
+    w("")
+
+    w("## SETs\n")
+    w(f"Enviados: {len(by['set.sent'])}. Redundantes: **{len(redundant)}**.\n")
+    for e in redundant[:20]:
+        w(f"- {fmt(e['_at'])}: `{e.get('message')}`")
+    w("")
+
+    w("## Conexão\n")
+    w(f"Reconexões do Bluetooth: {min(len(by['link.down']), len(by['link.up']))}. Quedas do canal sem motivo: {len(dropped)}. Aberturas do canal: {len(by['channel.open'])}.\n")
+    w(f"Fechamentos pelo watchdog: {len(by['watchdog.close'])}.\n")
+    for e in by["watchdog.close"]:
+        w(f"- {fmt(e['_at'])}: {e.get('uis')} UIs contadas, {'explicado' if e not in unexplained else '**sem explicação**'}")
+    w("")
+
+    w("## Falhas\n")
+    w(f"Relatórios do macOS em `~/Library/Logs/DiagnosticReports`: **{len(crash_list)}**.\n")
+    for c in crash_list:
+        w(f"- {fmt(c['at'])}: `{c['path'].name}`, versão {c['version']}, {c['reason']}")
+    w(f"\nErros de protocolo: **{len(errors)}**. Encerramentos sem registro de saída: {unclean}, que incluem kill e queda de energia.\n")
+    for e in errors[:20]:
+        w(f"- {fmt(e['_at'])}: {e.get('kind')}: {e.get('error', '')}")
+    w("")
+
+    w("## Momentos marcados\n")
+    if not by["moment"]:
+        w("Nenhum.")
+    for e in by["moment"]:
+        w(f"### {fmt(e['_at'])}: {notes.get(e.get('id')) or '(sem texto)'}\n")
+        w("```json")
+        w(json.dumps(e.get("state", {}), ensure_ascii=False, sort_keys=True))
+        w("```\n")
+    w("")
+
+    w("## Som no Mac\n")
+    samples = by["macsound.sample"]
+    changes = by["macsound.set"]
+    w(f"Ligado {sum(1 for e in changes if e.get('on'))} vezes, desligado {sum(1 for e in changes if not e.get('on'))}. Amostras: {len(samples)}.\n")
+    latency = [e["latencyMs"] for e in samples if e.get("latencyMs", 0) > 0]
+    cpu = [e["cpuPct"] for e in samples if "cpuPct" in e]
+    if latency:
+        w(f"Latência: mediana {statistics.median(latency):.1f} ms, p95 {percentile(latency, 0.95):.1f} ms, máxima {max(latency):.1f} ms.")
+    if cpu:
+        w(f"CPU do app: mediana {statistics.median(cpu):.1f}%, máxima {max(cpu):.1f}%.")
+    w("")
+
+    w("## Eventos lidos\n")
+    w(", ".join(f"`{k}` {v}" for k, v in sorted(Counter(e["ev"] for e in events).items())) + ".\n")
+    unknown = sorted({e["ev"] for e in events} - KNOWN)
+    if unknown:
+        w(f"**Tipos que este relatório não conhece:** {', '.join(unknown)}.\n")
+    if broken:
+        w(f"**Linhas ilegíveis ignoradas:** {broken}.\n")
+    if by["log.full"]:
+        w(f"**Limite de 50 MB atingido em {len(by['log.full'])} dias: faltam eventos.**\n")
+    for e in by["hotkey.failed"]:
+        w(f"**O atalho {e.get('display')} não registrou em {fmt(e['_at'])}.**\n")
+    offered = [e for e in by["update.check"] if e.get("result") == "offered"]
+    if offered:
+        w(f"**O Sparkle ofereceu atualização: {offered[-1].get('offered')}.**\n")
+    return "\n".join(out)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--dir", type=Path)
+    parser.add_argument("--since")
+    parser.add_argument("--until")
+    parser.add_argument("--crashes", type=Path, default=CRASHES)
+    parser.add_argument("--out", type=Path)
+    args = parser.parse_args()
+    folder = args.dir or next((d for d in DEFAULT_DIRS if d.is_dir()), DEFAULT_DIRS[0])
+    events, broken = load(folder, args.since, args.until)
+    start = datetime.fromisoformat(args.since).astimezone() if args.since else events[0]["_at"] if events else None
+    end = datetime.fromisoformat(args.until).astimezone() if args.until else None
+    text = report(events, broken, crashes(args.crashes, start, end))
+    if args.out:
+        args.out.write_text(text, encoding="utf-8")
+    else:
+        sys.stdout.write(text)
+
+
+if __name__ == "__main__":
+    main()

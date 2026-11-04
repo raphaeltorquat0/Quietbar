@@ -21,12 +21,17 @@ struct MenuBarView: View {
     private var actions: PanelActions {
         let d = device
         return PanelActions(
-            setMode: { m in d.perform { try await $0.setSoundMode(m) } },
+            setMode: { m in
+                Telemetry.shared.modeRequested(.panel)
+                d.perform { try await $0.setSoundMode(m) }
+            },
             setAmbient: { v in d.perform { try await $0.setAmbientLevel(v) } },
             setFocusOnVoice: { v in d.perform { try await $0.setFocusOnVoice(v) } },
             setPreset: { id in d.perform { try await $0.setEqualizerPreset(id) } },
             setSpeakToChat: { v in d.perform { try await $0.setSpeakToChat(v) } },
             setDSEE: { v in d.perform { try await $0.setDSEE(v) } },
+            setMacSound: { _ in MacSound.shared.toggle() },
+            setMacPreset: { id in MacPreset(rawValue: id).map { MacSound.shared.preset = $0 } },
             previous: { d.perform { try await $0.playback(.previous) } },
             playPause: {
                 let playing = d.state.playback?.isPlaying ?? false
@@ -85,6 +90,14 @@ extension PanelState {
             p.dseeTitle = s.dseeType == 0x03 ? "DSEE Extreme" : "DSEE"
             p.dseeAvailable = s.dseeAvailable != false
         }
+        let sound = MacSound.shared
+        if sound.outputIsHeadphone {
+            p.macSound = .init(enabled: sound.isOn, presetID: sound.preset.rawValue, status: sound.statusText,
+                               presets: MacPreset.allCases.map {
+                                   .init(id: $0.rawValue, name: $0.label, available: $0 != .correction || sound.correction != nil)
+                               })
+        }
+        p.automation = Automation.shared.indicator
         p.showPlayback = s.capabilities.playback
         p.isPlaying = s.playback?.isPlaying ?? false
         p.volume = s.volume.map(Int.init)

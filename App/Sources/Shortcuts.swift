@@ -2,10 +2,14 @@ import AppKit
 import Carbon.HIToolbox
 import MDRKit
 import MDRSession
+import QuietTelemetry
 import SwiftUI
 
 enum ShortcutAction: String, CaseIterable, Codable, Identifiable {
     case toggleNcAmbient, cycleMode, noiseCanceling, ambient, off, focusOnVoice, playPause, showPopup
+    // Sempre no fim: o ID do atalho registrado é o índice aqui.
+    case toggleMacSound
+    case markMoment
 
     var id: String { rawValue }
 
@@ -19,11 +23,16 @@ enum ShortcutAction: String, CaseIterable, Codable, Identifiable {
         case .focusOnVoice: "Alternar Focus on Voice"
         case .playPause: "Play / pausa"
         case .showPopup: "Mostrar o popup do fone"
+        case .toggleMacSound: "Ligar ou desligar o Som no Mac"
+        case .markMoment: "Marcar momento (teste interno)"
         }
     }
 
-    @MainActor func run(_ device: DeviceController) {
+    @MainActor func run(_ device: DeviceController, source: ModeSource = .hotkey) {
         if self == .showPopup { return PopupController.shared.present() }
+        if self == .toggleMacSound { return MacSound.shared.toggle() }
+        if self == .markMoment { return Dogfood.shared.markMoment() }
+        Telemetry.shared.modeRequested(source)
         device.perform { s in
             let st = await s.state
             let mode = st.noiseControl?.soundMode
@@ -37,7 +46,7 @@ enum ShortcutAction: String, CaseIterable, Codable, Identifiable {
             case .off: try await s.setSoundMode(.off)
             case .focusOnVoice: try await s.setNoiseControl { $0.soundMode = .ambient; $0.focusOnVoice.toggle() }
             case .playPause: try await s.playback(st.playback?.isPlaying == true ? .pause : .play)
-            case .showPopup: break
+            case .showPopup, .toggleMacSound, .markMoment: break
             }
         }
     }
@@ -47,6 +56,12 @@ struct KeyCombo: Codable, Hashable {
     var keyCode: UInt32
     var carbonModifiers: UInt32
     var display: String
+
+    init(keyCode: UInt32, carbonModifiers: UInt32, display: String) {
+        self.keyCode = keyCode
+        self.carbonModifiers = carbonModifiers
+        self.display = display
+    }
 
     init?(event: NSEvent) {
         let f = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
@@ -81,12 +96,16 @@ final class HotKeys {
         refs.forEach { UnregisterEventHotKey($0) }
         refs.removeAll()
         installHandler()
+        let moment = AppSettings.shared.dogfoodEnabled
+        if moment, combos[.markMoment] == nil { combos[.markMoment] = .moment }
         for (i, action) in ShortcutAction.allCases.enumerated() {
-            guard let c = combos[action] else { continue }
+            guard let c = combos[action], action != .markMoment || moment else { continue }
             var ref: EventHotKeyRef?
             let id = EventHotKeyID(signature: OSType(0x534E_5943), id: UInt32(i)) // 'SNYC'
             if RegisterEventHotKey(c.keyCode, c.carbonModifiers, id, GetEventDispatcherTarget(), 0, &ref) == noErr, let ref {
                 refs.append(ref)
+            } else if action == .markMoment {
+                Dogfood.shared.record("hotkey.failed", ["display": c.display])
             }
         }
     }
@@ -117,7 +136,7 @@ struct ShortcutsTab: View {
     var body: some View {
         Form {
             Section {
-                ForEach(ShortcutAction.allCases) { action in
+                ForEach(ShortcutAction.allCases.filter { $0 != .markMoment || AppSettings.shared.dogfoodEnabled }) { action in
                     LabeledContent(action.label) {
                         HStack {
                             Button(recording == action ? "Digite o atalho…" : hotKeys.combos[action]?.display ?? "Gravar") {

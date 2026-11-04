@@ -1,0 +1,134 @@
+#!/usr/bin/env python3
+"""Resumo semanal das métricas. Lê o DynamoDB pelo AWS CLI, ou um arquivo com a saída de `aws dynamodb scan`.
+
+Uso: telemetry-report --table <nome> [--region <r>] | --input <arquivo> | --selftest
+"""
+import argparse, collections, datetime as dt, json, subprocess, sys
+
+Day = dt.date
+TRIGGERS = ("call", "focus", "app", "wifi", "shortcut")
+BUCKETS = (("0", 0, 0), ("1-2", 1, 2), ("3-5", 3, 5), ("6-10", 6, 10), ("11-49", 11, 49), ("50+", 50, 50))
+RETENTION_WINDOW = 7  # D7 é voltar entre os dias 7 e 13; D30, entre os dias 30 e 36
+
+
+def plain(attr):
+    """Tira os tipos do formato do DynamoDB."""
+    kind, value = next(iter(attr.items()))
+    if kind == "N":
+        return int(value)
+    if kind == "M":
+        return {k: plain(v) for k, v in value.items()}
+    if kind == "NULL":
+        return None
+    return value
+
+
+def scan(table, region):
+    # Scan de propósito: relatório manual e semanal numa tabela pequena. O CLI cuida da paginação.
+    cmd = ["aws", "dynamodb", "scan", "--table-name", table, "--output", "json"] + (["--region", region] if region else [])
+    return json.loads(subprocess.run(cmd, check=True, capture_output=True, text=True).stdout)
+
+
+def date(item):
+    return Day.fromisoformat(item["date"])
+
+
+def week(d):
+    return d - dt.timedelta(days=d.weekday())
+
+
+def retention(by_install, n, today):
+    """Quem tem primeiro dia antigo o bastante e usou o app na janela de `n`. O ID muda a cada 90 dias: quem rotaciona vira novo."""
+    eligible = kept = 0
+    for days in by_install.values():
+        first = min(days)
+        if today - first < dt.timedelta(days=n + RETENTION_WINDOW - 1):
+            continue
+        eligible += 1
+        kept += any(n <= (d - first).days < n + RETENTION_WINDOW for d in days)
+    return kept, eligible
+
+
+def percent(a, b):
+    return f"{100 * a / b:.0f}% ({a}/{b})" if b else "sem dados"
+
+
+def summarize(items, today):
+    active = [i for i in items if i["activeDay"]]
+    by_install = collections.defaultdict(set)
+    for i in active:
+        by_install[i["installId"]].add(date(i))
+    weeks = collections.defaultdict(set)
+    for i in active:
+        weeks[week(date(i))].add(i["installId"])
+    start = today - dt.timedelta(days=7)
+    recent = [i for i in items if start <= date(i) < today]
+    latest = {}
+    for i in sorted(recent, key=date):
+        latest[i["installId"]] = i
+    installs = len(latest)
+    automated = {i["installId"] for i in recent if i["automation"]["enabled"]}
+    used = {t: {i["installId"] for i in recent if i["automation"]["triggersFired"][t] > 0} for t in TRIGGERS}
+    fired = {t: sum(i["automation"]["triggersFired"][t] for i in recent) for t in TRIGGERS}
+    days = [i["manualModeChanges"] for i in recent if i["activeDay"]]
+    out = [f"# Métricas do Quietbar, até {today}", "", "## Ativos por semana"]
+    out += [f"- {w}: {len(ids)}" for w, ids in sorted(weeks.items())[-8:]] or ["- sem dados"]
+    out += ["", "## Retenção",
+            f"- D7 (voltou entre os dias 7 e 13): {percent(*retention(by_install, 7, today))}",
+            f"- D30 (voltou entre os dias 30 e 36): {percent(*retention(by_install, 30, today))}",
+            "- O ID muda a cada 90 dias: quem rotaciona conta como novo.",
+            "", "## Últimos 7 dias", f"- Instalações: {installs}",
+            f"- Com automação ativa: {percent(len(automated), installs)}",
+            f"- Ajustes manuais contra uma regra: {sum(i['automation']['overridesManual'] for i in recent)}", "",
+            "## Trocas manuais por dia ativo"]
+    out += [f"- {name}: {percent(sum(lo <= d <= hi for d in days), len(days))}" for name, lo, hi in BUCKETS]
+    out += ["", "## Uso por gatilho"]
+    out += [f"- {t}: {percent(len(used[t]), installs)} das instalações, {fired[t]} disparos (dias acima de 50 contam 50)" for t in TRIGGERS]
+    for title, key in (("Modelos", "deviceModelFamily"), ("macOS", "macOSMajor"), ("Versões do app", "appVersion")):
+        counts = collections.Counter(str(i[key]) if i[key] is not None else "sem fone visto" for i in latest.values())
+        out += ["", f"## {title}"] + [f"- {k}: {percent(n, installs)}" for k, n in counts.most_common()]
+    return "\n".join(out)
+
+
+def packet(install, day, manual=0, active=True, enabled=False, call=0, family="WH-1000XM5"):
+    triggers = dict.fromkeys(TRIGGERS, 0) | {"call": call}
+    return {"installId": install, "date": str(day), "activeDay": active, "manualModeChanges": manual, "macOSMajor": 27,
+            "appVersion": "1.4.0", "deviceModelFamily": family,
+            "automation": {"enabled": enabled, "triggersFired": triggers, "overridesManual": 0, "trialDay": None}}
+
+
+def selftest():
+    assert plain({"M": {"a": {"N": "1"}, "b": {"NULL": True}, "c": {"BOOL": False}, "d": {"S": "x"}}}) == {"a": 1, "b": None, "c": False, "d": "x"}
+    today = Day(2026, 10, 31)
+    ago = lambda n: today - dt.timedelta(days=n)
+    items = [packet("a", ago(40)), packet("a", ago(33)), packet("a", ago(9)), packet("a", ago(1), manual=50, enabled=True, call=2),
+             packet("b", ago(40)), packet("c", ago(2), active=False, family=None)]
+    by = {"a": {ago(40), ago(33), ago(9), ago(1)}, "b": {ago(40)}}
+    assert retention(by, 7, today) == (1, 2)
+    assert retention(by, 30, today) == (1, 2)
+    text = summarize(items, today)
+    assert "- Instalações: 2" in text
+    assert "- Com automação ativa: 50% (1/2)" in text
+    assert "- 50+: 100% (1/1)" in text
+    assert "- call: 50% (1/2) das instalações, 2 disparos" in text
+    assert "- sem fone visto: 50% (1/2)" in text
+    print("ok")
+
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--table")
+    p.add_argument("--region")
+    p.add_argument("--input")
+    p.add_argument("--selftest", action="store_true")
+    a = p.parse_args()
+    if a.selftest:
+        return selftest()
+    if not (a.table or a.input):
+        p.error("informe --table ou --input")
+    raw = json.load(open(a.input)) if a.input else scan(a.table, a.region)
+    print(summarize([plain({"M": i}) for i in raw["Items"]], Day.today()))
+
+
+if __name__ == "__main__":
+    sys.exit(main())

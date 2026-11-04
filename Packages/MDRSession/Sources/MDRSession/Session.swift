@@ -134,6 +134,17 @@ public actor MDRSession {
         setPhase(.disconnected)
     }
 
+    /// Como `disconnect`, sem esperar o `close` do canal: é ele que pode estar preso.
+    public func forceDisconnect() {
+        generation += 1
+        reader?.cancel()
+        reader = nil
+        let channel = channel
+        Task { await channel.close() }
+        failWaiters()
+        setPhase(.disconnected)
+    }
+
     private func teardown() async {
         reader?.cancel()
         reader = nil

@@ -6,7 +6,7 @@ I built a free, open-source menu bar app to control Sony headphones on the Mac
 
 **Post**
 
-I'm the developer, so take this as self-promotion. It's free and MIT licensed, with no account and no subscription. Its only network use is the update check, which you can turn off.
+I'm the developer, so take this as self-promotion. It's free and MIT licensed, with no account and no subscription. It uses the network for the update check, which you can turn off, and for anonymous metrics, opt-in, off by default.
 
 Quietbar is a native menu bar app for Sony headphones. From the Mac you can change:
 

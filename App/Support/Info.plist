@@ -26,12 +26,18 @@
 	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>O Quietbar usa o Bluetooth para ler e alterar os ajustes do seu fone Sony.</string>
+	<key>NSAudioCaptureUsageDescription</key>
+	<string>O Som no Mac processa o áudio do sistema para melhorar o som do seu fone. Nada é gravado nem enviado: o som é processado na memória e sai direto para o fone.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>O Quietbar não usa o microfone. Esta permissão só é pedida pelo teste de eco da aba Desenvolvedor, que lê um dispositivo virtual de loopback.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>O macOS só informa o nome da rede Wi-Fi a apps com acesso à localização. O Quietbar usa isso apenas para os perfis por rede.</string>
 	<key>NSLocationUsageDescription</key>
 	<string>O macOS só informa o nome da rede Wi-Fi a apps com acesso à localização. O Quietbar usa isso apenas para os perfis por rede.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Projeto independente, sem afiliação com a Sony.</string>
+	<key>QuietbarTelemetryURL</key>
+	<string></string>
 	<key>SUFeedURL</key>
 	<string>https://raphaeltorquat0.github.io/Quietbar/appcast.xml</string>
 	<key>SUPublicEDKey</key>

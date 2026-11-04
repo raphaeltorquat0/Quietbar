@@ -21,6 +21,8 @@ final class DeviceController {
     var lastError: String?
     /// Última bateria lida; o canal é solto 15 s após fechar a UI, mas o ícone continua mostrando o valor.
     private(set) var lastBattery: BatteryStatus?
+    /// Vezes em que o watchdog fechou um canal que a liberação por ociosidade deixou aberto.
+    private(set) var watchdogCloses = 0
 
     var state: MDRDeviceState { snapshot.state }
     var isReady: Bool { snapshot.phase == .ready }
@@ -31,7 +33,11 @@ final class DeviceController {
     var selectedAddress: String? {
         didSet {
             UserDefaults.standard.set(selectedAddress, forKey: "selectedAddress")
-            if oldValue != selectedAddress { Task { await reset() } }
+            if oldValue != selectedAddress {
+                MacSound.shared.targetChanged(selectedAddress)
+                Automation.shared.engine.forgetDevice()
+                Task { await reset() }
+            }
         }
     }
 
@@ -42,8 +48,14 @@ final class DeviceController {
     @ObservationIgnored private var batteryTimer: Timer?
     @ObservationIgnored private var visible = 0
     @ObservationIgnored private var connecting: Task<Void, Never>?
+    @ObservationIgnored private var tail: Task<Void, Never>?
     @ObservationIgnored private var lowBatteryNotified = false
     @ObservationIgnored private let watcher = BluetoothWatcher()
+    @ObservationIgnored private var watchdog = ChannelWatchdog()
+    @ObservationIgnored private var busy = 0
+    @ObservationIgnored private var lastActivity = ContinuousClock.now
+    /// Por que o canal vai fechar. Sem motivo, ele caiu sozinho.
+    @ObservationIgnored private var closing: String?
 
     private init() {
         selectedAddress = UserDefaults.standard.string(forKey: "selectedAddress")
@@ -51,6 +63,12 @@ final class DeviceController {
         if selectedAddress == nil { selectedAddress = BluetoothDevices.preferredSony(among: devices)?.address }
         observeSystem()
         scheduleBatteryCheck()
+        Task {
+            while true {
+                try? await Task.sleep(for: Self.watchdogTick)
+                await checkChannel()
+            }
+        }
     }
 
     func refreshDevices() {
@@ -63,6 +81,7 @@ final class DeviceController {
 
     func uiAppeared() {
         visible += 1
+        lastActivity = .now
         idleTask?.cancel()
         refreshDevices()
         Task { await ensureConnected() }
@@ -70,6 +89,7 @@ final class DeviceController {
 
     func uiDisappeared() {
         visible = max(0, visible - 1)
+        lastActivity = .now
         if visible == 0 { scheduleRelease() }
     }
 
@@ -79,8 +99,33 @@ final class DeviceController {
         idleTask = Task { [weak self] in
             try? await Task.sleep(for: delay)
             guard !Task.isCancelled, let self, self.visible == 0 else { return }
+            self.closing = "idle"
             await self.session?.disconnect()
         }
+    }
+
+    // MARK: - Watchdog
+
+    private static let watchdogTick = Duration.seconds(5)
+    /// A liberação normal tem a preferência: o watchdog só age depois dela.
+    private static let watchdogMargin = 5
+
+    /// Olha as janelas de verdade: um contador `visible` que ficou alto também prende o canal.
+    private var interfaceVisible: Bool {
+        visible > 0 && NSApp.windows.contains { $0.isVisible && $0.className != "NSStatusBarWindow" }
+    }
+
+    private func checkChannel() async {
+        let idle = settings.idleReleaseSeconds + Self.watchdogMargin
+        let status = ChannelWatchdog.Status(channelOpen: isReady, interfaceVisible: interfaceVisible, busy: busy > 0, lastActivity: lastActivity)
+        guard watchdog.shouldClose(status, limit: .seconds(idle), now: .now) else { return }
+        watchdogCloses = watchdog.closes
+        ProtocolLog.shared.note("Watchdog: canal aberto há mais de \(idle) s sem interface. Fechado (\(visible) UIs contadas).")
+        Dogfood.shared.record("watchdog.close", ["uis": visible, "idleS": idle])
+        closing = "watchdog"
+        visible = 0
+        idleTask?.cancel()
+        await session?.forceDisconnect()
     }
 
     // MARK: - Sessão
@@ -115,6 +160,7 @@ final class DeviceController {
         let s = session ?? makeSession(selectedAddress ?? "")
         do {
             try await s.connect()
+            lastActivity = .now
             lastError = nil
         } catch {
             lastError = error.localizedDescription
@@ -142,6 +188,7 @@ final class DeviceController {
 
     /// "Desconectar" do menu: solta o canal e a conexão Bluetooth do fone com o Mac.
     func disconnectDevice() async {
+        closing = "menu"
         await session?.disconnect()
         if !simulating, let a = selectedAddress { BluetoothDevices.disconnect(a) }
         refreshDevices()
@@ -156,7 +203,10 @@ final class DeviceController {
         #endif
         let s = MDRSession(channel: channel, traffic: { dir, bytes in
             if toFile { TrafficLog.append(dir, bytes) }
-            Task { @MainActor in ProtocolLog.shared.add(dir, bytes) }
+            Task { @MainActor in
+                ProtocolLog.shared.add(dir, bytes)
+                Dogfood.shared.traffic(dir, bytes)
+            }
         })
         session = s
         observer?.cancel()
@@ -167,6 +217,9 @@ final class DeviceController {
     }
 
     #if DEBUG
+    /// Validação: quantas UIs seguram o canal aberto agora.
+    var openUIs: Int { visible }
+
     /// Troca entre Bluetooth e fone simulado.
     func restartSession() async { await reset() }
 
@@ -191,18 +244,57 @@ final class DeviceController {
 
     /// Executa uma ação no fone: conecta se preciso e, sem UI aberta, solta o canal depois.
     func perform(_ action: @escaping @Sendable (MDRSession) async throws -> Void) {
+        let task = enqueue(action)
         Task {
-            await ensureConnected()
-            guard isReady, let session else { return }
-            do { try await action(session) } catch { lastError = error.localizedDescription }
-            if visible == 0 { scheduleRelease() }
+            do {
+                try await task.value
+            } catch is NotConnected {
+            } catch {
+                lastError = error.localizedDescription
+                Dogfood.shared.record("protocol.error", ["kind": "action", "error": lastError])
+            }
         }
     }
 
+    /// Como `perform`, para quem precisa do resultado: Atalhos e o motor de automação.
+    func run<T: Sendable>(_ action: @escaping @Sendable (MDRSession) async throws -> T) async throws -> T {
+        try await enqueue(action).value
+    }
+
+    /// Único caminho de escrita no fone: uma ação de cada vez, na ordem em que chegaram. Os `set` partem do
+    /// último estado lido, então duas ações juntas podiam desfazer uma à outra.
+    private func enqueue<T: Sendable>(_ action: @escaping @Sendable (MDRSession) async throws -> T) -> Task<T, Error> {
+        let previous = tail
+        let task = Task<T, Error> {
+            await previous?.value
+            idleTask?.cancel() // a liberação por ociosidade fecharia o canal no meio da ação
+            await ensureConnected()
+            guard isReady, let session else { throw NotConnected() }
+            busy += 1
+            defer {
+                busy -= 1
+                lastActivity = .now
+                if visible == 0 { scheduleRelease() }
+            }
+            return try await action(session)
+        }
+        tail = Task { _ = await task.result }
+        return task
+    }
+
     private func received(_ snap: MDRSession.Snapshot) {
+        if snap.phase != snapshot.phase {
+            Dogfood.shared.channelChanged(from: snapshot.phase, to: snap.phase, reason: closing)
+            closing = nil
+        }
         snapshot = snap
+        #if DEBUG
+        HardwareTest.log()
+        #endif
         if let b = snap.state.primaryBattery { lastBattery = b }
         checkBattery(snap.state.primaryBattery)
+        Automation.shared.report()
+        Telemetry.shared.modeReported(snap.state.noiseControl?.soundMode)
     }
 
     // MARK: - Bateria
@@ -235,24 +327,38 @@ final class DeviceController {
     private func observeSystem() {
         let nc = NSWorkspace.shared.notificationCenter
         nc.addObserver(forName: NSWorkspace.willSleepNotification, object: nil, queue: .main) { _ in
-            MainActor.assumeIsolated { _ = Task { await DeviceController.shared.session?.disconnect() } }
+            MainActor.assumeIsolated {
+                DeviceController.shared.closing = "sleep"
+                _ = Task { await DeviceController.shared.session?.disconnect() }
+            }
         }
         nc.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { _ in
             MainActor.assumeIsolated {
                 let c = DeviceController.shared
-                guard c.visible > 0 else { return }
                 Task {
                     try? await Task.sleep(for: .seconds(3)) // o Bluetooth volta alguns segundos depois do wake
-                    await c.ensureConnected()
+                    if c.visible > 0 { await c.ensureConnected() }
+                    // Sem aviso de conexão, porque o link não caiu, uma transição pendente ficaria presa.
+                    Automation.shared.engine.deviceAvailable()
                 }
             }
         }
         watcher.onChange = { [weak self] address, connected in
             guard let self, address == self.selectedAddress else { return }
+            Dogfood.shared.record(connected ? "link.up" : "link.down")
             self.refreshDevices()
             if connected, self.visible > 0 { Task { await self.ensureConnected() } }
             if connected { PopupController.shared.deviceConnected() }
-            if !connected { Task { await self.session?.disconnect() } }
+            if connected {
+                Task {
+                    try? await Task.sleep(for: .seconds(2)) // o serviço RFCOMM sobe logo depois do baseband
+                    Automation.shared.engine.deviceAvailable()
+                }
+            }
+            if !connected {
+                self.closing = "link"
+                Task { await self.session?.disconnect() }
+            }
         }
         watcher.start()
 
@@ -270,6 +376,10 @@ final class DeviceController {
     }
 }
 
+struct NotConnected: LocalizedError {
+    var errorDescription: String? { String(localized: "O fone não está conectado.") }
+}
+
 enum Notifier {
     static func requestAuthorization() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
@@ -283,13 +393,15 @@ enum Notifier {
     }
 }
 
-/// Log de tráfego em `~/Library/Logs/Quietbar/traffic.log`, no mesmo formato do `mdr-cli --log-hex`.
+/// Log de tráfego em `~/Library/Logs/Quietbar/traffic.log`: tempo monotônico em ms, hora e o frame como no
+/// `mdr-cli --log-hex`. Só o monotônico ordena frames de uma sessão: a hora tem resolução de 1 s e pode ser ajustada.
 enum TrafficLog {
     static let url = FileManager.default.homeDirectoryForCurrentUser
         .appending(path: "Library/Logs/Quietbar/traffic.log")
 
     @Sendable static func append(_ dir: MDRSession.Direction, _ bytes: [UInt8]) {
-        let line = "\(Date().ISO8601Format()) \(dir == .tx ? ">>" : "<<") \(bytes.hex)\n"
+        let ms = clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW) / 1_000_000
+        let line = "\(ms) \(Date().ISO8601Format()) \(dir == .tx ? ">>" : "<<") \(bytes.hex)\n"
         try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         if let h = try? FileHandle(forWritingTo: url) {
             h.seekToEndOfFile()

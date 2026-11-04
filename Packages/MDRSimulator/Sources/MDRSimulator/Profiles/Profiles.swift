@@ -49,9 +49,9 @@ public enum Profiles {
             $0.connectionPriority = true
             $0.generalSettings = [touch1, multipoint2]
         },
-        origin: .capture(fixtures: ["wh-1000xm5-2.5.1", "wh-1000xm5-2.5.1-sessao"],
-                         source: "mdr-cli dump --log-hex somente leitura de um WH-1000XM5 fw 2.5.1, em 2026-10-29 e 2026-10-30"),
-        gaps: ["Sessão somente leitura: a reação real a cada SET não foi observada",
+        origin: .capture(fixtures: ["wh-1000xm5-2.5.1", "wh-1000xm5-2.5.1-sessao", "wh-1000xm5-2.5.1-escrita"],
+                         source: "mdr-cli dump e set --log-hex de um WH-1000XM5 fw 2.5.1, em 2026-10-29 e 2026-10-30"),
+        gaps: ["SETs capturados em 2026-10-30, exceto painel de toque, função do botão NC/AMB e desligar o fone",
                "O endereço e os nomes de aparelhos pareados foram trocados por valores falsos"])
 
     public static let wf1000xm5 = DeviceProfile(

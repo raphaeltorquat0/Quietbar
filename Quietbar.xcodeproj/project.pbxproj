@@ -7,40 +7,54 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0BCA50A5F1B865CCC792E95A /* QuietAutomation in Frameworks */ = {isa = PBXBuildFile; productRef = 12E8C6183AD027D04A4F0E35 /* QuietAutomation */; };
 		0CA5A0CEE926A96ED6397367 /* MDRTransport in Frameworks */ = {isa = PBXBuildFile; productRef = 011E8A8A201E1764AD8D4448 /* MDRTransport */; };
 		0F716386549DB4C763F4B570 /* EqualizerTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0A1D70B5F7ACD718F8431E5 /* EqualizerTab.swift */; };
 		15D38B949FF9D9637981D723 /* PressKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43C257976F7F3F5B27D0A311 /* PressKit.swift */; };
 		17D44908CE935FEDADFD47C1 /* CoreWLAN.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0BA90D24E84A37B9DECB5FF /* CoreWLAN.framework */; };
 		1A800BF189A50C1A0FC3999E /* QuietbarControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7BA4B97DEE65BACB7F355C9 /* QuietbarControls.swift */; };
 		27A3BA1E4227E02F9E3E96E6 /* MDRKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5E6AD44C85C96598AE9489C9 /* MDRKit */; };
+		2CA2F9E155AAFDB9AE1D9A60 /* MacSoundTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9FF9BC9CF7AC1C9C8195B0 /* MacSoundTab.swift */; };
 		30B5AFDF470B79D7D2E0B5C0 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 0528E04F6642BDBBB82B90AE /* Localizable.xcstrings */; };
 		3BC6EE86C1310F1F16334F7C /* QuietbarControls.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = EFDDB74D13EAD0A8486AC2B8 /* QuietbarControls.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		3E2F3C425371031DC5F3EF42 /* SiteCaptures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 805AC7AC0617F3A8C4470ACC /* SiteCaptures.swift */; };
 		444D9008C2CE459DB413CAE8 /* Sparkle-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 5450C3163EF32382EA56FFB7 /* Sparkle-LICENSE.txt */; };
 		4EE2AD566D8518B672A610A9 /* ProtocolLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64FCB687A295807BCC467D05 /* ProtocolLog.swift */; };
 		55575B2ABBF47CF3559C7906 /* StatusBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6765529F3829519180CD6F /* StatusBar.swift */; };
+		5B4CA07914DF2A5D1AD54B5F /* AutomationTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1735D0B536BC9F24EE9BBD85 /* AutomationTab.swift */; };
 		669E0DDD1CD604F0C7BEF3E6 /* PanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7293F759BEDD528E9841E932 /* PanelView.swift */; };
 		6E825011F722CF70EC0F9805 /* PanelControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8999D82FE5D45F03AE5247 /* PanelControls.swift */; };
 		7D1AA783287C66799FDAA0C4 /* QuietbarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A5F3C7054A1D2754390EC94 /* QuietbarApp.swift */; };
 		8249C76B689F489AE270576B /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BFDD4022653354E2552EB540 /* WidgetKit.framework */; };
-		97829A26D6AF70F4F9ECDD88 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 15BF06F3DBFD9D88EF19588C /* Sparkle */; };
+		8C1FF0FBC177193E414A29A8 /* Dogfood.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E6AEACF2BA88B5966BA63D /* Dogfood.swift */; };
+		912CE03B702C801EFFDDC6DF /* QuietTelemetry in Frameworks */ = {isa = PBXBuildFile; productRef = 409715532AA8C8697C0B5DD7 /* QuietTelemetry */; };
+		97829A26D6AF70F4F9ECDD88 /* QuietAudio in Frameworks */ = {isa = PBXBuildFile; productRef = CF9BF86A6D2C2433BC2C3459 /* QuietAudio */; };
 		A62F23B59BB5B25402306ACB /* MDRSession in Frameworks */ = {isa = PBXBuildFile; productRef = FAD7807A0489F2F72F8609BF /* MDRSession */; };
 		A668E326F360720412943C8E /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D4526A10BD3500F2860F0A2 /* Components.swift */; };
 		A7ADD00688CC326586E22F04 /* ControlCenterBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C191D66CBB722B4503ADE4CE /* ControlCenterBridge.swift */; };
 		AD9FC4A606565CED254FA8AE /* Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621C215115C7F95676029BE6 /* Shortcuts.swift */; };
 		AF1168603033131E4704FF97 /* Updates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 285EF06533C520AFDA960E52 /* Updates.swift */; };
 		B2D72CE5891642BEEDCC6D0C /* DeviceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E689B6483FC7D446807B1524 /* DeviceController.swift */; };
+		B7EC7922B122F322AE718CCE /* MacSound.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31DDF0234A11C66470731BF /* MacSound.swift */; };
+		BE2B07E17B8C1C403C359573 /* Automation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8145CABC0B8B7EA29B4025B6 /* Automation.swift */; };
 		C2C73A7935414E007E2FDF47 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C9EADF4AEA31E57C5D2E018 /* SwiftUI.framework */; };
+		C98C317FAF52C195C763195E /* AppShortcuts.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 86C94C91B0BB93E0D730D844 /* AppShortcuts.xcstrings */; };
+		CA8128836DF6A85A93D06EB6 /* Telemetry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8492F1A21588037520845A2F /* Telemetry.swift */; };
+		CD5F1F772BC5BC4AD6F9048F /* AutomationDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 332DC0F8A75C3225ED133C73 /* AutomationDemo.swift */; };
 		D24AC5EB3BE8594D0EC080AB /* Simulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9843EA39B727B5E4032860A1 /* Simulation.swift */; };
 		D50AC8A5F68C7E99ADE65F0F /* DeveloperTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5026D463C4EF96FAE5805490 /* DeveloperTab.swift */; };
 		DC358D01EF23714EB03ABB5B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2B1A7D6751AA76BE8A2FFCF0 /* Assets.xcassets */; };
 		E10AD1FF69C8CCBBF9900709 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55AA52EA50BAEEF2BC5C922E /* MenuBarView.swift */; };
 		E1868A8502D808E34FB0D55C /* PanelPreviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A837D05662D77D3D91B3C5F /* PanelPreviews.swift */; };
 		E3E70312A2884E5EA8D92294 /* ConnectionPopup.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5B1E7BC89D8E3FC8678E979 /* ConnectionPopup.swift */; };
+		E6EA3792527A51DF08C6FE22 /* QuietbarIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0758B1DDE173670F42002BB1 /* QuietbarIntents.swift */; };
 		E766A8A621897E61A98C6EC2 /* HeadphoneModel in Frameworks */ = {isa = PBXBuildFile; productRef = D11F9DC88DDACE026C1BAE93 /* HeadphoneModel */; };
 		E80843557ADC5D34F74C47B8 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95BB0AFD5218FDDCF1F6DAB /* AppSettings.swift */; };
 		F3C5495A8F31D9DA79CC9BC7 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22A44C60BD66C3FC3B1A8B34 /* SettingsView.swift */; };
 		F8E13853253718D9A471C746 /* IOBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E3FAD409812AC26310D97661 /* IOBluetooth.framework */; };
+		FCFC156EFEAF50B782BDDE43 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 15BF06F3DBFD9D88EF19588C /* Sparkle */; };
 		FDCD271225078D0994CC81DA /* Profiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB21389603CDC1E949FC6D25 /* Profiles.swift */; };
+		FFD64B44A7ADF8DF908A0AA6 /* PrivacyTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15775F0ABDED7A68B77E594 /* PrivacyTab.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -69,11 +83,16 @@
 
 /* Begin PBXFileReference section */
 		0528E04F6642BDBBB82B90AE /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		0758B1DDE173670F42002BB1 /* QuietbarIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuietbarIntents.swift; sourceTree = "<group>"; };
 		0D4526A10BD3500F2860F0A2 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
+		15E6AEACF2BA88B5966BA63D /* Dogfood.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dogfood.swift; sourceTree = "<group>"; };
+		1735D0B536BC9F24EE9BBD85 /* AutomationTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomationTab.swift; sourceTree = "<group>"; };
+		20FAB22704C32D5DF6553C38 /* sonyctl_macos */ = {isa = PBXFileReference; lastKnownFileType = folder; name = sonyctl_macos; path = .; sourceTree = SOURCE_ROOT; };
 		22A44C60BD66C3FC3B1A8B34 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		285EF06533C520AFDA960E52 /* Updates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Updates.swift; sourceTree = "<group>"; };
 		2A8999D82FE5D45F03AE5247 /* PanelControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelControls.swift; sourceTree = "<group>"; };
 		2B1A7D6751AA76BE8A2FFCF0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		332DC0F8A75C3225ED133C73 /* AutomationDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomationDemo.swift; sourceTree = "<group>"; };
 		43C257976F7F3F5B27D0A311 /* PressKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PressKit.swift; sourceTree = "<group>"; };
 		4C9EADF4AEA31E57C5D2E018 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		5026D463C4EF96FAE5805490 /* DeveloperTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperTab.swift; sourceTree = "<group>"; };
@@ -84,17 +103,23 @@
 		6A5F3C7054A1D2754390EC94 /* QuietbarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuietbarApp.swift; sourceTree = "<group>"; };
 		7293F759BEDD528E9841E932 /* PanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelView.swift; sourceTree = "<group>"; };
 		7A837D05662D77D3D91B3C5F /* PanelPreviews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelPreviews.swift; sourceTree = "<group>"; };
-		8E855E57218E8638078E0E34 /* quietbar-hotfix */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "quietbar-hotfix"; path = .; sourceTree = SOURCE_ROOT; };
+		805AC7AC0617F3A8C4470ACC /* SiteCaptures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteCaptures.swift; sourceTree = "<group>"; };
+		8145CABC0B8B7EA29B4025B6 /* Automation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Automation.swift; sourceTree = "<group>"; };
+		8492F1A21588037520845A2F /* Telemetry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Telemetry.swift; sourceTree = "<group>"; };
+		86C94C91B0BB93E0D730D844 /* AppShortcuts.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = AppShortcuts.xcstrings; sourceTree = "<group>"; };
 		9843EA39B727B5E4032860A1 /* Simulation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simulation.swift; sourceTree = "<group>"; };
 		A0A1D70B5F7ACD718F8431E5 /* EqualizerTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EqualizerTab.swift; sourceTree = "<group>"; };
 		A7BA4B97DEE65BACB7F355C9 /* QuietbarControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuietbarControls.swift; sourceTree = "<group>"; };
 		AA6765529F3829519180CD6F /* StatusBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBar.swift; sourceTree = "<group>"; };
 		BB21389603CDC1E949FC6D25 /* Profiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profiles.swift; sourceTree = "<group>"; };
 		BFDD4022653354E2552EB540 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		C15775F0ABDED7A68B77E594 /* PrivacyTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyTab.swift; sourceTree = "<group>"; };
 		C191D66CBB722B4503ADE4CE /* ControlCenterBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlCenterBridge.swift; sourceTree = "<group>"; };
 		C5B1E7BC89D8E3FC8678E979 /* ConnectionPopup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionPopup.swift; sourceTree = "<group>"; };
 		D0BA90D24E84A37B9DECB5FF /* CoreWLAN.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreWLAN.framework; path = System/Library/Frameworks/CoreWLAN.framework; sourceTree = SDKROOT; };
 		D2098E44906205C3E301EA24 /* Quietbar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Quietbar.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D31DDF0234A11C66470731BF /* MacSound.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacSound.swift; sourceTree = "<group>"; };
+		DD9FF9BC9CF7AC1C9C8195B0 /* MacSoundTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacSoundTab.swift; sourceTree = "<group>"; };
 		E3FAD409812AC26310D97661 /* IOBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOBluetooth.framework; path = System/Library/Frameworks/IOBluetooth.framework; sourceTree = SDKROOT; };
 		E689B6483FC7D446807B1524 /* DeviceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceController.swift; sourceTree = "<group>"; };
 		E95BB0AFD5218FDDCF1F6DAB /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
@@ -119,7 +144,10 @@
 				0CA5A0CEE926A96ED6397367 /* MDRTransport in Frameworks */,
 				27A3BA1E4227E02F9E3E96E6 /* MDRKit in Frameworks */,
 				E766A8A621897E61A98C6EC2 /* HeadphoneModel in Frameworks */,
-				97829A26D6AF70F4F9ECDD88 /* Sparkle in Frameworks */,
+				97829A26D6AF70F4F9ECDD88 /* QuietAudio in Frameworks */,
+				0BCA50A5F1B865CCC792E95A /* QuietAutomation in Frameworks */,
+				912CE03B702C801EFFDDC6DF /* QuietTelemetry in Frameworks */,
+				FCFC156EFEAF50B782BDDE43 /* Sparkle in Frameworks */,
 				F8E13853253718D9A471C746 /* IOBluetooth.framework in Frameworks */,
 				17D44908CE935FEDADFD47C1 /* CoreWLAN.framework in Frameworks */,
 			);
@@ -131,7 +159,7 @@
 		044843ED4D3956710BD3FB42 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				8E855E57218E8638078E0E34 /* quietbar-hotfix */,
+				20FAB22704C32D5DF6553C38 /* sonyctl_macos */,
 			);
 			path = Packages;
 			sourceTree = "<group>";
@@ -140,21 +168,31 @@
 			isa = PBXGroup;
 			children = (
 				E95BB0AFD5218FDDCF1F6DAB /* AppSettings.swift */,
+				8145CABC0B8B7EA29B4025B6 /* Automation.swift */,
+				332DC0F8A75C3225ED133C73 /* AutomationDemo.swift */,
+				1735D0B536BC9F24EE9BBD85 /* AutomationTab.swift */,
 				0D4526A10BD3500F2860F0A2 /* Components.swift */,
 				C5B1E7BC89D8E3FC8678E979 /* ConnectionPopup.swift */,
 				C191D66CBB722B4503ADE4CE /* ControlCenterBridge.swift */,
 				5026D463C4EF96FAE5805490 /* DeveloperTab.swift */,
 				E689B6483FC7D446807B1524 /* DeviceController.swift */,
+				15E6AEACF2BA88B5966BA63D /* Dogfood.swift */,
 				A0A1D70B5F7ACD718F8431E5 /* EqualizerTab.swift */,
+				D31DDF0234A11C66470731BF /* MacSound.swift */,
+				DD9FF9BC9CF7AC1C9C8195B0 /* MacSoundTab.swift */,
 				55AA52EA50BAEEF2BC5C922E /* MenuBarView.swift */,
 				43C257976F7F3F5B27D0A311 /* PressKit.swift */,
+				C15775F0ABDED7A68B77E594 /* PrivacyTab.swift */,
 				BB21389603CDC1E949FC6D25 /* Profiles.swift */,
 				64FCB687A295807BCC467D05 /* ProtocolLog.swift */,
 				6A5F3C7054A1D2754390EC94 /* QuietbarApp.swift */,
+				0758B1DDE173670F42002BB1 /* QuietbarIntents.swift */,
 				22A44C60BD66C3FC3B1A8B34 /* SettingsView.swift */,
 				621C215115C7F95676029BE6 /* Shortcuts.swift */,
 				9843EA39B727B5E4032860A1 /* Simulation.swift */,
+				805AC7AC0617F3A8C4470ACC /* SiteCaptures.swift */,
 				AA6765529F3829519180CD6F /* StatusBar.swift */,
+				8492F1A21588037520845A2F /* Telemetry.swift */,
 				285EF06533C520AFDA960E52 /* Updates.swift */,
 				B54FFB63207BB3E28ACA9FAB /* Panel */,
 			);
@@ -222,6 +260,7 @@
 		F4D9CE16549A25E820018B59 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				86C94C91B0BB93E0D730D844 /* AppShortcuts.xcstrings */,
 				2B1A7D6751AA76BE8A2FFCF0 /* Assets.xcassets */,
 				0528E04F6642BDBBB82B90AE /* Localizable.xcstrings */,
 				5450C3163EF32382EA56FFB7 /* Sparkle-LICENSE.txt */,
@@ -253,6 +292,9 @@
 				011E8A8A201E1764AD8D4448 /* MDRTransport */,
 				5E6AD44C85C96598AE9489C9 /* MDRKit */,
 				D11F9DC88DDACE026C1BAE93 /* HeadphoneModel */,
+				CF9BF86A6D2C2433BC2C3459 /* QuietAudio */,
+				12E8C6183AD027D04A4F0E35 /* QuietAutomation */,
+				409715532AA8C8697C0B5DD7 /* QuietTelemetry */,
 				15BF06F3DBFD9D88EF19588C /* Sparkle */,
 			);
 			productName = Quietbar;
@@ -324,6 +366,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C98C317FAF52C195C763195E /* AppShortcuts.xcstrings in Resources */,
 				DC358D01EF23714EB03ABB5B /* Assets.xcassets in Resources */,
 				30B5AFDF470B79D7D2E0B5C0 /* Localizable.xcstrings in Resources */,
 				444D9008C2CE459DB413CAE8 /* Sparkle-LICENSE.txt in Resources */,
@@ -338,24 +381,34 @@
 			buildActionMask = 2147483647;
 			files = (
 				E80843557ADC5D34F74C47B8 /* AppSettings.swift in Sources */,
+				BE2B07E17B8C1C403C359573 /* Automation.swift in Sources */,
+				CD5F1F772BC5BC4AD6F9048F /* AutomationDemo.swift in Sources */,
+				5B4CA07914DF2A5D1AD54B5F /* AutomationTab.swift in Sources */,
 				A668E326F360720412943C8E /* Components.swift in Sources */,
 				E3E70312A2884E5EA8D92294 /* ConnectionPopup.swift in Sources */,
 				A7ADD00688CC326586E22F04 /* ControlCenterBridge.swift in Sources */,
 				D50AC8A5F68C7E99ADE65F0F /* DeveloperTab.swift in Sources */,
 				B2D72CE5891642BEEDCC6D0C /* DeviceController.swift in Sources */,
+				8C1FF0FBC177193E414A29A8 /* Dogfood.swift in Sources */,
 				0F716386549DB4C763F4B570 /* EqualizerTab.swift in Sources */,
+				B7EC7922B122F322AE718CCE /* MacSound.swift in Sources */,
+				2CA2F9E155AAFDB9AE1D9A60 /* MacSoundTab.swift in Sources */,
 				E10AD1FF69C8CCBBF9900709 /* MenuBarView.swift in Sources */,
 				6E825011F722CF70EC0F9805 /* PanelControls.swift in Sources */,
 				E1868A8502D808E34FB0D55C /* PanelPreviews.swift in Sources */,
 				669E0DDD1CD604F0C7BEF3E6 /* PanelView.swift in Sources */,
 				15D38B949FF9D9637981D723 /* PressKit.swift in Sources */,
+				FFD64B44A7ADF8DF908A0AA6 /* PrivacyTab.swift in Sources */,
 				FDCD271225078D0994CC81DA /* Profiles.swift in Sources */,
 				4EE2AD566D8518B672A610A9 /* ProtocolLog.swift in Sources */,
 				7D1AA783287C66799FDAA0C4 /* QuietbarApp.swift in Sources */,
+				E6EA3792527A51DF08C6FE22 /* QuietbarIntents.swift in Sources */,
 				F3C5495A8F31D9DA79CC9BC7 /* SettingsView.swift in Sources */,
 				AD9FC4A606565CED254FA8AE /* Shortcuts.swift in Sources */,
 				D24AC5EB3BE8594D0EC080AB /* Simulation.swift in Sources */,
+				3E2F3C425371031DC5F3EF42 /* SiteCaptures.swift in Sources */,
 				55575B2ABBF47CF3559C7906 /* StatusBar.swift in Sources */,
+				CA8128836DF6A85A93D06EB6 /* Telemetry.swift in Sources */,
 				AF1168603033131E4704FF97 /* Updates.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -373,7 +426,7 @@
 /* Begin PBXTargetDependency section */
 		B25F9612E580A03540C91675 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = "TEMP_B9C12FBE-11B2-4977-8F26-24A027535334" /* MDRSimulator */;
+			productRef = "TEMP_D71BDE37-6902-47F9-AEBB-88EDDE9F0886" /* MDRSimulator */;
 		};
 		DF552CBE810537470F8789A7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -417,7 +470,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 7;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -430,7 +483,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.3.1;
+				MARKETING_VERSION = 1.4.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -575,7 +628,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 7;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -594,7 +647,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.3.1;
+				MARKETING_VERSION = 1.4.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -661,14 +714,26 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = MDRTransport;
 		};
+		12E8C6183AD027D04A4F0E35 /* QuietAutomation */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = QuietAutomation;
+		};
 		15BF06F3DBFD9D88EF19588C /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 8378AFDEFA79EA9D11C7C111 /* XCRemoteSwiftPackageReference "Sparkle" */;
 			productName = Sparkle;
 		};
+		409715532AA8C8697C0B5DD7 /* QuietTelemetry */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = QuietTelemetry;
+		};
 		5E6AD44C85C96598AE9489C9 /* MDRKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MDRKit;
+		};
+		CF9BF86A6D2C2433BC2C3459 /* QuietAudio */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = QuietAudio;
 		};
 		D11F9DC88DDACE026C1BAE93 /* HeadphoneModel */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -678,7 +743,7 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = MDRSession;
 		};
-		"TEMP_B9C12FBE-11B2-4977-8F26-24A027535334" /* MDRSimulator */ = {
+		"TEMP_D71BDE37-6902-47F9-AEBB-88EDDE9F0886" /* MDRSimulator */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MDRSimulator;
 		};

@@ -34,9 +34,9 @@ func deviceBinding<T: Sendable>(_ value: T?, default d: T, _ write: @escaping @M
 extension SoundMode {
     var label: String {
         switch self {
-        case .noiseCanceling: "Cancelamento"
-        case .ambient: "Ambiente"
-        case .off: "Desligado"
+        case .noiseCanceling: String(localized: "Cancelamento")
+        case .ambient: String(localized: "Ambiente")
+        case .off: String(localized: "Desligado")
         }
     }
 

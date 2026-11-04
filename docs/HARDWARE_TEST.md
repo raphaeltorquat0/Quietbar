@@ -17,6 +17,7 @@ Os SETs abaixo podem ser feitos pelo app (painel/Configurações) ou, para quem 
 | `dump --log-hex --trace` somente leitura: 58 frames recebidos, só GET enviado | OK, 8 de 8 rodadas | 2026-10-30 |
 | App `--selftest` sem App Sandbox | `phase=ready` | 2026-10-29 |
 | App `--selftest` com App Sandbox | `phase=ready` | 2026-10-29 |
+| Escrita, reflexo no app e Som no Mac no fone real ([relatório](test-runs/2026-10-30-xm5.md)) | OK, com as ressalvas do relatório | 2026-10-30 |
 | Ícone da barra (macOS 27, sem fone): clique abre/fecha o painel, clique fora e Esc fecham; clique direito e Option-clique mostram o menu curto (com Option, "Ferramentas de desenvolvedor…"); "Configurações do fone…" abre as Configurações mesmo antes de o painel abrir | OK (era o item 21) | 2026-10-29 |
 
 ## A verificar (escreve no fone)
@@ -63,11 +64,11 @@ scripts/sanitize-capture.sh captures/wh1000xm5/escrita.log wh-1000xm5-2.5.1-escr
 | 4 | `set dsee on` / `off` | relido igual |
 | 5 | `set stc on`, `set stc-sens high`, `set stc-time short` | Speak-to-Chat responde à voz |
 | 6 | `set autopause off` / `on` | tirar o fone não pausa / pausa |
-| 7 | **`set autooff 15m`** | **relido = 15m** — confirma a escolha "último byte `00`" (DECISIONS #6) |
+| 7 | `set autooff never` / `removed` | relido igual. No XM5 fw 2.5.1 só existem essas duas opções (`autooff-options`) |
 | 8 | **`set multipoint off`** / `on` | fone pede confirmação; CLI responde positivo; relido igual (DECISIONS #7) |
 | 9 | `set touch off` / `on` | toque no painel deixa de / volta a funcionar |
 | 10 | `set priority stability` / `quality` | relido igual |
-| 11 | `set volume 10` | volume muda no fone |
+| 11 | `set volume 10` | volume muda no fone. Com áudio do Mac, o volume do Mac volta a valer no fluxo seguinte: ajuste os dois para restaurar |
 | 12 | `set play`, `pause`, `next`, `prev` | mídia do sistema responde |
 | 13 | App: alerta de bateria baixa com threshold acima da carga atual | notificação aparece uma vez |
 | 14 | App sandbox: perfil por Wi-Fi | troca de rede aplica o perfil (pede localização) |
@@ -87,3 +88,45 @@ Fones diferentes do WH-1000XM5 estão marcados como experimentais no README. Par
 Configurações › Geral › "Mostrar a aba Desenvolvedor" › **Copiar diagnóstico** + **Log do protocolo MDR › Exportar…**,
 anexados numa issue com o template "Relatório de fone". Conferir em especial: bateria esquerda/direita/estojo
 (earbuds), modos de som disponíveis e o equalizador (6 ou 10 bandas).
+
+## Som no Mac
+
+Nenhum passo aqui usa SET no fone, exceto "Deixar em plano", que só acontece se você clicar. Use um build instalado com `make install` e o fone como saída do Mac, sem chamada aberta.
+
+O pedido de permissão só sai do botão do onboarding. **Pause tudo antes e responda na hora**: quando o diálogo veio do `coreaudiod`, nenhum app conseguiu começar a tocar som enquanto ele esteve aberto. Em build ad-hoc, a permissão precisa ser dada de novo a cada build.
+
+| # | Ação | Esperado |
+|---|---|---|
+| 0 | Abra a aba Som no Mac, sem clicar em nada | A instrução de pausar o áudio e responder na hora aparece no onboarding; nenhum diálogo abre |
+| 1 | Pause tudo, clique no botão e responda **Permitir** | Estado vai para "Aguardando áudio"; nada muda no som. Enquanto o diálogo estiver aberto, confira se outro app ainda consegue começar a tocar |
+| 2 | Toque música | Em menos de 1 s o Estado vira "Ativo"; sem estalo nem eco |
+| 3 | Preset "Mais grave", depois "Plano" | Grave muda sem clique nem chiado durante a troca |
+| 4 | Clique no botão A/B várias vezes | Troca imediata, sem clique |
+| 5 | Pontos da curva: arraste com música tocando | Mudança contínua; o medidor não encosta no laranja por muito tempo |
+| 6 | Aba Desenvolvedor | Anote latência, carga do render e CPU do app; a meta é < 20 ms e < 2% |
+| 7 | Mude a saída para os alto-falantes e volte | A música segue nos alto-falantes; ao voltar, "Ativo" de novo |
+| 8 | Desligue o fone com música tocando | Áudio vai para a saída seguinte do Mac; o app não fica em erro |
+| 9 | Abra uma chamada (microfone do fone) | "Pausado durante chamadas"; a voz segue normal; ao fechar, volta a processar |
+| 10 | Com música tocando: `pkill -9 -x Quietbar` | **Em menos de 1 s a música volta sozinha, sem processamento** |
+| 11 | Reabra o app | Volta a processar se estava ligado |
+| 12 | Tire a permissão em Ajustes do Sistema, com música tocando | No pior caso, 5 s de silêncio e o áudio volta sem processamento |
+| 13 | Clique em "Deixar em plano" | Só nesse clique o EQ do fone muda |
+| 14 | Aba Desenvolvedor › "Iniciar teste de eco", com um dispositivo de loopback | "Passou: o som original zerou." O clique pode pedir o Microfone, usado só para ler o loopback. Inconclusivo significa que o tom não voltou pela entrada |
+| 15 | No passo 2, com o fone | Sem som dobrado: o teste 14 prova o mudo no dispositivo virtual, e o ouvido confere no Bluetooth |
+| 16 | Deixe o pedido de permissão sem resposta por 2 minutos, em build novo | O app avisa que não vai pedir de novo sozinho, e não pede |
+| 17 | Saia e reabra o app sem ter dado a permissão | Nenhum diálogo abre; o Som no Mac segue desligado |
+| 18 | "Obter curva de correção"; baixe o `Sony WH-1000XM5 ParametricEQ.txt`; use "Importar curva…" e, depois, arraste o arquivo para a área indicada | Abre a página do WH-1000XM5; o painel abre em Downloads, filtrando `.txt` e `.json`; nos dois caminhos, a Correção é selecionada |
+| 19 | Instalação nova e update da 1.3.0 | Som no Mac vem desligado, e nada pede permissão |
+
+**Medição no maintainer** (dispositivo com loopback, sem som audível nem fone). A tap só roda com outro processo tocando no dispositivo:
+
+```sh
+swift build -c release --product mdr-cli
+S=SteamStreamingSpeakers_UID
+.build/release/mdr-cli audio-probe --echo-test $S
+.build/release/mdr-cli audio-probe --play $S --seconds 12 &
+.build/release/mdr-cli audio-probe --device $S --seconds 10 --mute --timeline
+```
+
+Para repetir dentro do app assinado, depois de autorizar pelo botão: `Quietbar --audio-selftest $S`, com o `--play` rodando. Sem a permissão ele recusa, sem abrir diálogo.
+

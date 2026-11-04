@@ -63,6 +63,7 @@ import SwiftUI
 
     func openPanel() {
         guard panel == nil, let button = item.button, let buttonWindow = button.window else { return }
+        Telemetry.shared.panelOpened()
         let p = KeyPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: true)
         p.level = .popUpMenu
         p.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary, .transient, .ignoresCycle]
@@ -153,6 +154,12 @@ import SwiftUI
         let d = DeviceController.shared
         let connected = d.isBluetoothConnected
         let menu = NSMenu()
+        if let rule = Automation.shared.indicator {
+            let item = NSMenuItem(title: rule, action: nil, keyEquivalent: "")
+            item.isEnabled = false
+            menu.addItem(item)
+            menu.addItem(.separator())
+        }
         menu.addItem(ClosureItem(connected ? "Desconectar" : "Conectar") {
             Task { connected ? await d.disconnectDevice() : await d.connectDevice() }
         })

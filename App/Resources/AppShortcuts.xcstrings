@@ -1,0 +1,86 @@
+{
+  "sourceLanguage": "pt-BR",
+  "version": "1.0",
+  "strings": {
+    "Definir o ${applicationName} como ${mode}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set ${applicationName} to ${mode}"
+          }
+        }
+      }
+    },
+    "Mudar o modo de ruído no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change the noise mode in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Ajustar o som ambiente no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set the ambient level in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Aplicar ${profile} no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply ${profile} in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Aplicar um perfil no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply a profile in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Aplicar um preset de equalizador no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply an EQ preset in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Qual a bateria no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What's the battery in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Consultar a bateria no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check the battery in ${applicationName}"
+          }
+        }
+      }
+    }
+  }
+}

@@ -103,7 +103,7 @@ import SwiftUI
         return w
     }
 
-    private static func screencapture(_ args: [String]) async {
+    static func screencapture(_ args: [String]) async {
         let p = Process()
         p.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
         p.arguments = args
@@ -114,12 +114,15 @@ import SwiftUI
     }
 }
 
-/// Com foco, como o painel real: sem ele, os controles perdem a cor e ligado parece desligado.
-private final class KeyLookPanel: NSPanel {
-    override var canBecomeKey: Bool { true }
+extension PressKit {
+    /// Com foco, como o painel real: sem ele, os controles perdem a cor e ligado parece desligado.
+    final class KeyLookPanel: NSPanel {
+        override var canBecomeKey: Bool { true }
+    }
 }
 
-private struct Backdrop<Content: View>: View {
+extension PressKit {
+struct Backdrop<Content: View>: View {
     let dark: Bool
     let content: Content
 
@@ -131,6 +134,7 @@ private struct Backdrop<Content: View>: View {
                                                     : [Color(red: 0.62, green: 0.78, blue: 0.98), Color(red: 0.95, green: 0.75, blue: 0.85)],
                                        startPoint: .topLeading, endPoint: .bottomTrailing))
     }
+}
 }
 
 /// Roteiro do GIF: popup de conexão seguido da troca de modo no painel.

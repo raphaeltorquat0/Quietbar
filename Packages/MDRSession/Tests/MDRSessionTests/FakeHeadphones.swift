@@ -15,6 +15,9 @@ actor FakeHeadphones: MDRChannel {
     /// Erro definitivo ao abrir: fone sem o serviço, por exemplo.
     var openError: (any Error)?
     private(set) var openCalls = 0
+    /// `close` nunca volta, como um canal preso.
+    var closeHangs = false
+    private(set) var closeCalls = 0
     /// `false` = confirma SETs mas não ecoa NOTIFY.
     var echoSets = true
 
@@ -89,6 +92,8 @@ actor FakeHeadphones: MDRChannel {
     }
 
     func close() async {
+        closeCalls += 1
+        if closeHangs { await withCheckedContinuation { (_: CheckedContinuation<Void, Never>) in } }
         out?.finish()
         out = nil
     }

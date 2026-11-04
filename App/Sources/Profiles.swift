@@ -2,7 +2,7 @@ import AppKit
 import CoreLocation
 import CoreWLAN
 import MDRKit
-import MDRSession
+import QuietAutomation
 import SwiftUI
 
 /// Conjunto de ajustes aplicado quando um app fica em foco ou o Mac entra numa rede Wi-Fi.
@@ -11,6 +11,8 @@ struct Profile: Codable, Hashable, Identifiable {
     enum Trigger: Codable, Hashable {
         case app(bundleID: String, name: String)
         case wifi(ssid: String)
+        /// Sem gatilho próprio: serve aos Filtros de Foco e aos Atalhos.
+        case none
     }
 
     var id = UUID()
@@ -22,24 +24,31 @@ struct Profile: Codable, Hashable, Identifiable {
     var focusOnVoice: Bool?
     var equalizerPresetID: UInt8?
     var speakToChat: Bool?
+    /// Som no Mac ligado/desligado e preset; opcionais, então perfis antigos continuam lendo.
+    var macSound: Bool?
+    var macPreset: String?
+
+    /// O que o perfil define, no formato do motor de prioridade.
+    var settings: QuietAutomation.Settings {
+        var s = QuietAutomation.Settings()
+        s[.soundMode] = soundMode.map { .mode($0) }
+        s[.ambientLevel] = ambientLevel.map { .int($0) }
+        s[.focusOnVoice] = focusOnVoice.map { .bool($0) }
+        s[.equalizerPreset] = equalizerPresetID.map { .int(Int($0)) }
+        s[.speakToChat] = speakToChat.map { .bool($0) }
+        s[.macSound] = macSound.map { .bool($0) }
+        s[.macPreset] = macPreset.map { .text($0) }
+        return s
+    }
+
+    var rule: Rule { Rule(id: id.uuidString, name: name, settings: settings) }
 
     var triggerLabel: String {
         switch trigger {
         case .app(_, let name): "App: \(name)"
         case .wifi(let ssid): "Wi-Fi: \(ssid)"
+        case .none: "Só Foco e Atalhos"
         }
-    }
-
-    func apply(_ s: MDRSession) async throws {
-        if soundMode != nil || ambientLevel != nil || focusOnVoice != nil {
-            try await s.setNoiseControl { n in
-                if let m = soundMode { n.soundMode = m }
-                if let l = ambientLevel { n.ambientLevel = UInt8(clamping: l) }
-                if let v = focusOnVoice { n.focusOnVoice = v }
-            }
-        }
-        if let id = equalizerPresetID { try await s.setEqualizerPreset(id) }
-        if let stc = speakToChat { try await s.setSpeakToChat(stc) }
     }
 }
 
@@ -48,7 +57,12 @@ final class ProfileEngine: NSObject {
     static let shared = ProfileEngine()
 
     var profiles: [Profile] = AppSettings.load("profiles") ?? [] {
-        didSet { AppSettings.shared.save(profiles, "profiles"); evaluate() }
+        didSet {
+            AppSettings.shared.save(profiles, "profiles")
+            QuietbarShortcuts.updateAppShortcutParameters()
+            evaluate()
+            Automation.shared.refreshFocusRule()
+        }
     }
     private(set) var activeProfileID: UUID?
     private(set) var currentSSID: String?
@@ -56,16 +70,26 @@ final class ProfileEngine: NSObject {
 
     @ObservationIgnored private let location = CLLocationManager()
     @ObservationIgnored private var started = false
+    @ObservationIgnored private let smoother = RuleSmoother(enter: .zero, exit: .zero) { Automation.shared.engine.set(.app, $0) }
 
     func start() {
         guard !started else { return }
         started = true
         frontmostBundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+        #if DEBUG
+        if Self.injectedFront { frontmostBundleID = nil }
+        #endif
         NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main
         ) { note in
             let id = (note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication)?.bundleIdentifier
             MainActor.assumeIsolated {
+                // Abrir as Configurações não é sair do app em que o usuário estava.
+                guard id != Bundle.main.bundleIdentifier else { return }
+                #if DEBUG
+                if Self.injectedFront { return }
+                HardwareTest.trace(front: id)
+                #endif
                 ProfileEngine.shared.frontmostBundleID = id
                 ProfileEngine.shared.evaluate()
             }
@@ -73,6 +97,18 @@ final class ProfileEngine: NSObject {
         if profiles.contains(where: { if case .wifi = $0.trigger { true } else { false } }) { startWiFi() }
         evaluate()
     }
+
+    #if DEBUG
+    /// Validação: `--fake-front` ignora o primeiro plano real, e o script informa o app pelo comando `front`.
+    /// Sem isso, a medição tira o foco de quem usa o Mac, e qualquer Cmd-Tab invalida o ciclo.
+    private static let injectedFront = CommandLine.arguments.contains("--fake-front")
+
+    func injectFront(_ id: String) {
+        HardwareTest.trace(front: id)
+        frontmostBundleID = id
+        evaluate()
+    }
+    #endif
 
     /// O macOS só revela o SSID para apps com autorização de localização.
     func startWiFi() {
@@ -91,21 +127,24 @@ final class ProfileEngine: NSObject {
         evaluate()
     }
 
+    /// Só detecta o contexto: quem decide e escreve é o motor de prioridade.
     func evaluate() {
+        let settings = AppSettings.shared
         let enabled = profiles.filter(\.enabled)
-        let match = enabled.first {
+        let app = settings.appRulesEnabled ? enabled.first {
             if case .app(let id, _) = $0.trigger { return id == frontmostBundleID }
             return false
-        } ?? enabled.first {
+        } : nil
+        let wifi = settings.wifiRulesEnabled ? enabled.first {
             if case .wifi(let ssid) = $0.trigger { return ssid == currentSSID }
             return false
-        }
-        guard let match, match.id != activeProfileID else {
-            if match == nil { activeProfileID = nil }
-            return
-        }
-        activeProfileID = match.id
-        DeviceController.shared.perform { try await match.apply($0) }
+        } : nil
+        activeProfileID = (app ?? wifi)?.id
+        Automation.shared.engine.set(.wifi, wifi?.rule)
+        smoother.enabled = settings.appRuleSmoothing
+        smoother.enter = .milliseconds(settings.appRuleEnterMs)
+        smoother.exit = .seconds(settings.appRuleHoldSeconds)
+        smoother.update(app?.rule)
     }
 }
 
@@ -145,6 +184,7 @@ struct ProfilesTab: View {
                     Menu {
                         Button("App em foco…") { addAppProfile() }
                         Button("Rede Wi-Fi atual") { addWiFiProfile() }
+                        Button("Sem gatilho (Foco e Atalhos)") { addPlainProfile() }
                     } label: { Image(systemName: "plus") }
                     .menuStyle(.borderlessButton).fixedSize()
                     Button { engine.profiles.removeAll { $0.id == selection } } label: { Image(systemName: "minus") }
@@ -156,11 +196,39 @@ struct ProfilesTab: View {
 
             if let i = engine.profiles.firstIndex(where: { $0.id == selection }) {
                 ProfileEditor(profile: $engine.profiles[i], presets: device.state.equalizerPresets)
+            } else if engine.profiles.isEmpty {
+                emptyState
             } else {
-                Text("Perfis aplicam ajustes quando um app fica em foco ou o Mac entra numa rede Wi-Fi. App tem prioridade sobre Wi-Fi.")
+                Text("Perfis aplicam ajustes quando um app fica em foco ou o Mac entra numa rede Wi-Fi, e voltam atrás quando deixam de valer. A prioridade está na aba Automação.")
                     .foregroundStyle(.secondary).padding().frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+    }
+
+    /// Sem perfis, o "+" no canto não diz por onde começar: cada gatilho vira um ponto de partida com exemplo.
+    private var emptyState: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Crie seu primeiro perfil").font(.title3.weight(.semibold))
+            Text("Um perfil guarda ajustes do fone e os aplica sozinho. Quando deixa de valer, o ajuste anterior volta.")
+                .foregroundStyle(.secondary)
+            starter("Ao usar um app…", "app.badge", "Ex.: cancelar ruído enquanto o Xcode ou o Música estiver em primeiro plano.", addAppProfile)
+            starter("Nesta rede Wi-Fi", "wifi", "Ex.: ambiente no escritório, para ouvir quem fala com você.", addWiFiProfile)
+            starter("Para um Foco ou Atalho", "moon", "Ex.: cancelar ruído no Foco Trabalho. Depois você associa o perfil ao Foco.", addPlainProfile)
+        }
+        .padding(24).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private func starter(_ title: LocalizedStringKey, _ icon: String, _ example: LocalizedStringKey, _ action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                    Text(example).font(.caption).foregroundStyle(.secondary)
+                }
+            } icon: { Image(systemName: icon).frame(width: 20) }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .controlSize(.large)
     }
 
     private func addAppProfile() {
@@ -170,6 +238,12 @@ struct ProfilesTab: View {
         guard panel.runModal() == .OK, let url = panel.url, let bundle = Bundle(url: url), let id = bundle.bundleIdentifier else { return }
         let name = FileManager.default.displayName(atPath: url.path).replacingOccurrences(of: ".app", with: "")
         let p = Profile(name: name, trigger: .app(bundleID: id, name: name), soundMode: .noiseCanceling)
+        engine.profiles.append(p)
+        selection = p.id
+    }
+
+    private func addPlainProfile() {
+        let p = Profile(name: "Novo perfil", trigger: .none, soundMode: .noiseCanceling)
         engine.profiles.append(p)
         selection = p.id
     }
@@ -206,6 +280,15 @@ struct ProfileEditor: View {
             } else {
                 LabeledContent("Gatilho", value: profile.triggerLabel)
             }
+            if profile.trigger == .none {
+                Section {
+                    Text("Para usar com um Foco: em Ajustes do Sistema › Foco, escolha o Foco, adicione o Quietbar em Filtros de Foco e selecione \"\(profile.name)\". Pelo app Atalhos, use a ação \"Aplicar perfil\".")
+                        .font(.caption).foregroundStyle(.secondary)
+                    Button("Abrir os Ajustes de Foco") {
+                        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.Focus-Settings.extension")!)
+                    }
+                }
+            }
             Section("Ao ativar") {
                 Picker("Modo", selection: $profile.soundMode) {
                     Text("Não alterar").tag(SoundMode?.none)
@@ -220,6 +303,15 @@ struct ProfileEditor: View {
                     }
                 }
                 optionalBool("Speak-to-Chat", $profile.speakToChat)
+            }
+            if MacSound.shared.available {
+                Section("Som no Mac") {
+                    optionalBool("Processamento", $profile.macSound)
+                    Picker("Preset", selection: $profile.macPreset) {
+                        Text("Não alterar").tag(String?.none)
+                        ForEach(MacPreset.allCases) { Text($0.label).tag(String?.some($0.rawValue)) }
+                    }
+                }
             }
         }
         .formStyle(.grouped)

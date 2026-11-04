@@ -23,6 +23,8 @@ import SwiftUI
         p.showPlayback = true
         p.isPlaying = true
         p.volume = 17
+        p.macSound = .init(enabled: true, presetID: MacPreset.bass.rawValue, status: String(localized: "Ativo"),
+                           presets: MacPreset.allCases.map { .init(id: $0.rawValue, name: $0.label, available: $0 != .correction) })
         return p
     }
 

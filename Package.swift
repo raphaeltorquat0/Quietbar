@@ -10,6 +10,9 @@ let package = Package(
         .library(name: "MDRSession", targets: ["MDRSession"]),
         .library(name: "HeadphoneModel", targets: ["HeadphoneModel"]),
         .library(name: "MDRSimulator", targets: ["MDRSimulator"]),
+        .library(name: "QuietAudio", targets: ["QuietAudio"]),
+        .library(name: "QuietAutomation", targets: ["QuietAutomation"]),
+        .library(name: "QuietTelemetry", targets: ["QuietTelemetry"]),
         .executable(name: "mdr-cli", targets: ["mdr-cli"]),
     ],
     targets: [
@@ -35,9 +38,27 @@ let package = Package(
         .target(name: "HeadphoneModel", dependencies: ["MDRKit"], path: "Packages/HeadphoneModel/Sources/HeadphoneModel"),
         .testTarget(name: "HeadphoneModelTests", dependencies: ["HeadphoneModel", "MDRKit"], path: "Packages/HeadphoneModel/Tests/HeadphoneModelTests"),
 
+        // O que roda na thread de áudio fica em C: sem ARC nem runtime Swift no render (docs/AUDIO.md).
+        .target(
+            name: "CQuietAudio",
+            path: "Packages/QuietAudio/Sources/CQuietAudio",
+            linkerSettings: [.linkedFramework("CoreAudio")]
+        ),
+        .target(name: "QuietAudio", dependencies: ["CQuietAudio"], path: "Packages/QuietAudio/Sources/QuietAudio"),
+        .testTarget(name: "QuietAudioTests", dependencies: ["QuietAudio"], path: "Packages/QuietAudio/Tests/QuietAudioTests"),
+
+        // Regras de contexto: ficam fora do protocolo (MDRKit) e testáveis sem o app (DECISIONS.md #117).
+        .target(name: "QuietAutomation", dependencies: ["MDRKit"], path: "Packages/QuietAutomation/Sources/QuietAutomation"),
+        .testTarget(name: "QuietAutomationTests", dependencies: ["QuietAutomation", "MDRKit"],
+                    path: "Packages/QuietAutomation/Tests/QuietAutomationTests"),
+
+        // Métricas opt-in: sem SDK de terceiros e testáveis sem o app (DECISIONS.md #142).
+        .target(name: "QuietTelemetry", path: "Packages/QuietTelemetry/Sources/QuietTelemetry"),
+        .testTarget(name: "QuietTelemetryTests", dependencies: ["QuietTelemetry", "MDRSimulator"], path: "Packages/QuietTelemetry/Tests/QuietTelemetryTests"),
+
         .executableTarget(
             name: "mdr-cli",
-            dependencies: ["MDRKit", "MDRTransport", "MDRSession", "HeadphoneModel"],
+            dependencies: ["MDRKit", "MDRTransport", "MDRSession", "HeadphoneModel", "QuietAudio"],
             path: "Tools/mdr-cli"
         ),
     ]
