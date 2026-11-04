@@ -141,8 +141,10 @@ private func theoreticalDB(_ f: EQFilter, at frequency: Double, fs: Double) -> D
         var l = next(9_600), r = l
         c.process(left: &l, right: &r)
         // Segunda diferença de um seno puro é pequena; um degrau a faria explodir.
-        let d2 = (2..<l.count).map { abs(l[$0] - 2 * l[$0 - 1] + l[$0 - 2]) }.max() ?? 1
-        #expect(d2 < 0.3 * Float(pow(2 * .pi * 1000 / fs, 2)) * 1.3)
+        // Tipos explícitos: o compilador do CI desistia de inferir a expressão inteira.
+        let d2: Float = (2..<l.count).map { (i: Int) -> Float in abs(l[i] - 2 * l[i - 1] + l[i - 2]) }.max() ?? 1
+        let step: Double = 2 * .pi * 1000 / fs
+        #expect(d2 < 0.3 * Float(step * step) * 1.3)
         #expect(abs((l[4_800...].map(abs).max() ?? 0) - 0.3) < 0.01) // terminou no ganho novo
     }
 
