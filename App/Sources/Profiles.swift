@@ -196,11 +196,39 @@ struct ProfilesTab: View {
 
             if let i = engine.profiles.firstIndex(where: { $0.id == selection }) {
                 ProfileEditor(profile: $engine.profiles[i], presets: device.state.equalizerPresets)
+            } else if engine.profiles.isEmpty {
+                emptyState
             } else {
                 Text("Perfis aplicam ajustes quando um app fica em foco ou o Mac entra numa rede Wi-Fi, e voltam atrás quando deixam de valer. A prioridade está na aba Automação.")
                     .foregroundStyle(.secondary).padding().frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+    }
+
+    /// Sem perfis, o "+" no canto não diz por onde começar: cada gatilho vira um ponto de partida com exemplo.
+    private var emptyState: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Crie seu primeiro perfil").font(.title3.weight(.semibold))
+            Text("Um perfil guarda ajustes do fone e os aplica sozinho. Quando deixa de valer, o ajuste anterior volta.")
+                .foregroundStyle(.secondary)
+            starter("Ao usar um app…", "app.badge", "Ex.: cancelar ruído enquanto o Xcode ou o Música estiver em primeiro plano.", addAppProfile)
+            starter("Nesta rede Wi-Fi", "wifi", "Ex.: ambiente no escritório, para ouvir quem fala com você.", addWiFiProfile)
+            starter("Para um Foco ou Atalho", "moon", "Ex.: cancelar ruído no Foco Trabalho. Depois você associa o perfil ao Foco.", addPlainProfile)
+        }
+        .padding(24).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private func starter(_ title: LocalizedStringKey, _ icon: String, _ example: LocalizedStringKey, _ action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                    Text(example).font(.caption).foregroundStyle(.secondary)
+                }
+            } icon: { Image(systemName: icon).frame(width: 20) }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .controlSize(.large)
     }
 
     private func addAppProfile() {
@@ -251,6 +279,15 @@ struct ProfileEditor: View {
                 }
             } else {
                 LabeledContent("Gatilho", value: profile.triggerLabel)
+            }
+            if profile.trigger == .none {
+                Section {
+                    Text("Para usar com um Foco: em Ajustes do Sistema › Foco, escolha o Foco, adicione o Quietbar em Filtros de Foco e selecione \"\(profile.name)\". Pelo app Atalhos, use a ação \"Aplicar perfil\".")
+                        .font(.caption).foregroundStyle(.secondary)
+                    Button("Abrir os Ajustes de Foco") {
+                        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.Focus-Settings.extension")!)
+                    }
+                }
             }
             Section("Ao ativar") {
                 Picker("Modo", selection: $profile.soundMode) {

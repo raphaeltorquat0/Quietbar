@@ -69,6 +69,9 @@ struct AutomationTab: View {
                 Toggle("Perfis por Wi-Fi", isOn: $settings.wifiRulesEnabled)
                 Text("O modo de cada um é definido no próprio perfil, na aba Perfis.")
                     .font(.caption).foregroundStyle(.secondary)
+                if ProfileEngine.shared.profiles.isEmpty {
+                    Button("Criar o primeiro perfil…") { SettingsRouter.shared.tab = "profiles" }
+                }
             }
         }
         .formStyle(.grouped)

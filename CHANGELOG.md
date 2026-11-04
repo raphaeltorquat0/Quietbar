@@ -13,6 +13,7 @@ As notas completas de cada versão ficam em [`docs/releases/`](docs/releases/) e
 - **Motor de prioridade:** ajuste manual › chamada › Foco › perfil por app › perfil por Wi-Fi › padrão, por ajuste.
 - Aba **Automação** nas Configurações e indicador da regra ativa no painel e no menu curto.
 - Perfis sem gatilho, para Foco e Atalhos.
+- Aba Perfis vazia mostra por onde começar: app, rede Wi-Fi ou Foco, com exemplos. Um perfil sem gatilho explica como associá-lo a um Foco.
 - **Som no Mac:** EQ paramétrico só para o áudio do Mac, detalhado em [`docs/releases/1.4.0.md`](docs/releases/1.4.0.md).
 
 - **Métricas anônimas, opt-in, desligadas por padrão:** Configurações › Privacidade liga, desliga e mostra o JSON exato do próximo envio. Veja [`docs/PRIVACY.md`](docs/PRIVACY.md).
