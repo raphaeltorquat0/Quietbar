@@ -4,10 +4,6 @@ import Testing
 
 /// Tudo com funções falsas: nenhum teste aqui toca no TCC de verdade nem pode abrir o diálogo.
 @Suite struct SystemPermissionTests {
-    /// O padrão de 3 s estourou no CI com a suíte inteira em paralelo: a fila global demorou a atender
-    /// a função falsa. Quem testa o tempo limite passa o seu.
-    private static let slack: TimeInterval = 30
-
     private func defaults() -> UserDefaults {
         let name = "quietbar.tests.\(UUID().uuidString)"
         let d = UserDefaults(suiteName: name)!
@@ -36,7 +32,7 @@ import Testing
 
     @Test func readsTheThreeKnownAnswers() {
         for (value, status) in [(Int32(0), SystemPermission.Status.granted), (1, .denied), (2, .notAsked)] {
-            let p = SystemPermission(functions: fake(value), defaults: defaults(), timeout: Self.slack)
+            let p = SystemPermission(functions: fake(value), defaults: defaults())
             #expect(p.status(.audioCapture) == status)
             #expect(p.problem == nil)
         }
@@ -44,7 +40,7 @@ import Testing
 
     /// A única mudança de assinatura que dá para ver: um retorno fora do combinado.
     @Test func unknownAnswerIsUnavailable() {
-        let p = SystemPermission(functions: fake(7), defaults: defaults(), timeout: Self.slack)
+        let p = SystemPermission(functions: fake(7), defaults: defaults())
         #expect(p.status(.audioCapture) == .unavailable)
         #expect(p.problem?.contains("7") == true)
     }
@@ -54,7 +50,7 @@ import Testing
         let hung = SystemPermission.Functions(preflight: { _ in sleep(5); return 0 }, request: { _, _ in })
         let p = SystemPermission(functions: hung, defaults: d, timeout: 0.05)
         #expect(p.status(.audioCapture) == .unavailable)
-        #expect(SystemPermission(functions: fake(0), defaults: d, timeout: Self.slack).status(.audioCapture) == .granted)
+        #expect(SystemPermission(functions: fake(0), defaults: d).status(.audioCapture) == .granted)
     }
 
     /// Uma chamada que derruba o app não acontece uma segunda vez: a marca fica gravada antes dela.
@@ -65,7 +61,7 @@ import Testing
         let crashing = SystemPermission.Functions(
             preflight: { _ in mark.value = d.string(forKey: "tccCallInFlight"); return 0 },
             request: { _, _ in Issue.record("não pode chamar") })
-        #expect(SystemPermission(functions: crashing, defaults: d, timeout: Self.slack).status(.audioCapture) == .granted)
+        #expect(SystemPermission(functions: crashing, defaults: d).status(.audioCapture) == .granted)
         #expect(mark.value != nil)
 
         // A execução seguinte encontra o que a anterior deixaria se tivesse caído dentro da chamada.
@@ -90,7 +86,7 @@ import Testing
 
     @Test func finishedCallLeavesNoMark() {
         let d = defaults()
-        #expect(SystemPermission(functions: fake(0), defaults: d, timeout: Self.slack).status(.audioCapture) == .granted)
+        #expect(SystemPermission(functions: fake(0), defaults: d).status(.audioCapture) == .granted)
         #expect(d.string(forKey: "tccCallInFlight") == nil)
     }
 }

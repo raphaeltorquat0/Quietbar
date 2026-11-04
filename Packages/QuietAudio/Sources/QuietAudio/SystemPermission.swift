@@ -74,10 +74,12 @@ public final class SystemPermission: @unchecked Sendable {
         guard let functions else { return .unavailable }
         final class Box: @unchecked Sendable { var value: Int32 = -1 }
         let box = Box(), done = DispatchSemaphore(value: 0)
-        DispatchQueue.global().async { [self] in
+        // Thread própria, fora dos pools: quem espera aqui pode estar ocupando uma das poucas threads
+        // do pool, e a chamada esperada ficaria sem onde rodar. Num runner de 3 núcleos, travava o processo.
+        Thread { [self] in
             box.value = guarded { functions.preflight(service.rawValue) }
             done.signal()
-        }
+        }.start()
         guard done.wait(timeout: .now() + timeout) == .success else {
             defaults.removeObject(forKey: Self.guardKey) // lentidão não é queda: não marca a próxima execução
             return report("TCCAccessPreflight não respondeu em \(Int(timeout)) s")
