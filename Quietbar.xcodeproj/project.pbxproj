@@ -426,7 +426,7 @@
 /* Begin PBXTargetDependency section */
 		B25F9612E580A03540C91675 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = "TEMP_2E77B178-793D-4560-8257-161463171D3D" /* MDRSimulator */;
+			productRef = "TEMP_D71BDE37-6902-47F9-AEBB-88EDDE9F0886" /* MDRSimulator */;
 		};
 		DF552CBE810537470F8789A7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -470,7 +470,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -628,7 +628,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -743,7 +743,7 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = MDRSession;
 		};
-		"TEMP_2E77B178-793D-4560-8257-161463171D3D" /* MDRSimulator */ = {
+		"TEMP_D71BDE37-6902-47F9-AEBB-88EDDE9F0886" /* MDRSimulator */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MDRSimulator;
 		};

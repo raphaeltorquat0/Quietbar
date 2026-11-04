@@ -32,6 +32,7 @@ As notas completas de cada versão ficam em [`docs/releases/`](docs/releases/) e
 - Aba do equalizador e rótulos de modo do popup sem tradução para inglês.
 - Quedas do app quando um dispositivo Bluetooth conecta e ao abrir com o fone já conectado.
 - Um comando no instante da liberação do canal falhava com "Fone não conectado".
+- Queda do app ao pedir a permissão de áudio: a resposta do macOS chega depois do pedido retornar.
 - Uma mudança no fone com o canal solto não se perde mais na troca de contexto: vira ajuste manual, e a regra só volta na mudança seguinte.
 - Pedir o modo que o fone já tem não envia comando, venha de onde vier.
 - Um canal com o fone esquecido aberto agora é fechado sozinho, com registro na aba Desenvolvedor.

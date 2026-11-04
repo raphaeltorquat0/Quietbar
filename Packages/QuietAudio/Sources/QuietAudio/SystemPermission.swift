@@ -22,7 +22,7 @@ public final class SystemPermission: @unchecked Sendable {
     }
 
     private typealias Preflight = @convention(c) (CFString, CFDictionary?) -> Int32
-    private typealias Request = @convention(c) (CFString, CFDictionary?, @convention(block) (Bool) -> Void) -> Void
+    private typealias Request = @convention(c) (CFString, CFDictionary?, @escaping @convention(block) (Bool) -> Void) -> Void
     nonisolated(unsafe) private static let tcc = dlopen("/System/Library/PrivateFrameworks/TCC.framework/Versions/A/TCC", RTLD_NOW)
     private static let guardKey = "tccCallInFlight"
 

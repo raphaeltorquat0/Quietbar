@@ -72,6 +72,18 @@ import Testing
         next.request(.audioCapture) { #expect(!$0) }
     }
 
+    /// O `TCCAccessRequest` de verdade responde depois de retornar. Sem `@escaping` no bloco, o runtime
+    /// derrubava o app ao primeiro pedido (relatório de 03/11, `non-escaping closure has escaped`).
+    @Test func requestAnswersAfterTheCallReturns() async {
+        typealias Request = @convention(c) (CFString, CFDictionary?, @escaping @convention(block) (Bool) -> Void) -> Void
+        let request: Request = { _, _, done in DispatchQueue.global().asyncAfter(deadline: .now() + 0.05) { done(true) } }
+        nonisolated(unsafe) let symbol = unsafeBitCast(request, to: UnsafeMutableRawPointer.self)
+        let p = SystemPermission(lookup: { $0 == "TCCAccessRequest" ? symbol : UnsafeMutableRawPointer(bitPattern: 0x10) },
+                                 defaults: defaults())
+        let answer = await withCheckedContinuation { c in p.request(.audioCapture) { c.resume(returning: $0) } }
+        #expect(answer)
+    }
+
     @Test func finishedCallLeavesNoMark() {
         let d = defaults()
         #expect(SystemPermission(functions: fake(0), defaults: d).status(.audioCapture) == .granted)
