@@ -21,6 +21,8 @@ CRASHES = HOME / "Library/Logs/DiagnosticReports"
 
 # Um ajuste manual até aqui depois de uma troca automática é sinal de que a regra errou.
 AFTER_AUTO = timedelta(seconds=120)
+# Um gesto que muda vários ajustes chega como um `manual` por campo, a milissegundos um do outro.
+SAME_GESTURE = timedelta(seconds=1)
 # Depois do fim da chamada, a volta ainda pode precisar reabrir o canal.
 RETURN_WINDOW = timedelta(seconds=30)
 # Queda do canal perto de uma queda do Bluetooth é a mesma coisa.
@@ -59,7 +61,19 @@ def load(folder, since, until):
             except (ValueError, KeyError):
                 broken += 1
     events.sort(key=lambda e: e["_at"])
-    return events, broken
+    return merge_gestures(events), broken
+
+
+def merge_gestures(events):
+    merged, last = [], None
+    for e in events:
+        if (e["ev"] == "manual" and last and e.get("source") == last.get("source")
+                and e["_at"] - last["_at"] <= SAME_GESTURE and "fields" in e and "fields" in last):
+            last["fields"] = {**last["fields"], **e["fields"]}
+            continue
+        merged.append(e)
+        last = e if e["ev"] == "manual" else None
+    return merged
 
 
 def crashes(folder, start, end):

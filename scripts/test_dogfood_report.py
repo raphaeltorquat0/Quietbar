@@ -109,4 +109,12 @@ assert "Reconexões do Bluetooth: 1. Quedas do canal sem motivo: 1" in text
 assert "Latência: mediana 13.0 ms" in text and "CPU do app: mediana 1.3%" in text
 assert "Tipos que este relatório não conhece:** evento.novo" in text
 assert "Trocas de Foco: 1" in text and "{'wifi': 1}" in text
+# Um gesto no fone que muda nível e foco na voz é um ajuste, não dois (04/11 11:01:52).
+gesture = good_call(0) + [
+    ev("manual", 640, 0, source="other", fields={"ambientLevel": "20"}),
+    ev("manual", 640.003, 0, source="other", fields={"focusOnVoice": "true"}),
+]
+text = run(gesture)
+assert "Total: 1." in text and "Logo depois de uma troca automática (até 120 s): **1**" in text, text
+assert "'ambientLevel': '20', 'focusOnVoice': 'true'" in text
 print("ok")
