@@ -56,7 +56,7 @@ Confira se a primeira abertura segue os passos 4 a 8. O cask não remove a quare
 
 ## Se algo divergir
 
-Atualize a seção **Instalar** de `README.md` e `README.en.md`, nos mesmos termos que o macOS mostrou, e `docs/launch/` se o número de passos mudar. Anote aqui a versão do macOS em que você testou.
+Atualize a seção **Instalar** de `README.md` e `README.pt.md`, nos mesmos termos que o macOS mostrou, e `docs/launch/` se o número de passos mudar. Anote aqui a versão do macOS em que você testou.
 
 ## Limpar
 
