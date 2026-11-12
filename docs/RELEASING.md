@@ -9,6 +9,31 @@ Os alvos `make release` e `make notarize` funcionam sem credenciais: sem as vari
 
 Nenhum dos dois é segredo por si só, mas não os versione. A senha fica no Keychain.
 
+## Certificado local para `make install`
+
+Ad-hoc, cada build muda de identidade, e o macOS pede de novo o acesso ao Bluetooth a cada `make install`. Um certificado autoassinado mantém a identidade entre builds. Ele só vale nesta máquina e não serve para distribuir. Crie uma vez:
+
+```sh
+cat > /tmp/qb.cnf <<'EOF'
+[req]
+distinguished_name = dn
+x509_extensions = ext
+prompt = no
+[dn]
+CN = Quietbar Local
+[ext]
+basicConstraints = critical,CA:false
+keyUsage = critical,digitalSignature
+extendedKeyUsage = critical,codeSigning
+EOF
+openssl req -x509 -newkey rsa:2048 -nodes -keyout /tmp/qb.key -out /tmp/qb.pem -days 3650 -config /tmp/qb.cnf
+openssl pkcs12 -export -inkey /tmp/qb.key -in /tmp/qb.pem -name "Quietbar Local" -out /tmp/qb.p12 -passout pass:quietbar
+security import /tmp/qb.p12 -k ~/Library/Keychains/login.keychain-db -P quietbar -T /usr/bin/codesign
+rm /tmp/qb.key /tmp/qb.p12
+```
+
+O `make install` usa o "Quietbar Local" sozinho quando ele está no chaveiro. `security find-identity` mostra o certificado como `CSSMERR_TP_NOT_TRUSTED`, e isso é esperado: o `codesign` assina mesmo assim. A primeira instalação com ele ainda pede o Bluetooth uma vez.
+
 ## Configurar o Developer ID (uma vez)
 
 1. Entre no [Apple Developer Program](https://developer.apple.com/programs/). Ele é pago, e o certificado Developer ID exige a inscrição.

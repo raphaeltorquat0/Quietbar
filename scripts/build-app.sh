@@ -51,18 +51,22 @@ cp -R "$BUILT" dist/
 APP=dist/Quietbar.app
 
 if [ "$SIGN_IDENTITY" != "-" ]; then
+  RUNTIME="--options runtime --timestamp"
+  # O autoassinado não tem Team ID, e o hardened runtime recusa carregar o Sparkle sem o mesmo Team ID
+  # do app. O runtime só é preciso para notarizar (docs/RELEASING.md).
+  [ "$SIGN_IDENTITY" = "Quietbar Local" ] && RUNTIME="--timestamp=none"
   # De dentro para fora, sem --deep: o Sparkle pede os serviços e auxiliares um a um.
   SPARKLE="$APP/Contents/Frameworks/Sparkle.framework"
-  sign() { codesign --force --options runtime --timestamp -s "$SIGN_IDENTITY" "$@"; }
+  sign() { codesign --force $RUNTIME -s "$SIGN_IDENTITY" "$@"; }
   sign "$SPARKLE/Versions/B/XPCServices/Installer.xpc"
   sign --preserve-metadata=entitlements "$SPARKLE/Versions/B/XPCServices/Downloader.xpc"
   sign "$SPARKLE/Versions/B/Autoupdate"
   sign "$SPARKLE/Versions/B/Updater.app"
   sign "$SPARKLE"
   for ext in "$APP"/Contents/PlugIns/*.appex; do
-    codesign --force --options runtime --timestamp --entitlements Controls/QuietbarControls.entitlements -s "$SIGN_IDENTITY" "$ext"
+    codesign --force $RUNTIME --entitlements Controls/QuietbarControls.entitlements -s "$SIGN_IDENTITY" "$ext"
   done
-  codesign --force --options runtime --timestamp --entitlements "$ENTITLEMENTS" -s "$SIGN_IDENTITY" "$APP"
+  codesign --force $RUNTIME --entitlements "$ENTITLEMENTS" -s "$SIGN_IDENTITY" "$APP"
 fi
 codesign --verify --deep --strict "$APP"
 echo "dist/Quietbar.app $VERSION ($BUILD_NUMBER)"
