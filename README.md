@@ -40,7 +40,7 @@ Quietbar is a native Swift/SwiftUI app that speaks the Sony MDR v2 protocol dire
 
 The app only shows what your headphones report at connection. It runs on macOS 14 or later, on Apple Silicon and Intel.
 
-<p align="center"><img src="docs/media/demo.gif" width="640" alt="Connection popup and sound mode switching in the panel"></p>
+<p align="center"><img src="docs/media/demo-en.gif" width="640" alt="Connection popup and sound mode switching in the panel, with a Sony WH-1000XM5 and then a JBL Live Beam 4"></p>
 
 ## Compatibility
 

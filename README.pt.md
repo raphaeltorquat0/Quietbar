@@ -47,7 +47,7 @@ Seus ajustes ficam no Mac. O app usa a internet para procurar atualizações, o 
 
 O app só mostra o que o fone anuncia na conexão. macOS 14 ou mais novo, Apple Silicon e Intel.
 
-<p align="center"><img src="docs/media/demo.gif" width="640" alt="Popup de conexão e troca do modo de som no painel"></p>
+<p align="center"><img src="docs/media/demo.gif" width="640" alt="Popup de conexão e troca de modo de som no painel, com um Sony WH-1000XM5 e depois um JBL Live Beam 4"></p>
 
 ## Compatibilidade
 

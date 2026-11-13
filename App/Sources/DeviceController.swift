@@ -315,7 +315,8 @@ final class DeviceController {
         #endif
         if let b = snap.state.primaryBattery { lastBattery = b }
         // As capacidades chegam no handshake; antes delas o formato não é conhecido e o último vale.
-        if !snap.state.capabilities.table1.isEmpty { isEarbuds = snap.state.capabilities.isEarbuds }
+        // O fone simulado (press kit, testes) não grava: as preferências são as do app instalado.
+        if !simulating, !snap.state.capabilities.table1.isEmpty { isEarbuds = snap.state.capabilities.isEarbuds }
         checkBattery(snap.state.primaryBattery)
         Automation.shared.report()
         Telemetry.shared.modeReported(snap.state.noiseControl?.soundMode)
