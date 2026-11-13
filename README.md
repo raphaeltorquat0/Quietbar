@@ -3,12 +3,21 @@
 <h1 align="center">Quietbar</h1>
 
 <p align="center">
-Control your Sony headphones (WH-1000XM5, WF-1000XM5, LinkBuds…) from the macOS menu bar, without the phone app.<br>
+<a href="https://github.com/raphaeltorquat0/Quietbar/releases"><img src="https://img.shields.io/github/v/release/raphaeltorquat0/Quietbar?include_prereleases&label=release" alt="Release"></a>
+<a href="https://github.com/raphaeltorquat0/Quietbar/releases"><img src="https://img.shields.io/github/downloads/raphaeltorquat0/Quietbar/total" alt="Downloads"></a>
+<a href="https://github.com/raphaeltorquat0/Quietbar/actions/workflows/ci.yml"><img src="https://github.com/raphaeltorquat0/Quietbar/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+<img src="https://img.shields.io/badge/macOS-14%2B-blue" alt="macOS 14+">
+<a href="LICENSE"><img src="https://img.shields.io/github/license/raphaeltorquat0/Quietbar" alt="MIT"></a>
+</p>
+
+<p align="center">
+Control your <b>Sony</b> (WH-1000XM5, WF-1000XM5, LinkBuds…) and <b>JBL</b> (Live Beam 4) headphones from the macOS menu bar, without the phone app.<br>
 <a href="README.pt.md">Português</a>
 </p>
 
 <p align="center">
-<a href="https://github.com/raphaeltorquat0/Quietbar/releases/latest"><b>⬇︎ Download the latest version (.dmg)</b></a>
+<a href="https://github.com/raphaeltorquat0/Quietbar/releases/latest"><b>⬇︎ Download the latest version (.dmg)</b></a><br>
+<sub>New: <a href="https://github.com/raphaeltorquat0/Quietbar/releases/tag/v1.4.0-beta.1">1.4.0 beta</a> with call automation, Mac Sound and the JBL Live Beam 4</sub>
 </p>
 
 <p align="center">

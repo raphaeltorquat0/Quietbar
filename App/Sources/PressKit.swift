@@ -21,6 +21,11 @@ import SwiftUI
 
     static func run(to dir: URL) async {
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        // Imagem de prévia do repositório (Settings › Social preview), 1280×640 com a margem do `Backdrop`.
+        if CommandLine.arguments.contains("--social-preview") {
+            await shot(SocialPreview(), dark: true, to: dir.appending(path: "social-preview.png"))
+            exit(0)
+        }
         // Só o GIF, no idioma do processo: o script grava uma vez por idioma (`-AppleLanguages`).
         if CommandLine.arguments.contains("--demo-only") {
             await record(to: dir.appending(path: "demo.mov"))
@@ -147,6 +152,37 @@ struct Backdrop<Content: View>: View {
                                        startPoint: .topLeading, endPoint: .bottomTrailing))
     }
 }
+}
+
+/// Prévia do repositório: nome, frase e os painéis do Sony e do JBL, só com o cabeçalho e os modos.
+private struct SocialPreview: View {
+    var body: some View {
+        HStack(spacing: 48) {
+            VStack(alignment: .leading, spacing: 18) {
+                Image(nsImage: NSImage(named: NSImage.applicationIconName) ?? NSImage()).resizable().frame(width: 128, height: 128)
+                Text(verbatim: "Quietbar").font(.system(size: 64, weight: .bold))
+                Text(verbatim: "Sony and JBL headphones, from the macOS menu bar.").font(.system(size: 28, weight: .medium))
+                    .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(width: 440, alignment: .leading)
+            HStack(alignment: .top, spacing: 20) {
+                PanelView(state: Self.compact(PanelFixtures.connected(.noiseCanceling)))
+                PanelView(state: Self.compact(PanelFixtures.jblLiveBeam4, mode: .ambient))
+            }
+        }
+        .frame(width: 1208, height: 568)
+    }
+
+    private static func compact(_ state: PanelState, mode: SoundMode? = nil) -> PanelState {
+        var p = state
+        if let mode { p.mode = mode }
+        p.presets = []
+        p.speakToChat = nil
+        p.dsee = nil
+        p.showPlayback = false
+        p.macSound = nil
+        return p
+    }
 }
 
 /// Roteiro do GIF: o Sony conecta e troca de modo no painel; depois o JBL conecta e troca também.

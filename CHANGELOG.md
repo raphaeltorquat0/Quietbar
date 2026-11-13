@@ -15,6 +15,10 @@ As notas completas de cada versão ficam em [`docs/releases/`](docs/releases/) e
 - Perfis sem gatilho, para Foco e Atalhos.
 - Aba Perfis vazia mostra por onde começar: app, rede Wi-Fi ou Foco, com exemplos. Um perfil sem gatilho explica como associá-lo a um Foco.
 - **Som no Mac:** EQ paramétrico só para o áudio do Mac, detalhado em [`docs/releases/1.4.0.md`](docs/releases/1.4.0.md).
+- **JBL Live Beam 4 (experimental):** modo de som (ANC, Ambient Aware, TalkThru, desligado), bateria de cada fone e do estojo e a troca pelo botão do fone, por BLE. Testado no fone. Sem nível do ambiente e sem EQ. Veja [`docs/JBL.md`](docs/JBL.md).
+- Com o fone escolhido desconectado, o app passa a seguir o fone compatível que está conectado.
+- Ícone da barra de menus conforme o formato do fone: de arco ou intra-auricular.
+- `mdr-cli jbl-probe` e `mdr-cli jbl-set` para medir o protocolo do JBL.
 
 - **Métricas anônimas, opt-in, desligadas por padrão:** Configurações › Privacidade liga, desliga e mostra o JSON exato do próximo envio. Veja [`docs/PRIVACY.md`](docs/PRIVACY.md).
 - Automação em beta gratuito, com o rótulo "Beta" na aba.
@@ -37,6 +41,7 @@ As notas completas de cada versão ficam em [`docs/releases/`](docs/releases/) e
 - Uma mudança no fone com o canal solto não se perde mais na troca de contexto: vira ajuste manual, e a regra só volta na mudança seguinte.
 - Pedir o modo que o fone já tem não envia comando, venha de onde vier.
 - Um canal com o fone esquecido aberto agora é fechado sozinho, com registro na aba Desenvolvedor.
+- O cartão do fone no painel ficava deslizando em loop depois do carregamento.
 
 ## Versões anteriores
 
