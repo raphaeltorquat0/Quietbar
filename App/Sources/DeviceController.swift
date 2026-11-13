@@ -21,6 +21,10 @@ final class DeviceController {
     var lastError: String?
     /// Última bateria lida; o canal é solto 15 s após fechar a UI, mas o ícone continua mostrando o valor.
     private(set) var lastBattery: BatteryStatus?
+    /// Formato do fone escolhido, para o ícone da barra. Fica guardado: o estado zera a cada reconexão.
+    private(set) var isEarbuds = UserDefaults.standard.bool(forKey: "selectedIsEarbuds") {
+        didSet { if oldValue != isEarbuds { UserDefaults.standard.set(isEarbuds, forKey: "selectedIsEarbuds") } }
+    }
     /// Vezes em que o watchdog fechou um canal que a liberação por ociosidade deixou aberto.
     private(set) var watchdogCloses = 0
 
@@ -34,6 +38,7 @@ final class DeviceController {
         didSet {
             UserDefaults.standard.set(selectedAddress, forKey: "selectedAddress")
             if oldValue != selectedAddress {
+                isEarbuds = false
                 MacSound.shared.targetChanged(selectedAddress)
                 Automation.shared.engine.forgetDevice()
                 Task { await reset() }
@@ -77,6 +82,13 @@ final class DeviceController {
         }
     }
 
+    /// O fone escolhido está desconectado e outro compatível está conectado: segue o que está no ouvido.
+    private func followConnectedDevice() {
+        guard !simulating, selectedDevice?.isConnected != true,
+              let d = devices.first(where: { $0.isConnected && BluetoothDevices.isSupported($0) }) else { return }
+        selectedAddress = d.address
+    }
+
     // MARK: - Visibilidade
 
     func uiAppeared() {
@@ -84,6 +96,7 @@ final class DeviceController {
         lastActivity = .now
         idleTask?.cancel()
         refreshDevices()
+        followConnectedDevice()
         Task { await ensureConnected() }
     }
 
@@ -301,6 +314,8 @@ final class DeviceController {
         HardwareTest.log()
         #endif
         if let b = snap.state.primaryBattery { lastBattery = b }
+        // As capacidades chegam no handshake; antes delas o formato não é conhecido e o último vale.
+        if !snap.state.capabilities.table1.isEmpty { isEarbuds = snap.state.capabilities.isEarbuds }
         checkBattery(snap.state.primaryBattery)
         Automation.shared.report()
         Telemetry.shared.modeReported(snap.state.noiseControl?.soundMode)
@@ -353,7 +368,12 @@ final class DeviceController {
             }
         }
         watcher.onChange = { [weak self] address, connected in
-            guard let self, address == self.selectedAddress else { return }
+            guard let self else { return }
+            if connected, address != self.selectedAddress {
+                self.refreshDevices()
+                self.followConnectedDevice()
+            }
+            guard address == self.selectedAddress else { return }
             Dogfood.shared.record(connected ? "link.up" : "link.down")
             self.refreshDevices()
             if connected, self.visible > 0 { Task { await self.ensureConnected() } }

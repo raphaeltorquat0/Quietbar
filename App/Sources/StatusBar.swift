@@ -34,7 +34,7 @@ import SwiftUI
     private func refreshLabel() {
         let d = DeviceController.shared
         withObservationTracking {
-            item.button?.image = Self.icon(connected: d.isBluetoothConnected, lowBattery: d.isBatteryLow)
+            item.button?.image = Self.icon(connected: d.isBluetoothConnected, lowBattery: d.isBatteryLow, earbuds: d.isEarbuds)
             let percent = d.settings.menuBarShowsPercent ? d.lastBattery.map { "\($0.level)%" } : nil
             item.button?.title = percent ?? ""
             item.button?.font = .monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
@@ -198,10 +198,12 @@ import SwiftUI
 
     // MARK: Ícone
 
-    /// Template do SF Symbol `headphones`; apagado quando desconectado, com ponto quando a bateria está baixa.
-    static func icon(connected: Bool, lowBattery: Bool) -> NSImage {
+    /// Template do SF Symbol do formato do fone (`headphones` ou `earbuds`); apagado quando desconectado, com ponto
+    /// quando a bateria está baixa.
+    static func icon(connected: Bool, lowBattery: Bool, earbuds: Bool = false) -> NSImage {
         let config = NSImage.SymbolConfiguration(pointSize: 14, weight: .regular)
-        let symbol = NSImage(systemSymbolName: "headphones", accessibilityDescription: nil)!.withSymbolConfiguration(config)!
+        let symbol = NSImage(systemSymbolName: earbuds ? "earbuds" : "headphones", accessibilityDescription: nil)!
+            .withSymbolConfiguration(config)!
         let size = NSSize(width: symbol.size.width + 3, height: symbol.size.height)
         let img = NSImage(size: size, flipped: false) { _ in
             symbol.draw(in: NSRect(origin: .zero, size: symbol.size), from: .zero, operation: .sourceOver, fraction: connected ? 1 : 0.35)

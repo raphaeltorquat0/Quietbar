@@ -263,10 +263,9 @@ struct HeadphoneIllustration: View {
             }
         }
         .rotationEffect(.degrees(reduceMotion ? 0 : (sway ? 3 : -3)))
-        .onAppear {
-            guard !reduceMotion else { return }
-            withAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true)) { sway = true }
-        }
+        // Presa ao `sway`, como o `Shimmer`: `withAnimation` no `onAppear` põe em loop o resto do layout.
+        .animation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: sway)
+        .onAppear { if !reduceMotion { sway = true } }
     }
 }
 
