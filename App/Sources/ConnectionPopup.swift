@@ -125,6 +125,8 @@ struct PopupDemo {
     var level: UInt8 = 62
     var charging = false
     var mode: SoundMode = .noiseCanceling
+    /// Fones intra-auriculares sem modelo 3D próprio, como o JBL Live Beam 4: vai o símbolo.
+    var earbuds = false
 }
 
 struct PopupView: View {
@@ -203,7 +205,8 @@ struct PopupView: View {
     @ViewBuilder
     private func visual(level: Double?, mode: SoundMode?, settings: AppSettings) -> some View {
         let name = model.demo == nil ? device.state.modelName : nil
-        if model.demo == nil, device.state.capabilities.isEarbuds, !hasEarbudsModel(name), CustomMedia.modelURL == nil, CustomMedia.image == nil {
+        let earbuds = model.demo.map(\.earbuds) ?? device.state.capabilities.isEarbuds
+        if earbuds, !hasEarbudsModel(name), CustomMedia.modelURL == nil, CustomMedia.image == nil {
             EarbudsVisual()
         } else if failed3D || !settings.popupUse3D {
             HeadphoneIllustration(battery: shownBattery, accent: Color(nsColor: settings.ringNSColor), image: CustomMedia.image)
@@ -263,10 +266,9 @@ struct HeadphoneIllustration: View {
             }
         }
         .rotationEffect(.degrees(reduceMotion ? 0 : (sway ? 3 : -3)))
-        .onAppear {
-            guard !reduceMotion else { return }
-            withAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true)) { sway = true }
-        }
+        // Presa ao `sway`, como o `Shimmer`: `withAnimation` no `onAppear` põe em loop o resto do layout.
+        .animation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: sway)
+        .onAppear { if !reduceMotion { sway = true } }
     }
 }
 

@@ -13,7 +13,10 @@ test-sim: ## Roda só os testes do simulador
 	swift test --filter MDRSimulatorTests
 
 install: ## Compila em Release, assina, instala em /Applications, ativa abrir no login e abre o app
-	scripts/build-app.sh
+	@# Ad-hoc muda de identidade a cada build e o macOS pede o Bluetooth de novo; um certificado
+	@# "Quietbar Local" no chaveiro mantém as permissões entre builds (docs/RELEASING.md).
+	QUIETBAR_SIGN_IDENTITY="$${QUIETBAR_SIGN_IDENTITY:-$$(security find-identity -p codesigning | grep -q '"Quietbar Local"' && echo 'Quietbar Local' || echo -)}" \
+	  scripts/build-app.sh
 	@pkill -x $(APP_NAME) 2>/dev/null; \
 	 for i in 1 2 3 4 5 6 7 8 9 10; do pgrep -x $(APP_NAME) >/dev/null || break; sleep 0.5; done; \
 	 pkill -9 -x $(APP_NAME) 2>/dev/null; true

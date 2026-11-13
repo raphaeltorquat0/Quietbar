@@ -34,7 +34,7 @@ import SwiftUI
     private func refreshLabel() {
         let d = DeviceController.shared
         withObservationTracking {
-            item.button?.image = Self.icon(connected: d.isBluetoothConnected, lowBattery: d.isBatteryLow)
+            item.button?.image = Self.icon(connected: d.isBluetoothConnected, lowBattery: d.isBatteryLow, earbuds: d.isEarbuds)
             let percent = d.settings.menuBarShowsPercent ? d.lastBattery.map { "\($0.level)%" } : nil
             item.button?.title = percent ?? ""
             item.button?.font = .monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
@@ -122,22 +122,23 @@ import SwiftUI
 
     /// Topo do painel 6 pt abaixo da barra, centrado no ícone, sem passar da borda da tela.
     private var anchor: NSRect = .zero
-    private func place(_ p: NSPanel, under anchor: NSRect) {
+    private func place(_ p: NSPanel, under anchor: NSRect, size: NSSize? = nil) {
         self.anchor = anchor
-        let size = p.frame.size
+        let size = size ?? p.frame.size
         let screen = NSScreen.screens.first { $0.frame.intersects(anchor) }?.visibleFrame ?? .zero
         var x = anchor.midX - size.width / 2
         x = min(max(x, screen.minX + 8), screen.maxX - size.width - 8)
-        p.setFrameOrigin(NSPoint(x: x, y: anchor.minY - 6 - size.height))
+        p.setFrame(NSRect(x: x, y: anchor.minY - 6 - size.height, width: size.width, height: size.height), display: true)
     }
 
     /// O painel muda de altura (ex.: ajustes do modo Ambiente); mantém o topo preso sob a barra.
+    /// Tamanho e posição numa chamada só: `setContentSize` prende a base, e o topo pulava a cada quadro
+    /// da animação de altura até `place` trazê-lo de volta.
     func fit(_ size: CGSize) {
         guard let p = panel else { return }
         let s = Self.rounded(size)
         guard s != p.contentLayoutRect.size else { return }
-        p.setContentSize(s)
-        place(p, under: anchor)
+        place(p, under: anchor, size: p.frameRect(forContentRect: NSRect(origin: .zero, size: s)).size)
     }
 
     private static func rounded(_ s: CGSize) -> NSSize { NSSize(width: s.width.rounded(.up), height: s.height.rounded(.up)) }
@@ -197,10 +198,12 @@ import SwiftUI
 
     // MARK: Ícone
 
-    /// Template do SF Symbol `headphones`; apagado quando desconectado, com ponto quando a bateria está baixa.
-    static func icon(connected: Bool, lowBattery: Bool) -> NSImage {
+    /// Template do SF Symbol do formato do fone (`headphones` ou `earbuds`); apagado quando desconectado, com ponto
+    /// quando a bateria está baixa.
+    static func icon(connected: Bool, lowBattery: Bool, earbuds: Bool = false) -> NSImage {
         let config = NSImage.SymbolConfiguration(pointSize: 14, weight: .regular)
-        let symbol = NSImage(systemSymbolName: "headphones", accessibilityDescription: nil)!.withSymbolConfiguration(config)!
+        let symbol = NSImage(systemSymbolName: earbuds ? "earbuds" : "headphones", accessibilityDescription: nil)!
+            .withSymbolConfiguration(config)!
         let size = NSSize(width: symbol.size.width + 3, height: symbol.size.height)
         let img = NSImage(size: size, flipped: false) { _ in
             symbol.draw(in: NSRect(origin: .zero, size: symbol.size), from: .zero, operation: .sourceOver, fraction: connected ? 1 : 0.35)

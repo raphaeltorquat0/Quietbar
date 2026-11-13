@@ -318,9 +318,12 @@ struct Shimmer: ViewModifier {
                     LinearGradient(colors: [.clear, .white.opacity(0.35), .clear], startPoint: .leading, endPoint: .trailing)
                         .frame(width: g.size.width * 0.6)
                         .offset(x: phase * g.size.width * 1.6)
+                        // Presa ao `phase`: com `withAnimation` no `onAppear`, a repetição infinita pegava o que
+                        // mudasse de lugar no mesmo instante, e o cabeçalho ficava deslizando depois do carregamento.
+                        .animation(.linear(duration: 1.2).repeatForever(autoreverses: false), value: phase)
                 }
                 .mask(content)
-                .onAppear { withAnimation(.linear(duration: 1.2).repeatForever(autoreverses: false)) { phase = 1 } }
+                .onAppear { phase = 1 }
             }
         }
     }

@@ -30,6 +30,8 @@ struct PanelState {
     /// Modos que o fone oferece (só ambiente em alguns modelos, ex.: WF-C510).
     var modes: [SoundMode] = SoundMode.allCases
     var ambientLevel = 10
+    /// O JBL guarda um nível, mas o som não muda (docs/JBL.md §5): sem o controle.
+    var ambientLevelAdjustable = true
     var focusOnVoice = false
 
     var presets: [Preset] = []
@@ -213,8 +215,10 @@ struct PanelView: View {
 
     private var ambientControls: some View {
         VStack(spacing: 8) {
-            PanelSlider(value: state.ambientLevel, range: 1...20, icon: "ear", label: "Nível do som ambiente",
-                        commit: actions.setAmbient)
+            if state.ambientLevelAdjustable {
+                PanelSlider(value: state.ambientLevel, range: 1...20, icon: "ear", label: "Nível do som ambiente",
+                            commit: actions.setAmbient)
+            }
             ToggleRow(title: "Foco na voz", subtitle: "Deixa vozes mais claras que o resto",
                       isOn: state.focusOnVoice, set: actions.setFocusOnVoice)
         }

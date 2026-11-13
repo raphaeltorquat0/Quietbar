@@ -21,6 +21,10 @@ final class DeviceController {
     var lastError: String?
     /// Última bateria lida; o canal é solto 15 s após fechar a UI, mas o ícone continua mostrando o valor.
     private(set) var lastBattery: BatteryStatus?
+    /// Formato do fone escolhido, para o ícone da barra. Fica guardado: o estado zera a cada reconexão.
+    private(set) var isEarbuds = UserDefaults.standard.bool(forKey: "selectedIsEarbuds") {
+        didSet { if oldValue != isEarbuds { UserDefaults.standard.set(isEarbuds, forKey: "selectedIsEarbuds") } }
+    }
     /// Vezes em que o watchdog fechou um canal que a liberação por ociosidade deixou aberto.
     private(set) var watchdogCloses = 0
 
@@ -34,6 +38,7 @@ final class DeviceController {
         didSet {
             UserDefaults.standard.set(selectedAddress, forKey: "selectedAddress")
             if oldValue != selectedAddress {
+                isEarbuds = false
                 MacSound.shared.targetChanged(selectedAddress)
                 Automation.shared.engine.forgetDevice()
                 Task { await reset() }
@@ -60,7 +65,7 @@ final class DeviceController {
     private init() {
         selectedAddress = UserDefaults.standard.string(forKey: "selectedAddress")
         refreshDevices()
-        if selectedAddress == nil { selectedAddress = BluetoothDevices.preferredSony(among: devices)?.address }
+        if selectedAddress == nil { selectedAddress = BluetoothDevices.preferredDevice(among: devices)?.address }
         observeSystem()
         scheduleBatteryCheck()
         Task {
@@ -73,8 +78,15 @@ final class DeviceController {
 
     func refreshDevices() {
         devices = BluetoothDevices.paired().filter {
-            $0.hasMDRService || BluetoothDevices.looksLikeSony($0.name) || $0.address == selectedAddress
+            BluetoothDevices.isSupported($0) || $0.address == selectedAddress
         }
+    }
+
+    /// O fone escolhido está desconectado e outro compatível está conectado: segue o que está no ouvido.
+    private func followConnectedDevice() {
+        guard !simulating, selectedDevice?.isConnected != true,
+              let d = devices.first(where: { $0.isConnected && BluetoothDevices.isSupported($0) }) else { return }
+        selectedAddress = d.address
     }
 
     // MARK: - Visibilidade
@@ -84,6 +96,7 @@ final class DeviceController {
         lastActivity = .now
         idleTask?.cancel()
         refreshDevices()
+        followConnectedDevice()
         Task { await ensureConnected() }
     }
 
@@ -194,12 +207,21 @@ final class DeviceController {
         refreshDevices()
     }
 
+    /// JBL vai por BLE com a ponte para MDR; o resto é Sony por RFCOMM.
+    private func bluetoothChannel(_ address: String) -> any MDRChannel {
+        guard let d = devices.first(where: { $0.address == address }), d.isJBL else { return RFCOMMChannel(address: address) }
+        let c = JBLChannel(name: d.name)
+        // A sessão só vê o MDR da ponte; o relato de bug precisa do que passou no ar.
+        c.traffic = { bytes, sent in ProtocolLog.shared.note("JBL \(sent ? ">>" : "<<") \(bytes.hex)") }
+        return c
+    }
+
     private func makeSession(_ address: String) -> MDRSession {
         let toFile = settings.logTraffic
         #if DEBUG
-        let channel: any MDRChannel = Simulation.shared.transport ?? RFCOMMChannel(address: address)
+        let channel: any MDRChannel = Simulation.shared.transport ?? bluetoothChannel(address)
         #else
-        let channel: any MDRChannel = RFCOMMChannel(address: address)
+        let channel: any MDRChannel = bluetoothChannel(address)
         #endif
         let s = MDRSession(channel: channel, traffic: { dir, bytes in
             if toFile { TrafficLog.append(dir, bytes) }
@@ -292,6 +314,9 @@ final class DeviceController {
         HardwareTest.log()
         #endif
         if let b = snap.state.primaryBattery { lastBattery = b }
+        // As capacidades chegam no handshake; antes delas o formato não é conhecido e o último vale.
+        // O fone simulado (press kit, testes) não grava: as preferências são as do app instalado.
+        if !simulating, !snap.state.capabilities.table1.isEmpty { isEarbuds = snap.state.capabilities.isEarbuds }
         checkBattery(snap.state.primaryBattery)
         Automation.shared.report()
         Telemetry.shared.modeReported(snap.state.noiseControl?.soundMode)
@@ -344,7 +369,12 @@ final class DeviceController {
             }
         }
         watcher.onChange = { [weak self] address, connected in
-            guard let self, address == self.selectedAddress else { return }
+            guard let self else { return }
+            if connected, address != self.selectedAddress {
+                self.refreshDevices()
+                self.followConnectedDevice()
+            }
+            guard address == self.selectedAddress else { return }
             Dogfood.shared.record(connected ? "link.up" : "link.down")
             self.refreshDevices()
             if connected, self.visible > 0 { Task { await self.ensureConnected() } }

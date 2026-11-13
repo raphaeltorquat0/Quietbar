@@ -7,7 +7,7 @@ import SwiftUI
 @MainActor enum PanelFixtures {
     static func connected(_ mode: SoundMode, battery: Int = 72) -> PanelState {
         var p = PanelState()
-        p.name = "Meu fone"
+        p.name = String(localized: "Meu fone")
         p.subtitle = "WH-1000XM5 · AAC"
         p.modelName = "WH-1000XM5"
         p.link = .ready
@@ -49,6 +49,23 @@ import SwiftUI
         p.bands = [4, 4, -1, -1, 0, 0, 0, 0, 0, 0]
         p.bandsLimit = 6
         p.speakToChat = nil
+        return p
+    }
+
+    /// JBL Live Beam 4: earbuds pela ponte BLE, sem EQ, sem reprodução e sem nível do ambiente.
+    static var jblLiveBeam4: PanelState {
+        var p = connected(.noiseCanceling, battery: 95)
+        p.name = "JBL Live Beam 4"
+        p.subtitle = "JBL Live Beam 4"
+        p.modelName = "JBL Live Beam 4"
+        p.earbuds = .init(left: 95, right: 94, caseLevel: 97)
+        p.ambientLevelAdjustable = false
+        p.presets = []
+        p.bands = []
+        p.speakToChat = nil
+        p.dsee = nil
+        p.showPlayback = false
+        p.volume = nil
         return p
     }
 

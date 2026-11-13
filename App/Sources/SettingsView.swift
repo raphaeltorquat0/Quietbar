@@ -156,8 +156,11 @@ struct SoundTab: View {
                         ForEach(SoundMode.allCases, id: \.self) { Text($0.label).tag($0) }
                     }
                     .pickerStyle(.segmented)
-                    DeviceSlider(value: Int(n.ambientLevel), range: 1...20, label: "Nível do ambiente") { v in
-                        device.perform { try await $0.setAmbientLevel(v) }
+                    // O JBL guarda um nível, mas o som não muda (docs/JBL.md §5).
+                    if device.selectedDevice?.isJBL != true {
+                        DeviceSlider(value: Int(n.ambientLevel), range: 1...20, label: "Nível do ambiente") { v in
+                            device.perform { try await $0.setAmbientLevel(v) }
+                        }
                     }
                     Toggle("Focus on Voice", isOn: deviceBinding(n.focusOnVoice, default: false) { v in
                         device.perform { try await $0.setFocusOnVoice(v) }

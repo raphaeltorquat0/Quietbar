@@ -21,6 +21,11 @@ import SwiftUI
 
     static func run(to dir: URL) async {
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        // Só o GIF, no idioma do processo: o script grava uma vez por idioma (`-AppleLanguages`).
+        if CommandLine.arguments.contains("--demo-only") {
+            await record(to: dir.appending(path: "demo.mov"))
+            exit(0)
+        }
         for dark in [true, false] {
             let suffix = dark ? "escuro" : "claro"
             for (name, state) in panels {
@@ -44,7 +49,7 @@ import SwiftUI
     }
 
     private static func popup(_ m: PopupModel, seconds: Double = 60) -> some View {
-        m.demo = PopupDemo(name: "Meu fone")
+        m.demo = PopupDemo(name: String(localized: "Meu fone"), level: 72)
         m.reset(duration: seconds)
         return PopupView(model: m) {}.environment(DeviceController.shared)
     }
@@ -74,15 +79,22 @@ import SwiftUI
     }
 
     private static func record(to url: URL) async {
-        let w = window(DemoScene(popup: popup(PopupModel(), seconds: 5)), dark: true)
+        let height = DemoScene.panelHeight
+        let w = window(DemoScene(panelHeight: height).environment(DeviceController.shared), dark: true)
         // O hosting view só conhece a altura final depois da troca de modo; o tamanho é o do roteiro.
-        w.setContentSize(NSSize(width: 776, height: 642))
+        w.setContentSize(NSSize(width: 776, height: height + 72))
         w.center()
+        // A gravação é de um retângulo da tela e pega o cursor: a janela vai para o lado sem ele.
+        let mouse = NSEvent.mouseLocation, screen = NSScreen.screens[0].visibleFrame
+        if w.frame.insetBy(dx: -40, dy: -40).contains(mouse) {
+            let x = mouse.x < screen.midX ? screen.maxX - w.frame.width - 20 : screen.minX + 20
+            w.setFrameOrigin(NSPoint(x: x, y: w.frame.minY))
+        }
         await focus(w)
         try? FileManager.default.removeItem(at: url)
         // `-R` usa a origem no canto superior esquerdo da tela principal.
         let f = w.frame, top = NSScreen.screens[0].frame.maxY - f.maxY
-        await screencapture(["-x", "-v", "-V", "10", "-R", "\(Int(f.minX)),\(Int(top)),\(Int(f.width)),\(Int(f.height))", url.path])
+        await screencapture(["-x", "-v", "-V", "18", "-R", "\(Int(f.minX)),\(Int(top)),\(Int(f.width)),\(Int(f.height))", url.path])
         w.orderOut(nil)
         print(url.path)
     }
@@ -137,24 +149,53 @@ struct Backdrop<Content: View>: View {
 }
 }
 
-/// Roteiro do GIF: popup de conexão seguido da troca de modo no painel.
-private struct DemoScene<Popup: View>: View {
-    let popup: Popup
+/// Roteiro do GIF: o Sony conecta e troca de modo no painel; depois o JBL conecta e troca também.
+/// O popup acompanha o painel: mesmo fone, mesma bateria, mesmo modo.
+private struct DemoScene: View {
+    let panelHeight: CGFloat
     @State private var state = PanelFixtures.connected(.noiseCanceling)
+    @State private var popup = PopupModel()
     @State private var showPopup = false
+
+    /// Altura do painel mais alto do roteiro: Sony no modo Ambiente, com Som no Mac.
+    @MainActor static var panelHeight: CGFloat {
+        let host = NSHostingView(rootView: PanelView(state: PanelFixtures.connected(.ambient)).environment(DeviceController.shared))
+        return host.fittingSize.height.rounded(.up)
+    }
 
     var body: some View {
         HStack(alignment: .top, spacing: 24) {
-            PanelView(state: state).frame(height: 570, alignment: .top)
-            ZStack { if showPopup { popup } }.frame(width: 360, height: 190, alignment: .top)
+            PanelView(state: state).frame(height: panelHeight, alignment: .top)
+            ZStack { if showPopup { PopupView(model: popup) {} } }.frame(width: 360, height: 190, alignment: .top)
         }
         .task {
             try? await Task.sleep(for: .seconds(2.5)) // o screencapture leva um tempo para começar a gravar
-            showPopup = true
+            connect(PopupDemo(name: state.name, level: UInt8(state.battery ?? 0), mode: .noiseCanceling), seconds: 6)
             for (delay, mode) in [(2.5, SoundMode.ambient), (2.0, .off), (1.6, .noiseCanceling)] {
                 try? await Task.sleep(for: .seconds(delay))
-                withAnimation(.snappy) { state.mode = mode }
+                set(mode)
             }
+            try? await Task.sleep(for: .seconds(1.4))
+            withAnimation(.snappy) { state = PanelFixtures.jblLiveBeam4 }
+            let jbl = PanelFixtures.jblLiveBeam4
+            connect(PopupDemo(name: jbl.name, level: UInt8(jbl.earbuds?.left ?? 0), mode: .noiseCanceling, earbuds: true), seconds: 5)
+            for (delay, mode) in [(2.4, SoundMode.ambient), (2.0, .noiseCanceling)] {
+                try? await Task.sleep(for: .seconds(delay))
+                set(mode)
+            }
+        }
+    }
+
+    private func connect(_ demo: PopupDemo, seconds: Double) {
+        popup.demo = demo
+        popup.reset(duration: seconds)
+        showPopup = true
+    }
+
+    private func set(_ mode: SoundMode) {
+        withAnimation(.snappy) {
+            state.mode = mode
+            popup.demo?.mode = mode
         }
     }
 }
