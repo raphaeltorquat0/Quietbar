@@ -29,8 +29,8 @@ Controle seus fones <b>Sony</b> (WH-1000XM5, WF-1000XM5, LinkBuds…) pela barra
 App nativo em Swift/SwiftUI que fala o protocolo Sony MDR v2 direto pelo Bluetooth (RFCOMM).
 Seus ajustes ficam no Mac. O app usa a internet para procurar atualizações, o que dá para desligar, e para métricas anônimas, opt-in, desligadas por padrão ([o que é coletado](docs/PRIVACY.md)).
 
-> Projeto independente. **Não é afiliado, endossado nem suportado pela Sony.**
-> "Sony", "WH-1000XM5", "WF-1000XM5", "LinkBuds" e os demais nomes de modelos são marcas de seus respectivos donos, citadas só para indicar compatibilidade.
+> Projeto independente. **Não é afiliado, endossado nem suportado pela Sony nem pela JBL/Harman.**
+> "Sony", "JBL", "WH-1000XM5", "WF-1000XM5", "LinkBuds", "Live Beam" e os demais nomes de modelos são marcas de seus respectivos donos, citadas só para indicar compatibilidade.
 
 ## O que faz
 
@@ -56,6 +56,7 @@ O app só mostra o que o fone anuncia na conexão. macOS 14 ou mais novo, Apple 
 | **Testado em hardware** | WH-1000XM5 (firmware 2.5.1) | Sessão completa de leitura num fone real. Os comandos de escrita ainda seguem o roteiro de [`docs/HARDWARE_TEST.md`](docs/HARDWARE_TEST.md) |
 | **Validado com tráfego real** | WF-1000XM5 (fw 6.1.0), LinkBuds Clip / WF-LC900 (fw 2.0.3) | O app entende capturas públicas desses fones, mas não foi usado com eles |
 | **Experimental** (protocolo conhecido, sem teste) | WH-1000XM6, WH-CH720N, ULT WEAR, WF-1000XM6, WF-C510, WF-C700N, WF-C710N, LinkBuds S, LinkBuds Open | Fontes públicas indicam MDR v2, mas o Quietbar nunca rodou com eles |
+| **Experimental** (JBL, BLE) | JBL Live Beam 4 | Modo de som (ANC, Ambient Aware, TalkThru, desligado) e bateria dos fones e do estojo, pelo Protocol4. Base: [JBLProtocol4](https://github.com/NeoHBz/JBLProtocol4) (MIT, medido num Tune 780NC) e a leitura do app oficial, que confirma o protocolo e o começo de conexão deste modelo ([`docs/JBL.md`](docs/JBL.md)). Testado no fone: modos, bateria e o botão de modo. Sem nível do ambiente (o fone guarda, mas o som não muda) e ainda sem EQ |
 | **Não verificado** (pode ser MDR v1) | WF-1000XM4, WF-C500, LinkBuds | Nenhuma fonte confirma a versão do protocolo. Podem não funcionar |
 | **No roadmap** (MDR v1) | WH-1000XM4/XM3/XM2, WF-1000XM3, WF-SP800N | Usam a versão antiga do protocolo, ainda não implementada |
 

@@ -75,6 +75,7 @@ extension PanelState {
             p.mode = n.soundMode
             if n.inquiredType == 0x22 { p.modes = [.ambient, .off] } // só ambiente (sem cancelamento)
             p.ambientLevel = Int(n.ambientLevel)
+            p.ambientLevelAdjustable = d.selectedDevice?.isJBL != true
             p.focusOnVoice = n.focusOnVoice
         }
         if let eq = s.equalizer, !s.equalizerPresets.isEmpty {

@@ -14,6 +14,8 @@ uso: mdr-cli <comando> [--address AA:BB:CC:DD:EE:FF] [--log-hex] [--trace]
   sniff                     conecta e imprime todo o tráfego até Ctrl-C
   popup                     pede ao app aberto para mostrar o popup de conexão
   ble-scan [s] [--all]      procura anúncios BLE Fast Pair (0xFE2C); padrão 15 s
+  jbl-probe ["nome"] [s]    somente leitura: GETs 0x01-0x60 no GATT JBL e imprime o hex; padrão 5 s
+  jbl-set tag=valor ...      SET cru no JBL (só tags permitidas, hex) e relê o modo; ex.: jbl-set 49=ff 19=83
   audio-probe --device <uid> [--seconds s] [--mute] [--tone] [--hold]
                             mede a tap de áudio do Mac (docs/AUDIO.md); não fala com o fone
   model --export <f.usdz>   exporta o modelo 3D do app (Quick Look)
@@ -177,15 +179,38 @@ func run(_ argv: [String]) async throws {
     if command == "ble-scan" {
         return try await runBLEScan(seconds: args.dropFirst().first.flatMap(Double.init) ?? 15, showAll: args.contains("--all"))
     }
+    if command == "jbl-set" {
+        guard let name = BluetoothDevices.paired().first(where: \.isJBL)?.name else { throw CLIError("nenhum JBL pareado") }
+        return try await runJBLSet(name: name, pairs: Array(args.dropFirst()))
+    }
+    if command == "jbl-probe" {
+        let rest = args.dropFirst()
+        let name = rest.first { Double($0) == nil } ?? BluetoothDevices.paired().first(where: \.isJBL)?.name
+        guard let name else { throw CLIError("nenhum JBL pareado; passe o nome do fone") }
+        return try await runJBLProbe(name: name, seconds: rest.compactMap(Double.init).first ?? 5)
+    }
     guard ["dump", "get", "set", "send", "sniff"].contains(command) else { print(usage); return }
 
-    guard let target = address ?? BluetoothDevices.preferredSony()?.address else {
-        throw CLIError("nenhum fone Sony pareado encontrado; use --address")
+    let paired = BluetoothDevices.paired()
+    guard let target = address ?? BluetoothDevices.preferredDevice(among: paired)?.address else {
+        throw CLIError("nenhum fone compatível pareado encontrado; use --address")
     }
     eprint("conectando em \(target)…")
     let sniffing = command == "sniff"
-    let channel = RFCOMMChannel(address: target)
-    if tracing { channel.trace = { eprint(String(format: "%8.3f", Date().timeIntervalSince(startTime)) + " -- " + $0) } }
+    let traceLine: (String) -> Void = { eprint(String(format: "%8.3f", Date().timeIntervalSince(startTime)) + " -- " + $0) }
+    let channel: any MDRChannel
+    if let jbl = paired.first(where: { $0.address == target && $0.isJBL }) {
+        let c = JBLChannel(name: jbl.name)
+        if tracing {
+            c.trace = traceLine
+            c.traffic = { bytes, sent in traceLine("jbl \(sent ? ">>" : "<<") " + bytes.map { String(format: "%02x", $0) }.joined()) }
+        }
+        channel = c
+    } else {
+        let c = RFCOMMChannel(address: target)
+        if tracing { c.trace = traceLine }
+        channel = c
+    }
     // `dump` e `get` nunca alteram o fone: só GET sai pelo canal.
     var options = MDRSession.Options()
     options.readOnly = ["dump", "get", "sniff"].contains(command)

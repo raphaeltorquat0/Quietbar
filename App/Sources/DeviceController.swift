@@ -60,7 +60,7 @@ final class DeviceController {
     private init() {
         selectedAddress = UserDefaults.standard.string(forKey: "selectedAddress")
         refreshDevices()
-        if selectedAddress == nil { selectedAddress = BluetoothDevices.preferredSony(among: devices)?.address }
+        if selectedAddress == nil { selectedAddress = BluetoothDevices.preferredDevice(among: devices)?.address }
         observeSystem()
         scheduleBatteryCheck()
         Task {
@@ -73,7 +73,7 @@ final class DeviceController {
 
     func refreshDevices() {
         devices = BluetoothDevices.paired().filter {
-            $0.hasMDRService || BluetoothDevices.looksLikeSony($0.name) || $0.address == selectedAddress
+            BluetoothDevices.isSupported($0) || $0.address == selectedAddress
         }
     }
 
@@ -194,12 +194,21 @@ final class DeviceController {
         refreshDevices()
     }
 
+    /// JBL vai por BLE com a ponte para MDR; o resto é Sony por RFCOMM.
+    private func bluetoothChannel(_ address: String) -> any MDRChannel {
+        guard let d = devices.first(where: { $0.address == address }), d.isJBL else { return RFCOMMChannel(address: address) }
+        let c = JBLChannel(name: d.name)
+        // A sessão só vê o MDR da ponte; o relato de bug precisa do que passou no ar.
+        c.traffic = { bytes, sent in ProtocolLog.shared.note("JBL \(sent ? ">>" : "<<") \(bytes.hex)") }
+        return c
+    }
+
     private func makeSession(_ address: String) -> MDRSession {
         let toFile = settings.logTraffic
         #if DEBUG
-        let channel: any MDRChannel = Simulation.shared.transport ?? RFCOMMChannel(address: address)
+        let channel: any MDRChannel = Simulation.shared.transport ?? bluetoothChannel(address)
         #else
-        let channel: any MDRChannel = RFCOMMChannel(address: address)
+        let channel: any MDRChannel = bluetoothChannel(address)
         #endif
         let s = MDRSession(channel: channel, traffic: { dir, bytes in
             if toFile { TrafficLog.append(dir, bytes) }

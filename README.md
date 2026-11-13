@@ -22,8 +22,8 @@ Control your Sony headphones (WH-1000XM5, WF-1000XM5, LinkBuds…) from the macO
 
 Quietbar is a native Swift/SwiftUI app that speaks the Sony MDR v2 protocol directly over Bluetooth (RFCOMM). Your settings stay on your Mac, and there's no account. It uses the internet for the update check, which you can turn off, and for anonymous metrics, opt-in, off by default ([what is collected, in Portuguese](docs/PRIVACY.md), and the [schema](docs/telemetry-schema.md)).
 
-> Independent project. **Not affiliated with, endorsed by or supported by Sony.**
-> "Sony", "WH-1000XM5", "WF-1000XM5", "LinkBuds" and other model names are trademarks of their respective owners, used only to indicate compatibility.
+> Independent project. **Not affiliated with, endorsed by or supported by Sony or JBL/Harman.**
+> "Sony", "JBL", "WH-1000XM5", "WF-1000XM5", "LinkBuds", "Live Beam" and other model names are trademarks of their respective owners, used only to indicate compatibility.
 
 ## Features
 
@@ -49,6 +49,7 @@ The app only shows what your headphones report at connection. It runs on macOS 1
 | **Tested on hardware** | WH-1000XM5 (firmware 2.5.1) | Full read session on a real unit. Write commands are still going through [`docs/HARDWARE_TEST.md`](docs/HARDWARE_TEST.md) |
 | **Validated with real traffic** | WF-1000XM5 (fw 6.1.0), LinkBuds Clip / WF-LC900 (fw 2.0.3) | The app understands public captures from these models, but hasn't been used with them |
 | **Experimental** (known protocol, untested) | WH-1000XM6, WH-CH720N, ULT WEAR, WF-1000XM6, WF-C510, WF-C700N, WF-C710N, LinkBuds S, LinkBuds Open | Public sources point to MDR v2, but Quietbar has never run with them |
+| **Experimental** (JBL, BLE) | JBL Live Beam 4 | Sound mode (ANC, Ambient Aware, TalkThru, off) and earbud and case battery, over Protocol4. Based on [JBLProtocol4](https://github.com/NeoHBz/JBLProtocol4) (MIT, measured on a Tune 780NC) and a reading of the official app, which confirms this model's protocol and connection start ([`docs/JBL.md`](docs/JBL.md), in Portuguese). Tested on the headphones: modes, battery and the mode button. No ambient level (the headphones store it, but the sound does not change) and no EQ yet |
 | **Unverified** (may be MDR v1) | WF-1000XM4, WF-C500, LinkBuds | No source confirms the protocol version. They may not work |
 | **On the roadmap** (MDR v1) | WH-1000XM4/XM3/XM2, WF-1000XM3, WF-SP800N | They use the older protocol, which isn't implemented yet |
 
