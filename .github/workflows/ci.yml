@@ -1,7 +1,9 @@
 name: CI
 
 on:
+  # Branch de PR já roda pelo pull_request: push em toda branch dobrava os jobs macOS na fila.
   push:
+    branches: [main]
   pull_request:
 
 jobs:
